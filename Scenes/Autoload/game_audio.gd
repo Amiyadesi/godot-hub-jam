@@ -138,11 +138,12 @@ func refresh_runtime_volumes() -> void:
 	var master_volume := _get_setting("master_volume", 0.8)
 	var music_volume := _get_setting("music_volume", 0.8)
 	var sfx_volume := _get_setting("sfx_volume", 0.8)
+	var ui_volume := _get_setting("ui_volume", 0.8)
 	var ambient_volume := _get_setting("ambient_volume", 0.8)
 	_set_bus_volume_linear("Master", master_volume)
 	_set_bus_volume_linear("Music", music_volume)
 	_set_bus_volume_linear("SFX", sfx_volume)
-	_set_bus_volume_linear("UI", sfx_volume)
+	_set_bus_volume_linear("UI", ui_volume)
 	_set_bus_volume_linear("Ambient", ambient_volume)
 
 
