@@ -1,0 +1,19 @@
+# Godot 4+ specific ignores
+.godot/
+/android/
+
+# Local exports and platform artifacts
+export/
+build/
+*.pck
+*.exe
+*.apk
+*.ipa
+*.dmg
+*.zip
+*.7z
+
+# Local environment files
+.env
+.env.*
+!.env.example
