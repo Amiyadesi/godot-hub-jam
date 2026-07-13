@@ -231,7 +231,6 @@ func _apply_sfx_volume(volume_between_0_and_1: float) -> void:
 	var sound_manager := _get_sound_manager()
 	if sound_manager != null and sound_manager.has_method("set_sound_volume"):
 		sound_manager.call("set_sound_volume", volume_between_0_and_1)
-	_apply_ui_volume(volume_between_0_and_1)
 
 
 # Applies interface-sound volume through SoundManager when available.

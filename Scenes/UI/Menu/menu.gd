@@ -34,7 +34,7 @@ func _connect_signals() -> void:
 	start_button.pressed.connect(_on_start_pressed)
 	setting_button.pressed.connect(setting_screen.open_modal)
 	thanks_button.pressed.connect(thank_screen.open_modal)
-	exit_button.pressed.connect(get_tree().quit)
+	exit_button.pressed.connect(_on_exit_pressed)
 	setting_screen.thanks_requested.connect(_on_setting_thanks_requested)
 	thank_screen.return_requested.connect(_on_thank_return_requested)
 
@@ -59,6 +59,11 @@ func _on_start_pressed() -> void:
 	if tween != null:
 		await tween.finished
 	SceneManager.change_scene_to_file(start_scene_path)
+
+
+func _on_exit_pressed() -> void:
+	if await FeedbackOverlay.ask("退出游戏", "确定要退出当前游戏吗？", "退出", "取消"):
+		get_tree().quit()
 
 
 func _on_setting_thanks_requested() -> void:
