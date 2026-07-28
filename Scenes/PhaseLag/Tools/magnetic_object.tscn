@@ -1,0 +1,52 @@
+[gd_scene load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://Scripts/PhaseLag/Tools/magnetic_object.gd" id="1_object"]
+[ext_resource type="Shader" path="res://resources/phase_lag/shaders/interaction_outline.gdshader" id="2_outline"]
+[ext_resource type="Texture2D" path="res://assets/phase_lag/environment/props/power_cell_device.png" id="3_cell"]
+[ext_resource type="PackedScene" path="res://Scenes/PhaseLag/UI/world_interaction_prompt.tscn" id="4_prompt"]
+
+[sub_resource type="RectangleShape2D" id="Rectangle_object"]
+size = Vector2(88, 118)
+
+[sub_resource type="PhysicsMaterial" id="PhysicsMaterial_object"]
+friction = 0.82
+bounce = 0.05
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_outline"]
+resource_local_to_scene = true
+shader = ExtResource("2_outline")
+shader_parameter/outline_color = Color(0.36, 1, 0.84, 1)
+shader_parameter/outline_width = 2.0
+
+[node name="MagneticObject" type="RigidBody2D" groups=["magnetic_objects", "pressure_weights"]]
+texture_filter = 1
+collision_layer = 8
+collision_mask = 4
+mass = 1.2
+physics_material_override = SubResource("PhysicsMaterial_object")
+contact_monitor = true
+max_contacts_reported = 4
+script = ExtResource("1_object")
+prop_texture = ExtResource("3_cell")
+
+[node name="VisualGroup" type="CanvasGroup" parent="."]
+position = Vector2(0, -59)
+scale = Vector2(2.5, 2.5)
+
+[node name="PropSprite" type="Sprite2D" parent="VisualGroup"]
+texture = ExtResource("3_cell")
+material = SubResource("ShaderMaterial_outline")
+
+[node name="StatusLight" type="Polygon2D" parent="VisualGroup"]
+position = Vector2(0, 18)
+polygon = PackedVector2Array(-5, -2, 5, -2, 5, 2, -5, 2)
+color = Color(0.36, 0.48, 0.5, 0.9)
+
+[node name="InteractionPrompt" parent="VisualGroup" instance=ExtResource("4_prompt")]
+position = Vector2(0, -62)
+scale = Vector2(0.4, 0.4)
+default_text = "J 拿起"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, -59)
+shape = SubResource("Rectangle_object")

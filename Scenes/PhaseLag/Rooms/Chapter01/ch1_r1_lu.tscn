@@ -1,0 +1,124 @@
+[gd_scene load_steps=10 format=3]
+
+[ext_resource type="PackedScene" path="res://Scenes/PhaseLag/Rooms/phase_room_side_base.tscn" id="1_base"]
+[ext_resource type="PackedScene" path="res://Scenes/PhaseLag/Circuit/phase_causal_pipeline.tscn" id="2_pipeline"]
+[ext_resource type="Resource" path="res://resources/phase_lag/circuit_parts/generator.tres" id="3_generator"]
+[ext_resource type="Resource" path="res://resources/phase_lag/circuit_parts/wire_straight.tres" id="4_straight"]
+[ext_resource type="Resource" path="res://resources/phase_lag/circuit_parts/wire_tee.tres" id="5_tee"]
+[ext_resource type="Resource" path="res://resources/phase_lag/circuit_parts/wire_corner.tres" id="6_corner"]
+[ext_resource type="Resource" path="res://resources/phase_lag/circuit_parts/output.tres" id="7_output"]
+[ext_resource type="PackedScene" path="res://Scenes/PhaseLag/Devices/powered_door.tscn" id="8_door"]
+[ext_resource type="PackedScene" path="res://Scenes/PhaseLag/Circuit/circuit_local_device_relay.tscn" id="9_relay"]
+[ext_resource type="PackedScene" path="res://Scenes/PhaseLag/Rooms/Chapter01/Terrain/ch1_r1_lu.tscn" id="10_terrain"]
+
+[node name="Ch1R1Lu" instance=ExtResource("1_base")]
+room_id = &"ch1_r1"
+side = 0
+room_width_px = 2240
+world_bounds_px = Rect2(0, 0, 2240, 768)
+
+[node name="SpawnPoint" parent="."]
+position = Vector2(150, 668)
+
+[node name="Floor" parent="StaticGeometry" index="0"]
+collision_layer = 0
+collision_mask = 0
+
+[node name="Visual" parent="StaticGeometry/Floor" index="0"]
+visible = false
+
+[node name="Edge" parent="StaticGeometry/Floor" index="1"]
+visible = false
+
+[node name="LeftBoundary" parent="StaticGeometry" index="1"]
+collision_layer = 0
+collision_mask = 0
+
+[node name="RightBoundary" parent="StaticGeometry" index="2"]
+collision_layer = 0
+collision_mask = 0
+
+[node name="Terrain" parent="." instance=ExtResource("10_terrain")]
+
+[node name="FutureDoor" parent="Mechanisms" instance=ExtResource("8_door")]
+position = Vector2(1120, 704)
+side = 0
+latch_open = true
+era_style = 0
+
+[node name="DoorPipeline" parent="Mechanisms" instance=ExtResource("2_pipeline")]
+position = Vector2(360, 500)
+side = 0
+interaction_radius = 220.0
+
+[node name="Conduit1" parent="Mechanisms/DoorPipeline/Conduits" index="0"]
+visible = true
+
+[node name="Conduit2" parent="Mechanisms/DoorPipeline/Conduits" index="1"]
+visible = true
+
+[node name="Conduit3" parent="Mechanisms/DoorPipeline/Conduits" index="2"]
+visible = true
+
+[node name="Conduit4" parent="Mechanisms/DoorPipeline/Conduits" index="3"]
+visible = true
+points = PackedVector2Array(240, 0, 240, -120)
+
+[node name="Conduit5" parent="Mechanisms/DoorPipeline/Conduits" index="4"]
+visible = true
+points = PackedVector2Array(240, -120, 120, -120)
+
+[node name="SlotA" parent="Mechanisms/DoorPipeline/Slots" index="0"]
+enabled = true
+connected_socket_ids = Array[StringName]([&"b"])
+initial_definition = ExtResource("3_generator")
+initial_fixed = true
+
+[node name="SlotB" parent="Mechanisms/DoorPipeline/Slots" index="1"]
+enabled = true
+connected_socket_ids = Array[StringName]([&"a", &"c"])
+initial_definition = ExtResource("4_straight")
+initial_rotation_quarters = 1
+
+[node name="SlotC" parent="Mechanisms/DoorPipeline/Slots" index="2"]
+enabled = true
+connected_socket_ids = Array[StringName]([&"b", &"d", &"e"])
+initial_definition = ExtResource("5_tee")
+initial_fixed = true
+
+[node name="SlotD" parent="Mechanisms/DoorPipeline/Slots" index="3"]
+enabled = true
+connected_socket_ids = Array[StringName]([&"c"])
+initial_definition = ExtResource("7_output")
+initial_fixed = true
+output_id = &"future_door"
+
+[node name="SlotE" parent="Mechanisms/DoorPipeline/Slots" index="4"]
+position = Vector2(240, -120)
+enabled = true
+connected_socket_ids = Array[StringName]([&"c", &"f"])
+initial_definition = ExtResource("6_corner")
+initial_rotation_quarters = 1
+
+[node name="SlotF" parent="Mechanisms/DoorPipeline/Slots" index="5"]
+position = Vector2(120, -120)
+enabled = true
+connected_socket_ids = Array[StringName]([&"e"])
+initial_definition = ExtResource("7_output")
+initial_rotation_quarters = 2
+initial_fixed = true
+output_id = &"past_door"
+output_link_id = &"ch1_r1_door"
+
+[node name="SlotG" parent="Mechanisms/DoorPipeline/Slots" index="6"]
+enabled = false
+
+[node name="Breaker" parent="Mechanisms/DoorPipeline" index="2"]
+position = Vector2(360, 126)
+
+[node name="LocalDoorRelay" parent="Mechanisms" instance=ExtResource("9_relay")]
+pipeline_path = NodePath("../DoorPipeline")
+output_id = &"future_door"
+device_path = NodePath("../FutureDoor")
+
+[editable path="Mechanisms/DoorPipeline"]

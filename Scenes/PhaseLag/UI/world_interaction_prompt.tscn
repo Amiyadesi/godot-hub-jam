@@ -1,0 +1,45 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://Scripts/PhaseLag/UI/world_interaction_prompt.gd" id="1_prompt"]
+
+[sub_resource type="StyleBoxFlat" id="Style_prompt"]
+content_margin_left = 14.0
+content_margin_top = 7.0
+content_margin_right = 14.0
+content_margin_bottom = 7.0
+bg_color = Color(0.008, 0.027, 0.032, 0.9)
+border_width_left = 2
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.36, 0.92, 0.82, 0.72)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+shadow_color = Color(0, 0, 0, 0.5)
+shadow_size = 4
+
+[node name="WorldInteractionPrompt" type="Node2D"]
+visible = false
+z_index = 40
+script = ExtResource("1_prompt")
+
+[node name="Panel" type="PanelContainer" parent="."]
+offset_left = -126.0
+offset_top = -24.0
+offset_right = 126.0
+offset_bottom = 24.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("Style_prompt")
+
+[node name="PromptLabel" type="Label" parent="Panel"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.9, 0.98, 0.95, 1)
+theme_override_colors/font_outline_color = Color(0.004, 0.012, 0.016, 0.96)
+theme_override_constants/outline_size = 3
+theme_override_font_sizes/font_size = 18
+text = "J 操作"
+horizontal_alignment = 1
+vertical_alignment = 1

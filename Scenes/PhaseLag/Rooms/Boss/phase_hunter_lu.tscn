@@ -1,0 +1,112 @@
+[gd_scene load_steps=7 format=3]
+
+[ext_resource type="PackedScene" path="res://Scenes/PhaseLag/Rooms/phase_room_side_base.tscn" id="1_base"]
+[ext_resource type="PackedScene" path="res://Scenes/PhaseLag/Circuit/phase_causal_pipeline.tscn" id="2_pipeline"]
+[ext_resource type="Resource" path="res://resources/phase_lag/circuit_parts/generator.tres" id="3_generator"]
+[ext_resource type="Resource" path="res://resources/phase_lag/circuit_parts/timer_1s.tres" id="4_timer"]
+[ext_resource type="Resource" path="res://resources/phase_lag/circuit_parts/wire_straight.tres" id="5_wire"]
+[ext_resource type="Resource" path="res://resources/phase_lag/circuit_parts/output.tres" id="6_output"]
+
+[node name="PhaseHunterLu" instance=ExtResource("1_base")]
+room_id = &"phase_hunter"
+side = 0
+checkpoint_id = &"boss"
+
+[node name="ClampPipeline" parent="Mechanisms" instance=ExtResource("2_pipeline")]
+position = Vector2(170, 390)
+side = 0
+source_pulse_seconds = 1.5
+
+[node name="Conduit1" parent="Mechanisms/ClampPipeline/Conduits" index="0"]
+visible = true
+points = PackedVector2Array(0, 0, 120, 0)
+
+[node name="Conduit2" parent="Mechanisms/ClampPipeline/Conduits" index="1"]
+visible = true
+points = PackedVector2Array(120, 0, 240, 0)
+
+[node name="Conduit3" parent="Mechanisms/ClampPipeline/Conduits" index="2"]
+visible = true
+points = PackedVector2Array(240, 0, 360, 0)
+
+[node name="SlotA" parent="Mechanisms/ClampPipeline/Slots" index="0"]
+enabled = true
+connected_socket_ids = Array[StringName]([&"b"])
+initial_definition = ExtResource("3_generator")
+initial_fixed = true
+
+[node name="SlotB" parent="Mechanisms/ClampPipeline/Slots" index="1"]
+enabled = true
+connected_socket_ids = Array[StringName]([&"a", &"c"])
+initial_definition = ExtResource("4_timer")
+
+[node name="SlotC" parent="Mechanisms/ClampPipeline/Slots" index="2"]
+enabled = true
+connected_socket_ids = Array[StringName]([&"b", &"d"])
+initial_definition = ExtResource("5_wire")
+initial_rotation_quarters = 1
+
+[node name="SlotD" parent="Mechanisms/ClampPipeline/Slots" index="3"]
+enabled = true
+connected_socket_ids = Array[StringName]([&"c"])
+initial_definition = ExtResource("6_output")
+initial_fixed = true
+output_id = &"clamp"
+output_link_id = &"boss_trap_clamp"
+
+[node name="SlotE" parent="Mechanisms/ClampPipeline/Slots" index="4"]
+enabled = false
+
+[node name="SlotF" parent="Mechanisms/ClampPipeline/Slots" index="5"]
+enabled = false
+
+[node name="SlotG" parent="Mechanisms/ClampPipeline/Slots" index="6"]
+enabled = false
+
+[node name="CorePipeline" parent="Mechanisms" instance=ExtResource("2_pipeline")]
+position = Vector2(1120, 390)
+side = 0
+source_pulse_seconds = 4.0
+
+[node name="Conduit1" parent="Mechanisms/CorePipeline/Conduits" index="0"]
+visible = true
+points = PackedVector2Array(0, 0, 120, 0)
+
+[node name="Conduit2" parent="Mechanisms/CorePipeline/Conduits" index="1"]
+visible = true
+points = PackedVector2Array(120, 0, 240, 0)
+
+[node name="SlotA" parent="Mechanisms/CorePipeline/Slots" index="0"]
+enabled = true
+connected_socket_ids = Array[StringName]([&"b"])
+initial_definition = ExtResource("3_generator")
+initial_fixed = true
+
+[node name="SlotB" parent="Mechanisms/CorePipeline/Slots" index="1"]
+enabled = true
+connected_socket_ids = Array[StringName]([&"a", &"c"])
+initial_definition = ExtResource("5_wire")
+initial_rotation_quarters = 1
+
+[node name="SlotC" parent="Mechanisms/CorePipeline/Slots" index="2"]
+enabled = true
+connected_socket_ids = Array[StringName]([&"b"])
+initial_definition = ExtResource("6_output")
+initial_fixed = true
+output_id = &"final_power"
+output_link_id = &"boss_final_power"
+
+[node name="SlotD" parent="Mechanisms/CorePipeline/Slots" index="3"]
+enabled = false
+
+[node name="SlotE" parent="Mechanisms/CorePipeline/Slots" index="4"]
+enabled = false
+
+[node name="SlotF" parent="Mechanisms/CorePipeline/Slots" index="5"]
+enabled = false
+
+[node name="SlotG" parent="Mechanisms/CorePipeline/Slots" index="6"]
+enabled = false
+
+[editable path="Mechanisms/ClampPipeline"]
+[editable path="Mechanisms/CorePipeline"]

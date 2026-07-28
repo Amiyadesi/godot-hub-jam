@@ -1,0 +1,436 @@
+[gd_scene load_steps=10 format=3]
+
+[ext_resource type="Script" path="res://Scripts/PhaseLag/UI/phase_lag_hud.gd" id="1_hud"]
+[ext_resource type="Theme" path="res://resources/main_theme.tres" id="2_theme"]
+
+[sub_resource type="StyleBoxFlat" id="Style_panel_cold"]
+bg_color = Color(0.015, 0.035, 0.045, 0.9)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.28, 0.86, 0.82, 0.58)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[sub_resource type="StyleBoxFlat" id="Style_chapter"]
+content_margin_left = 14.0
+content_margin_top = 8.0
+content_margin_right = 16.0
+content_margin_bottom = 8.0
+bg_color = Color(0.008, 0.025, 0.03, 0.92)
+border_width_left = 4
+border_width_bottom = 2
+border_color = Color(0.28, 0.86, 0.82, 0.72)
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+
+[sub_resource type="StyleBoxFlat" id="Style_panel_warm"]
+bg_color = Color(0.09, 0.035, 0.018, 0.9)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(1, 0.48, 0.24, 0.62)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[sub_resource type="StyleBoxFlat" id="Style_event"]
+bg_color = Color(0.055, 0.07, 0.075, 0.94)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.65, 0.9, 0.84, 0.45)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="Style_overlay"]
+bg_color = Color(0.008, 0.01, 0.014, 0.97)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.75, 0.88, 0.82, 0.65)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="Style_button"]
+bg_color = Color(0.12, 0.34, 0.34, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.58, 1, 0.91, 0.8)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[sub_resource type="StyleBoxFlat" id="Style_health_slot"]
+bg_color = Color(0.018, 0.026, 0.03, 0.78)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.62, 0.72, 0.7, 0.5)
+
+[node name="PhaseLagHUD" type="Control"]
+process_mode = 3
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme = ExtResource("2_theme")
+script = ExtResource("1_hud")
+
+[node name="ChapterLabel" type="Label" parent="."]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_top = 18.0
+offset_bottom = 58.0
+grow_horizontal = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.7, 1, 0.94, 1)
+theme_override_colors/font_outline_color = Color(0.004, 0.012, 0.016, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.85)
+theme_override_constants/outline_size = 4
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 2
+theme_override_font_sizes/font_size = 24
+text = "第一章 · 隔岸"
+horizontal_alignment = 1
+
+[node name="LuStatus" type="HBoxContainer" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+offset_left = 28.0
+offset_top = 20.0
+offset_right = 430.0
+offset_bottom = 66.0
+mouse_filter = 2
+theme_override_constants/separation = 10
+
+[node name="Accent" type="ColorRect" parent="LuStatus"]
+custom_minimum_size = Vector2(4, 0)
+layout_mode = 2
+mouse_filter = 2
+color = Color(0.28, 0.9, 0.82, 0.9)
+
+[node name="Name" type="Label" parent="LuStatus"]
+custom_minimum_size = Vector2(72, 0)
+layout_mode = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.62, 0.96, 0.9, 0.95)
+theme_override_colors/font_outline_color = Color(0.005, 0.015, 0.02, 0.95)
+theme_override_constants/outline_size = 3
+theme_override_font_sizes/font_size = 21
+text = "陆衡"
+vertical_alignment = 1
+
+[node name="LuControlLabel" type="Label" parent="LuStatus"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(112, 0)
+layout_mode = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.72, 0.84, 0.82, 0.92)
+theme_override_colors/font_outline_color = Color(0.005, 0.015, 0.02, 0.95)
+theme_override_constants/outline_size = 3
+theme_override_font_sizes/font_size = 16
+text = "P1 · 操作中"
+vertical_alignment = 1
+
+[node name="SlotOne" type="PanelContainer" parent="LuStatus"]
+custom_minimum_size = Vector2(18, 14)
+layout_mode = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("Style_health_slot")
+
+[node name="LuHealthOne" type="ColorRect" parent="LuStatus/SlotOne"]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+color = Color(0.28, 0.9, 0.82, 1)
+
+[node name="SlotTwo" type="PanelContainer" parent="LuStatus"]
+custom_minimum_size = Vector2(18, 14)
+layout_mode = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("Style_health_slot")
+
+[node name="LuHealthTwo" type="ColorRect" parent="LuStatus/SlotTwo"]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+color = Color(0.28, 0.9, 0.82, 1)
+
+[node name="XingStatus" type="HBoxContainer" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchor_top = 0.5
+anchor_bottom = 0.5
+offset_left = 28.0
+offset_top = 20.0
+offset_right = 448.0
+offset_bottom = 66.0
+grow_vertical = 2
+mouse_filter = 2
+theme_override_constants/separation = 10
+
+[node name="Accent" type="ColorRect" parent="XingStatus"]
+custom_minimum_size = Vector2(4, 0)
+layout_mode = 2
+mouse_filter = 2
+color = Color(1, 0.38, 0.16, 0.9)
+
+[node name="Name" type="Label" parent="XingStatus"]
+custom_minimum_size = Vector2(72, 0)
+layout_mode = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(1, 0.66, 0.34, 0.96)
+theme_override_colors/font_outline_color = Color(0.025, 0.008, 0.004, 0.95)
+theme_override_constants/outline_size = 3
+theme_override_font_sizes/font_size = 21
+text = "星遥"
+vertical_alignment = 1
+
+[node name="XingControlLabel" type="Label" parent="XingStatus"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(112, 0)
+layout_mode = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.9, 0.76, 0.68, 0.92)
+theme_override_colors/font_outline_color = Color(0.025, 0.008, 0.004, 0.95)
+theme_override_constants/outline_size = 3
+theme_override_font_sizes/font_size = 16
+text = "待命"
+vertical_alignment = 1
+
+[node name="SlotOne" type="PanelContainer" parent="XingStatus"]
+custom_minimum_size = Vector2(18, 14)
+layout_mode = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("Style_health_slot")
+
+[node name="XingHealthOne" type="ColorRect" parent="XingStatus/SlotOne"]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+color = Color(1, 0.38, 0.16, 1)
+
+[node name="SlotTwo" type="PanelContainer" parent="XingStatus"]
+custom_minimum_size = Vector2(18, 14)
+layout_mode = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("Style_health_slot")
+
+[node name="XingHealthTwo" type="ColorRect" parent="XingStatus/SlotTwo"]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+color = Color(1, 0.38, 0.16, 1)
+
+[node name="SlotThree" type="PanelContainer" parent="XingStatus"]
+custom_minimum_size = Vector2(18, 14)
+layout_mode = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("Style_health_slot")
+
+[node name="XingHealthThree" type="ColorRect" parent="XingStatus/SlotThree"]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+color = Color(1, 0.38, 0.16, 1)
+
+[node name="TimelineOverlay" type="ColorRect" parent="."]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 0
+color = Color(0.006, 0.008, 0.012, 0.96)
+
+[node name="Panel" type="PanelContainer" parent="TimelineOverlay"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -430.0
+offset_top = -170.0
+offset_right = 430.0
+offset_bottom = 170.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("Style_overlay")
+
+[node name="VBox" type="VBoxContainer" parent="TimelineOverlay/Panel"]
+layout_mode = 2
+alignment = 1
+theme_override_constants/separation = 18
+
+[node name="TimelineTitle" type="Label" parent="TimelineOverlay/Panel/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.35, 0.28, 1)
+theme_override_font_sizes/font_size = 44
+text = "时间线崩溃"
+horizontal_alignment = 1
+
+[node name="TimelineText" type="Label" parent="TimelineOverlay/Panel/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.94, 0.92, 0.95)
+theme_override_font_sizes/font_size = 22
+text = "时间线已重置。"
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="DisconnectPanel" type="ColorRect" parent="."]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 0
+color = Color(0, 0, 0, 0.82)
+
+[node name="Panel" type="PanelContainer" parent="DisconnectPanel"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -360.0
+offset_top = -150.0
+offset_right = 360.0
+offset_bottom = 150.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("Style_overlay")
+
+[node name="VBox" type="VBoxContainer" parent="DisconnectPanel/Panel"]
+layout_mode = 2
+alignment = 1
+theme_override_constants/separation = 20
+
+[node name="DisconnectTitle" type="Label" parent="DisconnectPanel/Panel/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.66, 0.35, 1)
+theme_override_font_sizes/font_size = 34
+text = "等待玩家 2"
+horizontal_alignment = 1
+
+[node name="DisconnectText" type="Label" parent="DisconnectPanel/Panel/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.96, 0.94, 0.95)
+theme_override_font_sizes/font_size = 20
+text = "P1 使用键盘。连接任意手柄后自动开始。"
+horizontal_alignment = 1
+
+[node name="DisconnectReturnButton" type="Button" parent="DisconnectPanel/Panel/VBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(260, 58)
+layout_mode = 2
+size_flags_horizontal = 4
+focus_mode = 2
+theme_override_font_sizes/font_size = 23
+theme_override_styles/normal = SubResource("Style_button")
+theme_override_styles/hover = SubResource("Style_panel_warm")
+theme_override_styles/pressed = SubResource("Style_event")
+text = "返回主菜单"
+
+[node name="FinalePanel" type="ColorRect" parent="."]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 0
+color = Color(0.005, 0.012, 0.016, 0.97)
+
+[node name="Panel" type="PanelContainer" parent="FinalePanel"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -530.0
+offset_top = -290.0
+offset_right = 530.0
+offset_bottom = 290.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("Style_overlay")
+
+[node name="Margin" type="MarginContainer" parent="FinalePanel/Panel"]
+layout_mode = 2
+theme_override_constants/margin_left = 46
+theme_override_constants/margin_top = 36
+theme_override_constants/margin_right = 46
+theme_override_constants/margin_bottom = 36
+
+[node name="VBox" type="VBoxContainer" parent="FinalePanel/Panel/Margin"]
+layout_mode = 2
+alignment = 1
+theme_override_constants/separation = 22
+
+[node name="FinaleTitle" type="Label" parent="FinalePanel/Panel/Margin/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.72, 1, 0.94, 1)
+theme_override_font_sizes/font_size = 48
+text = "抵达"
+horizontal_alignment = 1
+
+[node name="FinaleText" type="Label" parent="FinalePanel/Panel/Margin/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_colors/font_color = Color(0.92, 0.96, 0.95, 1)
+theme_override_font_sizes/font_size = 24
+text = "终章"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 2
+
+[node name="FinaleButton" type="Button" parent="FinalePanel/Panel/Margin/VBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(300, 62)
+layout_mode = 2
+size_flags_horizontal = 4
+focus_mode = 2
+theme_override_font_sizes/font_size = 24
+theme_override_styles/normal = SubResource("Style_button")
+theme_override_styles/hover = SubResource("Style_panel_warm")
+theme_override_styles/pressed = SubResource("Style_event")
+text = "接收事故后的新信号"

@@ -1,0 +1,338 @@
+[gd_scene load_steps=26 format=3]
+
+[ext_resource type="Script" path="res://Scripts/PhaseLag/Enemies/phase_parasite.gd" id="1_parasite"]
+[ext_resource type="PackedScene" path="res://Scenes/PhaseLag/Core/entangled_destruction_receiver.tscn" id="2_receiver"]
+[ext_resource type="PackedScene" path="res://Scenes/PhaseLag/VFX/remote_arrival_vfx.tscn" id="3_vfx"]
+[ext_resource type="Shader" path="res://resources/phase_lag/shaders/remote_arrival.gdshader" id="4_shader"]
+[ext_resource type="AudioStream" path="res://assets/phase_lag/audio/sfx/impact_metal.ogg" id="5_impact"]
+[ext_resource type="AudioStream" path="res://assets/phase_lag/audio/sfx/laser_small.ogg" id="6_pulse"]
+[ext_resource type="Texture2D" path="res://assets/phase_lag/enemies/ground_alien_walk.png" id="7_ground_alien"]
+[ext_resource type="AudioStream" path="res://assets/phase_lag/audio/sfx/explosion_crunch.ogg" id="8_collapse"]
+[ext_resource type="AudioStream" path="res://assets/phase_lag/audio/sfx/parasite_move.ogg" id="9_move"]
+
+[sub_resource type="CapsuleShape2D" id="Capsule_parasite"]
+radius = 45.0
+height = 100.0
+
+[sub_resource type="CircleShape2D" id="Circle_attack"]
+radius = 70.0
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_arrival"]
+resource_local_to_scene = true
+shader = ExtResource("4_shader")
+shader_parameter/sample_canvas_group = true
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_alien_0"]
+atlas = ExtResource("7_ground_alien")
+region = Rect2(57, 0, 57, 42)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_alien_1"]
+atlas = ExtResource("7_ground_alien")
+region = Rect2(114, 0, 57, 42)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_alien_2"]
+atlas = ExtResource("7_ground_alien")
+region = Rect2(171, 0, 57, 42)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_alien_3"]
+atlas = ExtResource("7_ground_alien")
+region = Rect2(228, 0, 57, 42)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_alien_4"]
+atlas = ExtResource("7_ground_alien")
+region = Rect2(285, 0, 57, 42)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_ground_alien"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_alien_1")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_alien_2")
+}],
+"loop": true,
+"name": &"attached",
+"speed": 4.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_alien_0")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_alien_1")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_alien_2")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_alien_3")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_alien_4")
+}],
+"loop": true,
+"name": &"crawl",
+"speed": 8.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_alien_4")
+}],
+"loop": false,
+"name": &"dead",
+"speed": 1.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_alien_0")
+}],
+"loop": false,
+"name": &"hit",
+"speed": 1.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_alien_3")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_alien_4")
+}],
+"loop": false,
+"name": &"leap",
+"speed": 10.0
+}]
+
+[sub_resource type="Gradient" id="Gradient_particle"]
+offsets = PackedFloat32Array(0, 0.5, 1)
+colors = PackedColorArray(1, 1, 1, 1, 1, 1, 1, 0.7, 1, 1, 1, 0)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture_particle"]
+gradient = SubResource("Gradient_particle")
+width = 24
+height = 24
+fill = 1
+fill_from = Vector2(0.5, 0.5)
+fill_to = Vector2(1, 0.5)
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcess_hit"]
+direction = Vector3(1, -0.2, 0)
+spread = 95.0
+initial_velocity_min = 70.0
+initial_velocity_max = 150.0
+gravity = Vector3(0, 190, 0)
+scale_min = 0.18
+scale_max = 0.42
+color = Color(1, 0.38, 0.24, 0.92)
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcess_block"]
+direction = Vector3(1, 0, 0)
+spread = 180.0
+initial_velocity_min = 40.0
+initial_velocity_max = 95.0
+gravity = Vector3(0, 80, 0)
+scale_min = 0.16
+scale_max = 0.32
+color = Color(0.42, 0.96, 1, 0.9)
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcess_collapse"]
+direction = Vector3(0, -1, 0)
+spread = 180.0
+initial_velocity_min = 85.0
+initial_velocity_max = 190.0
+gravity = Vector3(0, 120, 0)
+scale_min = 0.2
+scale_max = 0.48
+color = Color(0.96, 0.24, 0.52, 0.94)
+
+[sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_add"]
+blend_mode = 1
+
+[sub_resource type="Gradient" id="Gradient_light"]
+offsets = PackedFloat32Array(0, 0.5, 1)
+colors = PackedColorArray(1, 1, 1, 1, 1, 1, 1, 0.28, 1, 1, 1, 0)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture_light"]
+gradient = SubResource("Gradient_light")
+width = 96
+height = 96
+fill = 1
+fill_from = Vector2(0.5, 0.5)
+fill_to = Vector2(1, 0.5)
+
+[node name="PhaseParasite" type="CharacterBody2D" groups=["phase_enemies"]]
+texture_filter = 1
+collision_layer = 2
+collision_mask = 5
+floor_snap_length = 5.0
+script = ExtResource("1_parasite")
+
+[node name="VisualGroup" type="CanvasGroup" parent="."]
+position = Vector2(0, -55)
+scale = Vector2(2.5, 2.5)
+material = SubResource("ShaderMaterial_arrival")
+
+[node name="GroundAlienSprite" type="AnimatedSprite2D" parent="VisualGroup"]
+position = Vector2(0, -1)
+sprite_frames = SubResource("SpriteFrames_ground_alien")
+animation = &"crawl"
+scale = Vector2(1.2, 1.2)
+
+[node name="AttachRing" type="Line2D" parent="VisualGroup"]
+visible = false
+points = PackedVector2Array(0, -30, 22, -22, 30, 0, 22, 22, 0, 30, -22, 22, -30, 0, -22, -22, 0, -30)
+width = 4.0
+default_color = Color(1, 0.28, 0.52, 0.86)
+
+[node name="ArmorShell" type="Line2D" parent="VisualGroup"]
+visible = false
+points = PackedVector2Array(0, -32, 24, -24, 32, 0, 24, 24, 0, 32, -24, 24, -32, 0, -24, -24, 0, -32)
+width = 5.0
+default_color = Color(0.38, 0.92, 1, 0.86)
+
+[node name="PairMarker" type="Node2D" parent="VisualGroup"]
+position = Vector2(0, -38)
+
+[node name="Triangle" type="Polygon2D" parent="VisualGroup/PairMarker"]
+visible = false
+polygon = PackedVector2Array(0, -8, 8, 7, -8, 7)
+color = Color(0.98, 0.78, 0.32, 1)
+
+[node name="Diamond" type="Polygon2D" parent="VisualGroup/PairMarker"]
+visible = false
+polygon = PackedVector2Array(0, -9, 9, 0, 0, 9, -9, 0)
+color = Color(0.44, 1, 0.88, 1)
+
+[node name="Bars" type="Polygon2D" parent="VisualGroup/PairMarker"]
+visible = false
+polygon = PackedVector2Array(-9, -8, -3, -8, -3, 8, -9, 8, 3, -8, 9, -8, 9, 8, 3, 8)
+color = Color(1, 0.42, 0.36, 1)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, -30)
+shape = SubResource("Capsule_parasite")
+
+[node name="SightRay" type="RayCast2D" parent="."]
+position = Vector2(0, -48)
+target_position = Vector2(380, -6)
+collision_mask = 4
+enabled = true
+
+[node name="AttackArea" type="Area2D" parent="."]
+position = Vector2(0, -30)
+collision_layer = 0
+collision_mask = 1
+monitoring = true
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="AttackArea"]
+shape = SubResource("Circle_attack")
+
+[node name="LeapWarning" type="Node2D" parent="."]
+visible = false
+position = Vector2(0, -30)
+scale = Vector2(1.35, 1.35)
+z_index = 4
+
+[node name="Ring" type="Line2D" parent="LeapWarning"]
+points = PackedVector2Array(-38, -24, -8, 0, -38, 24, -8, 0, 36, 0)
+width = 5.0
+default_color = Color(1, 0.24, 0.12, 0.94)
+
+[node name="Arrow" type="Polygon2D" parent="LeapWarning"]
+position = Vector2(52, 0)
+polygon = PackedVector2Array(-18, -9, 2, -9, 2, -18, 24, 0, 2, 18, 2, 9, -18, 9)
+color = Color(1, 0.58, 0.18, 0.92)
+
+[node name="CoreLight" type="PointLight2D" parent="."]
+position = Vector2(0, -55)
+texture = SubResource("GradientTexture_light")
+texture_scale = 3.375
+energy = 0.46
+color = Color(1, 0.22, 0.48, 1)
+
+[node name="HitParticles" type="GPUParticles2D" parent="."]
+position = Vector2(0, -55)
+scale = Vector2(2.5, 2.5)
+material = SubResource("CanvasItemMaterial_add")
+emitting = false
+amount = 12
+lifetime = 0.34
+one_shot = true
+explosiveness = 1.0
+process_material = SubResource("ParticleProcess_hit")
+texture = SubResource("GradientTexture_particle")
+
+[node name="BlockParticles" type="GPUParticles2D" parent="."]
+position = Vector2(0, -55)
+scale = Vector2(2.5, 2.5)
+material = SubResource("CanvasItemMaterial_add")
+emitting = false
+amount = 9
+lifetime = 0.3
+one_shot = true
+explosiveness = 1.0
+process_material = SubResource("ParticleProcess_block")
+texture = SubResource("GradientTexture_particle")
+
+[node name="CollapseParticles" type="GPUParticles2D" parent="."]
+position = Vector2(0, -55)
+scale = Vector2(2.5, 2.5)
+material = SubResource("CanvasItemMaterial_add")
+emitting = false
+amount = 22
+lifetime = 0.52
+one_shot = true
+explosiveness = 1.0
+process_material = SubResource("ParticleProcess_collapse")
+texture = SubResource("GradientTexture_particle")
+
+[node name="MoveAudio" type="AudioStreamPlayer2D" parent="."]
+stream = ExtResource("9_move")
+volume_db = -20.0
+pitch_scale = 1.08
+bus = &"SFX"
+max_distance = 560.0
+
+[node name="HitAudio" type="AudioStreamPlayer2D" parent="."]
+stream = ExtResource("5_impact")
+volume_db = -10.0
+pitch_scale = 1.3
+bus = &"SFX"
+max_distance = 620.0
+
+[node name="BlockAudio" type="AudioStreamPlayer2D" parent="."]
+stream = ExtResource("5_impact")
+volume_db = -9.0
+pitch_scale = 0.82
+bus = &"SFX"
+max_distance = 620.0
+
+[node name="WarningAudio" type="AudioStreamPlayer2D" parent="."]
+stream = ExtResource("6_pulse")
+volume_db = -13.0
+pitch_scale = 1.48
+bus = &"SFX"
+max_distance = 720.0
+
+[node name="LeapAudio" type="AudioStreamPlayer2D" parent="."]
+stream = ExtResource("6_pulse")
+volume_db = -12.0
+pitch_scale = 0.86
+bus = &"SFX"
+max_distance = 720.0
+
+[node name="CollapseAudio" type="AudioStreamPlayer2D" parent="."]
+stream = ExtResource("8_collapse")
+volume_db = -8.0
+pitch_scale = 0.62
+bus = &"SFX"
+max_distance = 760.0
+
+[node name="DestructionReceiver" parent="." instance=ExtResource("2_receiver")]
+target_path = NodePath("..")
+remote_arrival_vfx_path = NodePath("../RemoteArrivalVfx")
+
+[node name="RemoteArrivalVfx" parent="." instance=ExtResource("3_vfx")]
+position = Vector2(0, -55)
+scale = Vector2(1.375, 1.375)
+visual_group_path = NodePath("../VisualGroup")

@@ -1,0 +1,42 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://Scripts/PhaseLag/Devices/pressure_plate.gd" id="1_plate"]
+[ext_resource type="Texture2D" path="res://assets/phase_lag/environment/props/pressure_plate.png" id="2_plate"]
+
+[sub_resource type="RectangleShape2D" id="Rectangle_detector"]
+size = Vector2(240, 80)
+
+[sub_resource type="RectangleShape2D" id="Rectangle_floor"]
+size = Vector2(260, 45)
+
+[node name="PressurePlate" type="Node2D" groups=["phase_sources"]]
+script = ExtResource("1_plate")
+
+[node name="VisualGroup" type="Node2D" parent="."]
+position = Vector2(0, -22.5)
+scale = Vector2(4, 4)
+
+[node name="Plate" type="Sprite2D" parent="VisualGroup"]
+texture = ExtResource("2_plate")
+
+[node name="StatusLight" type="Polygon2D" parent="VisualGroup"]
+position = Vector2(0, 4)
+polygon = PackedVector2Array(-6, -1, 6, -1, 6, 1, -6, 1)
+color = Color(0.32, 0.4, 0.42, 0.9)
+
+[node name="FloorBody" type="StaticBody2D" parent="."]
+collision_layer = 4
+collision_mask = 1
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="FloorBody"]
+position = Vector2(0, -7.5)
+shape = SubResource("Rectangle_floor")
+
+[node name="Detector" type="Area2D" parent="."]
+position = Vector2(0, -36)
+collision_layer = 0
+collision_mask = 11
+monitoring = true
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Detector"]
+shape = SubResource("Rectangle_detector")

@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="PhaseRoomDefinition" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://Scripts/PhaseLag/Core/phase_room_definition.gd" id="1_room"]
+[ext_resource type="PackedScene" path="res://Scenes/PhaseLag/Rooms/Chapter02/ch2_r1_lu.tscn" id="2_lu"]
+[ext_resource type="PackedScene" path="res://Scenes/PhaseLag/Rooms/Chapter02/ch2_r1_xing.tscn" id="3_xing"]
+
+[resource]
+script = ExtResource("1_room")
+room_id = &"ch2_r1"
+chapter_id = &"chapter_02"
+room_number = 1
+display_name = "分路"
+lu_heng_scene = ExtResource("2_lu")
+xing_yao_scene = ExtResource("3_xing")
+room_width_px = 1920
+completion_links = Array[StringName]([&"ch2_r1_shield", &"ch2_r1_xing_exit"])
+opening_dialogue_title = &"ch2_r1_open"
+completion_dialogue_title = &"ch2_r1_complete"
+hint_dialogue_title = &"split_route"

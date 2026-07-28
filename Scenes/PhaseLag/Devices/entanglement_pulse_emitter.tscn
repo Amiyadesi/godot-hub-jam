@@ -1,0 +1,88 @@
+[gd_scene load_steps=10 format=3]
+
+[ext_resource type="Script" path="res://Scripts/PhaseLag/Devices/entanglement_pulse_emitter.gd" id="1_pulse"]
+[ext_resource type="AudioStream" path="res://assets/phase_lag/audio/sfx/laser_small.ogg" id="2_audio"]
+[ext_resource type="Texture2D" path="res://assets/phase_lag/environment/big_computer.png" id="3_computer"]
+[ext_resource type="PackedScene" path="res://Scenes/PhaseLag/UI/world_interaction_prompt.tscn" id="4_prompt"]
+
+[sub_resource type="Gradient" id="Gradient_pulse_light"]
+offsets = PackedFloat32Array(0, 0.42, 1)
+colors = PackedColorArray(1, 1, 1, 0.88, 1, 1, 1, 0.2, 1, 1, 1, 0)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture_pulse_light"]
+gradient = SubResource("Gradient_pulse_light")
+width = 96
+height = 96
+fill = 1
+fill_from = Vector2(0.5, 0.5)
+fill_to = Vector2(1, 0.5)
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcess_discharge"]
+emission_shape = 2
+emission_rect_extents = Vector2(42, 34)
+direction = Vector3(0, -1, 0)
+spread = 180.0
+initial_velocity_min = 52.0
+initial_velocity_max = 126.0
+gravity = Vector3(0, 84, 0)
+scale_min = 0.18
+scale_max = 0.46
+color = Color(0.45, 1, 0.86, 0.88)
+
+[sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_add"]
+blend_mode = 1
+
+[node name="EntanglementPulseEmitter" type="Node2D" groups=["lu_heng_interactables"]]
+scale = Vector2(2.5, 2.5)
+script = ExtResource("1_pulse")
+
+[node name="VisualGroup" type="Node2D" parent="."]
+
+[node name="Body" type="Sprite2D" parent="VisualGroup"]
+texture = ExtResource("3_computer")
+scale = Vector2(0.68, 0.68)
+modulate = Color(0.76, 0.96, 0.94, 1)
+
+[node name="Lever" type="Polygon2D" parent="VisualGroup"]
+position = Vector2(-16, 18)
+polygon = PackedVector2Array(-4, -3, 24, -3, 24, 3, -4, 3)
+color = Color(0.78, 0.88, 0.84, 1)
+
+[node name="StatusLight" type="Polygon2D" parent="VisualGroup"]
+position = Vector2(30, -28)
+polygon = PackedVector2Array(-4, -4, 4, -4, 4, 4, -4, 4)
+color = Color(0.38, 1, 0.76, 1)
+
+[node name="PulseRing" type="Line2D" parent="VisualGroup"]
+visible = false
+points = PackedVector2Array(0, -48, 34, -34, 48, 0, 34, 34, 0, 48, -34, 34, -48, 0, -34, -34, 0, -48)
+width = 4.0
+default_color = Color(1, 0.58, 0.24, 0.9)
+
+[node name="InteractionPrompt" parent="VisualGroup" instance=ExtResource("4_prompt")]
+position = Vector2(0, -72)
+scale = Vector2(0.4, 0.4)
+
+[node name="PulseLight" type="PointLight2D" parent="."]
+position = Vector2(0, -2)
+texture = SubResource("GradientTexture_pulse_light")
+texture_scale = 2.4
+energy = 0.3
+color = Color(0.32, 1, 0.82, 1)
+z_index = -1
+
+[node name="DischargeParticles" type="GPUParticles2D" parent="."]
+material = SubResource("CanvasItemMaterial_add")
+emitting = false
+amount = 26
+lifetime = 0.5
+one_shot = true
+explosiveness = 1.0
+process_material = SubResource("ParticleProcess_discharge")
+texture = SubResource("GradientTexture_pulse_light")
+
+[node name="AudioStreamPlayer2D" type="AudioStreamPlayer2D" parent="."]
+stream = ExtResource("2_audio")
+volume_db = -8.0
+bus = &"SFX"
+max_distance = 700.0

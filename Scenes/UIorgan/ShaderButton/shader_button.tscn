@@ -2,18 +2,25 @@
 
 [ext_resource type="Script" uid="uid://c2qtfgumfei5" path="res://Scenes/UIorgan/ShaderButton/shader_button.gd" id="1_q8250"]
 [ext_resource type="Script" uid="uid://i3xgym8bhl33" path="res://Scenes/UIorgan/ButtonEffectModule/button_effect_module.gd" id="2_tc11w"]
+[ext_resource type="AudioStream" path="res://assets/phase_lag/audio/sfx/ui_select.ogg" id="3_select"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_tuexh"]
-bg_color = Color(0.44622445, 0.4462245, 0.44622445, 0.7372549)
-border_width_left = 6
-border_width_top = 6
-border_width_right = 6
-border_width_bottom = 6
-border_color = Color(0, 0, 0, 1)
-expand_margin_left = 6.0
-expand_margin_top = 6.0
-expand_margin_right = 6.0
-expand_margin_bottom = 6.0
+bg_color = Color(0.008, 0.025, 0.034, 0.92)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.32, 0.92, 0.86, 0.72)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+expand_margin_left = 5.0
+expand_margin_top = 5.0
+expand_margin_right = 5.0
+expand_margin_bottom = 5.0
+shadow_color = Color(0, 0, 0, 0.55)
+shadow_size = 6
 
 [node name="Button" type="Button" unique_id=1318297190]
 anchors_preset = 8
@@ -52,12 +59,12 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-theme_override_colors/font_outline_color = Color(0.12323087, 0.1232309, 1.2032688e-08, 1)
+theme_override_colors/font_outline_color = Color(0.005, 0.012, 0.016, 0.95)
 theme_override_constants/shadow_offset_x = 1
 theme_override_constants/shadow_offset_y = 1
-theme_override_constants/outline_size = 4
+theme_override_constants/outline_size = 3
 bbcode_enabled = true
-fit_content = true
+fit_content = false
 scroll_active = false
 autowrap_mode = 0
 horizontal_alignment = 1
@@ -68,7 +75,6 @@ bus = &"UI"
 volume_db = -12.0
 
 [node name="SelectAudio" type="AudioStreamPlayer" parent="." unique_id=379967188]
+stream = ExtResource("3_select")
 bus = &"UI"
 volume_db = -18.0
-
-[connection signal="resized" from="Label" to="." method="_on_label_resized"]

@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="PhaseRoomDefinition" format=3 uid="uid://dduy3dypruken"]
+
+[ext_resource type="Script" uid="uid://cx50s7wvya88b" path="res://Scripts/PhaseLag/Core/phase_room_definition.gd" id="1_room"]
+[ext_resource type="PackedScene" path="res://Scenes/PhaseLag/Rooms/Chapter01/ch1_r2_lu.tscn" id="2_lu"]
+[ext_resource type="PackedScene" path="res://Scenes/PhaseLag/Rooms/Chapter01/ch1_r2_xing.tscn" id="3_xing"]
+
+[resource]
+script = ExtResource("1_room")
+room_id = &"ch1_r2"
+room_number = 2
+display_name = "咬线"
+lu_heng_scene = ExtResource("2_lu")
+xing_yao_scene = ExtResource("3_xing")
+room_width_px = 2560
+solo_entry_side = 1
+layout_mode = 0
+completion_links = Array[StringName]([&"ch1_r2_parasite_1", &"ch1_r2_parasite_2"])
+opening_dialogue_title = &"ch1_r2_open"
+completion_dialogue_title = &"ch1_r2_complete"
+hint_dialogue_title = &"ch1_r2_hint"

@@ -1,128 +1,208 @@
 class_name LevelModule
 extends ISaveModule
-## 槽位存档模块 — 关卡进度
+## Slot save for the current Phase Lag timeline.
 ##
-## 存储当前槽位内的关卡解锁、最高分、完成状态等。
-## 属于槽位存档（is_global = false），随槽位切换而改变。
-##
-## 用法：
-##   SaveSystem.register_module(LevelModule.new())
-##
-## 解锁关卡：
-##   LevelModule.instance.unlock_level("level_02")
-##   SaveSystem.save_slot()
-##
-## 读取完成状态：
-##   if LevelModule.instance.is_completed("level_01"):
-##       show_star_rating()
+## The game persists only chapter progress, play mode, and one clean authored checkpoint.
+## In-flight events, health, enemies, Boss rounds, and compatibility fields are excluded.
 
-## 单例引用
 static var instance: LevelModule
 
-## key = level_id，value = { "unlocked": bool, "completed": bool, "best_score": int, "stars": int }
-var _levels: Dictionary = {}
+const PHASE_LAG_CHAPTER_IDS: Array[String] = [
+	"chapter_01",
+	"chapter_02",
+	"chapter_03",
+	"chapter_04",
+	"chapter_05",
+]
+const PHASE_LAG_TUTORIAL_CHAPTER_ID := "chapter_01"
+const PLAY_MODE_SOLO: StringName = &"solo"
+const PLAY_MODE_LOCAL_COOP: StringName = &"local_coop"
 
-## 当前加载/激活的关卡 ID
-var current_level_id: String = ""
+var current_chapter_id: String = ""
+var completed_chapters: Array[String] = []
+var checkpoint: Dictionary = {}
+var play_mode: StringName = PLAY_MODE_SOLO
 
-# Registers the latest level module instance for save-system callbacks.
+
+# Registers the active slot-progress module for menu and gameplay callers.
 func _init() -> void:
 	instance = self
 
-# ──────────────────────────────────────────────
-# ISaveModule 接口
-# ──────────────────────────────────────────────
 
-# Returns the stable slot-save key for level progress.
+# Returns the slot-save key for Phase Lag progression.
 func get_module_key() -> String:
 	return "level"
 
-# Stores level progress in slot saves because it belongs to one playthrough.
+
+# Keeps timeline progress isolated to one save slot.
 func is_global() -> bool:
 	return false
 
-# Captures all level records and the active level id for serialization.
+
+# Serializes only the current Phase Lag slot schema.
 func collect_data() -> Dictionary:
 	return {
-		"levels":           _levels.duplicate(true),
-		"current_level_id": current_level_id,
+		"current_chapter_id": current_chapter_id,
+		"completed_chapters": completed_chapters.duplicate(),
+		"checkpoint": checkpoint.duplicate(true),
+		"play_mode": String(play_mode),
 	}
 
-# Applies persisted level records and active level id.
-func apply_data(data: Dictionary) -> void:
-	_levels           = (data.get("levels", {}) as Dictionary).duplicate(true)
-	current_level_id  = str(data.get("current_level_id", ""))
 
-# Provides the first-run payload for a fresh save slot.
+# Applies the current schema and narrows legacy Ch4/Ch5 room checkpoints to stable entry points.
+func apply_data(data: Dictionary) -> void:
+	current_chapter_id = str(data.get("current_chapter_id", ""))
+	completed_chapters.clear()
+	var stored_chapters: Variant = data.get("completed_chapters", [])
+	if stored_chapters is Array:
+		for chapter_value: Variant in stored_chapters:
+			var chapter_id := str(chapter_value)
+			if _is_phase_lag_chapter(chapter_id) and not completed_chapters.has(chapter_id):
+				completed_chapters.append(chapter_id)
+	var stored_checkpoint: Variant = data.get("checkpoint", {})
+	checkpoint = (stored_checkpoint as Dictionary).duplicate(true) if stored_checkpoint is Dictionary else {}
+	var stored_play_mode := StringName(str(data.get("play_mode", PLAY_MODE_SOLO)))
+	play_mode = stored_play_mode if _is_valid_play_mode(stored_play_mode) else PLAY_MODE_SOLO
+	if not _is_phase_lag_chapter(current_chapter_id):
+		current_chapter_id = ""
+		checkpoint.clear()
+	elif not checkpoint.is_empty() and str(checkpoint.get("chapter_id", "")) != current_chapter_id:
+		checkpoint.clear()
+	_migrate_legacy_phase_checkpoint()
+
+
+# Provides an empty timeline for a fresh slot.
 func get_default_data() -> Dictionary:
 	return {
-		"levels":           {},
-		"current_level_id": "",
+		"current_chapter_id": "",
+		"completed_chapters": [],
+		"checkpoint": {},
+		"play_mode": String(PLAY_MODE_SOLO),
 	}
 
-# Resets level progress for a new game.
+
+# Clears the slot timeline and restores the default single-player mode.
 func on_new_game() -> void:
-	_levels = {}
-	current_level_id = ""
+	current_chapter_id = ""
+	completed_chapters.clear()
+	checkpoint.clear()
+	play_mode = PLAY_MODE_SOLO
 
-# ──────────────────────────────────────────────
-# 公开 API
-# ──────────────────────────────────────────────
 
-## 解锁关卡
-func unlock_level(level_id: String) -> void:
-	var entry := _get_or_create(level_id)
-	entry["unlocked"] = true
-	_levels[level_id] = entry
+# Stores one stable authored input mode for this save slot.
+func set_play_mode(value: StringName) -> void:
+	if not _is_valid_play_mode(value):
+		push_error("LevelModule.set_play_mode: unsupported mode '%s'" % String(value))
+		return
+	play_mode = value
 
-## 标记关卡完成
-func complete_level(level_id: String, score: int = 0, stars: int = 0) -> void:
-	var entry := _get_or_create(level_id)
-	entry["unlocked"]   = true
-	entry["completed"]  = true
-	entry["best_score"] = maxi(int(entry.get("best_score", 0)), score)
-	entry["stars"]      = maxi(int(entry.get("stars", 0)), stars)
-	_levels[level_id]   = entry
 
-## 关卡是否已解锁
-func is_unlocked(level_id: String) -> bool:
-	return bool(_levels.get(level_id, {}).get("unlocked", false))
+# Enters one authored chapter and drops a checkpoint owned by a different chapter.
+func enter_chapter(chapter_id: String) -> void:
+	if not _is_phase_lag_chapter(chapter_id):
+		push_error("LevelModule.enter_chapter: unknown chapter '%s'" % chapter_id)
+		return
+	if current_chapter_id != chapter_id:
+		checkpoint.clear()
+	current_chapter_id = chapter_id
 
-## 关卡是否已完成
-func is_completed(level_id: String) -> bool:
-	return bool(_levels.get(level_id, {}).get("completed", false))
 
-## 获取关卡最高分
-func get_best_score(level_id: String) -> int:
-	return int(_levels.get(level_id, {}).get("best_score", 0))
+# Marks one chapter complete and makes the next authored chapter the resume target.
+func complete_chapter(chapter_id: String, next_chapter_id: String = "") -> void:
+	if not _is_phase_lag_chapter(chapter_id):
+		push_error("LevelModule.complete_chapter: unknown chapter '%s'" % chapter_id)
+		return
+	if not completed_chapters.has(chapter_id):
+		completed_chapters.append(chapter_id)
+	checkpoint.clear()
+	if next_chapter_id.is_empty():
+		current_chapter_id = chapter_id
+	elif _is_phase_lag_chapter(next_chapter_id):
+		current_chapter_id = next_chapter_id
+	else:
+		push_error("LevelModule.complete_chapter: unknown next chapter '%s'" % next_chapter_id)
+		current_chapter_id = chapter_id
 
-## 获取关卡星级
-func get_stars(level_id: String) -> int:
-	return int(_levels.get(level_id, {}).get("stars", 0))
 
-## 获取所有已解锁关卡 ID
-func get_unlocked_levels() -> Array:
-	return _levels.keys().filter(func(id): return is_unlocked(id))
+# Reports whether one authored chapter has reached settlement.
+func is_chapter_completed(chapter_id: String) -> bool:
+	return completed_chapters.has(chapter_id)
 
-## 获取所有已完成关卡 ID
-func get_completed_levels() -> Array:
-	return _levels.keys().filter(func(id): return is_completed(id))
 
-## 获取完整关卡记录（用于 UI）
-func get_level_record(level_id: String) -> Dictionary:
-	return _levels.get(level_id, {}).duplicate()
+# Stores the latest clean room state and replaces the previous checkpoint.
+func set_phase_checkpoint(
+		chapter_id: String,
+		room_id: String,
+		checkpoint_id: String,
+		persistent_state: Dictionary = {}
+	) -> void:
+	if not _is_phase_lag_chapter(chapter_id):
+		push_error("LevelModule.set_phase_checkpoint: unknown chapter '%s'" % chapter_id)
+		return
+	current_chapter_id = chapter_id
+	checkpoint = {
+		"chapter_id": chapter_id,
+		"room_id": room_id,
+		"checkpoint_id": checkpoint_id,
+		"persistent_state": persistent_state.duplicate(true),
+	}
 
-# ──────────────────────────────────────────────
-# 内部辅助
-# ──────────────────────────────────────────────
 
-# Returns an existing level record or creates the default record shape.
-func _get_or_create(level_id: String) -> Dictionary:
-	if not _levels.has(level_id):
-		_levels[level_id] = {
-			"unlocked":   false,
-			"completed":  false,
-			"best_score": 0,
-			"stars":      0,
+# Returns the active chapter's isolated checkpoint snapshot.
+func get_phase_checkpoint(chapter_id: String) -> Dictionary:
+	if current_chapter_id != chapter_id or str(checkpoint.get("chapter_id", "")) != chapter_id:
+		return {}
+	return checkpoint.duplicate(true)
+
+
+# Reports whether Continue can enter a post-tutorial timeline.
+func has_phase_lag_resume_point() -> bool:
+	return not get_phase_lag_resume_point().is_empty()
+
+
+# Returns the current chapter plus its optional clean authored checkpoint.
+func get_phase_lag_resume_point() -> Dictionary:
+	if not is_chapter_completed(PHASE_LAG_TUTORIAL_CHAPTER_ID):
+		return {}
+	if current_chapter_id == PHASE_LAG_TUTORIAL_CHAPTER_ID or not _is_phase_lag_chapter(current_chapter_id):
+		return {}
+	var result := {
+		"chapter_id": current_chapter_id,
+		"checkpoint_id": "start",
+	}
+	var active_checkpoint := get_phase_checkpoint(current_chapter_id)
+	if not active_checkpoint.is_empty():
+		result["room_id"] = str(active_checkpoint.get("room_id", ""))
+		result["checkpoint_id"] = str(active_checkpoint.get("checkpoint_id", "start"))
+	return result
+
+
+# Maps retired room checkpoints to the stable Boss or Finale entry points.
+func _migrate_legacy_phase_checkpoint() -> void:
+	if checkpoint.is_empty():
+		return
+	var chapter_id := str(checkpoint.get("chapter_id", ""))
+	var room_id := str(checkpoint.get("room_id", ""))
+	if chapter_id == "chapter_04" and room_id != "phase_hunter":
+		checkpoint["room_id"] = "phase_hunter"
+		checkpoint["checkpoint_id"] = "boss"
+		checkpoint["persistent_state"] = {}
+		return
+	if chapter_id == "chapter_05":
+		current_chapter_id = "chapter_05"
+		checkpoint = {
+			"chapter_id": "chapter_05",
+			"room_id": "finale",
+			"checkpoint_id": "finale_start",
+			"persistent_state": {},
 		}
-	return _levels[level_id]
+
+
+# Restricts persisted progress to the five authored Phase Lag chapters.
+func _is_phase_lag_chapter(chapter_id: String) -> bool:
+	return PHASE_LAG_CHAPTER_IDS.has(chapter_id)
+
+
+# Restricts persisted input modes to the two menu-authored choices.
+func _is_valid_play_mode(value: StringName) -> bool:
+	return value == PLAY_MODE_SOLO or value == PLAY_MODE_LOCAL_COOP

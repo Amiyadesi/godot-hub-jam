@@ -1,0 +1,15 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://Scripts/PhaseLag/VFX/phase_dash_afterimage.gd" id="1_afterimage"]
+
+[node name="PhaseDashAfterimage" type="Node2D"]
+texture_filter = 1
+script = ExtResource("1_afterimage")
+
+[node name="NearSprite" type="Sprite2D" parent="."]
+visible = false
+z_index = -1
+
+[node name="FarSprite" type="Sprite2D" parent="."]
+visible = false
+z_index = -2

@@ -229,7 +229,7 @@ func close_modal() -> Tween:
 	_on_modal_closing()
 	
 	_tween = create_tween()
-	_tween.tween_method(_set_open_progress, 1.0, 0.0, closing_duration / _modal_open_progress)
+	_tween.tween_method(_set_open_progress, _modal_open_progress, 0.0, closing_duration * _modal_open_progress)
 	_tween.finished.connect(_on_modal_closed)
 	
 	return _tween

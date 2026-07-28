@@ -1,0 +1,303 @@
+[gd_scene load_steps=20 format=3]
+
+[ext_resource type="PackedScene" path="res://Scenes/PhaseLag/Rooms/phase_room_side_base.tscn" id="1_base"]
+[ext_resource type="PackedScene" path="res://Scenes/PhaseLag/Tools/magnetic_object.tscn" id="2_object"]
+[ext_resource type="PackedScene" path="res://Scenes/PhaseLag/Tools/magnetic_socket.tscn" id="3_socket"]
+[ext_resource type="PackedScene" path="res://Scenes/PhaseLag/Circuit/phase_causal_pipeline.tscn" id="4_pipeline"]
+[ext_resource type="PackedScene" path="res://Scenes/PhaseLag/Circuit/phase_pipeline_socket.tscn" id="5_pipeline_socket"]
+[ext_resource type="PackedScene" path="res://Scenes/PhaseLag/Circuit/circuit_source_relay.tscn" id="6_source_relay"]
+[ext_resource type="PackedScene" path="res://Scenes/PhaseLag/Core/entanglement_event_counter.tscn" id="7_counter"]
+[ext_resource type="Resource" path="res://resources/phase_lag/circuit_parts/generator.tres" id="8_generator"]
+[ext_resource type="Resource" path="res://resources/phase_lag/circuit_parts/and_gate.tres" id="9_and"]
+[ext_resource type="Resource" path="res://resources/phase_lag/circuit_parts/wire_tee.tres" id="10_tee"]
+[ext_resource type="Resource" path="res://resources/phase_lag/circuit_parts/wire_straight.tres" id="11_straight"]
+[ext_resource type="Resource" path="res://resources/phase_lag/circuit_parts/timer_1s.tres" id="12_timer_1"]
+[ext_resource type="Resource" path="res://resources/phase_lag/circuit_parts/timer_3s.tres" id="13_timer_3"]
+[ext_resource type="Resource" path="res://resources/phase_lag/circuit_parts/timer_6s.tres" id="14_timer_6"]
+[ext_resource type="Resource" path="res://resources/phase_lag/circuit_parts/output.tres" id="15_output"]
+[ext_resource type="Texture2D" path="res://assets/phase_lag/environment/props/power_cell_device.png" id="16_battery"]
+[ext_resource type="Texture2D" path="res://assets/phase_lag/environment/props/ganamoda/small_device.png" id="17_fuse"]
+[ext_resource type="Texture2D" path="res://assets/phase_lag/environment/props/ganamoda/wall_electric_panel_1.png" id="18_fuse_dock"]
+[ext_resource type="Texture2D" path="res://assets/phase_lag/environment/props/ganamoda/pipe.png" id="19_pipe"]
+
+[node name="Ch3R1Lu" instance=ExtResource("1_base")]
+room_id = &"ch3_r1"
+side = 0
+
+[node name="TimingPipeline" parent="Mechanisms" instance=ExtResource("4_pipeline")]
+position = Vector2(180, 420)
+side = 0
+source_pulse_seconds = 4.0
+expected_output_delays = {
+&"early_platform": 1.0,
+&"late_airlock": 6.0,
+&"middle_door": 3.0
+}
+
+[node name="Conduit1" parent="Mechanisms/TimingPipeline/Conduits" index="0"]
+visible = true
+points = PackedVector2Array(0, 0, 120, 0)
+
+[node name="Conduit2" parent="Mechanisms/TimingPipeline/Conduits" index="1"]
+visible = true
+points = PackedVector2Array(120, -120, 120, 0)
+
+[node name="Conduit3" parent="Mechanisms/TimingPipeline/Conduits" index="2"]
+visible = true
+points = PackedVector2Array(120, 0, 240, 0)
+
+[node name="Conduit4" parent="Mechanisms/TimingPipeline/Conduits" index="3"]
+visible = true
+points = PackedVector2Array(240, 0, 240, -120)
+
+[node name="Conduit5" parent="Mechanisms/TimingPipeline/Conduits" index="4"]
+visible = true
+points = PackedVector2Array(240, 0, 360, 0)
+
+[node name="Conduit6" parent="Mechanisms/TimingPipeline/Conduits" index="5"]
+visible = true
+points = PackedVector2Array(240, -120, 240, -240)
+
+[node name="Conduit7" parent="Mechanisms/TimingPipeline/Conduits" index="6"]
+visible = true
+points = PackedVector2Array(360, 0, 480, 0)
+
+[node name="Conduit8" parent="Mechanisms/TimingPipeline/Conduits" index="7"]
+visible = true
+points = PackedVector2Array(480, 0, 480, -120)
+
+[node name="Conduit9" type="Line2D" parent="Mechanisms/TimingPipeline/Conduits"]
+points = PackedVector2Array(480, -120, 480, -240)
+width = 36.0
+texture = ExtResource("19_pipe")
+texture_mode = 1
+default_color = Color(0.58, 0.72, 0.72, 0.92)
+
+[node name="Conduit10" type="Line2D" parent="Mechanisms/TimingPipeline/Conduits"]
+points = PackedVector2Array(480, 0, 600, 0)
+width = 36.0
+texture = ExtResource("19_pipe")
+texture_mode = 1
+default_color = Color(0.58, 0.72, 0.72, 0.92)
+
+[node name="Conduit11" type="Line2D" parent="Mechanisms/TimingPipeline/Conduits"]
+points = PackedVector2Array(600, 0, 720, 0)
+width = 36.0
+texture = ExtResource("19_pipe")
+texture_mode = 1
+default_color = Color(0.58, 0.72, 0.72, 0.92)
+
+[node name="Flow9" type="Polygon2D" parent="Mechanisms/TimingPipeline/FlowMarkers"]
+polygon = PackedVector2Array(-10, -7, 8, 0, -10, 7)
+color = Color(0.34, 0.66, 0.64, 0.38)
+
+[node name="Flow10" type="Polygon2D" parent="Mechanisms/TimingPipeline/FlowMarkers"]
+polygon = PackedVector2Array(-10, -7, 8, 0, -10, 7)
+color = Color(0.34, 0.66, 0.64, 0.38)
+
+[node name="Flow11" type="Polygon2D" parent="Mechanisms/TimingPipeline/FlowMarkers"]
+polygon = PackedVector2Array(-10, -7, 8, 0, -10, 7)
+color = Color(0.34, 0.66, 0.64, 0.38)
+
+[node name="SlotA" parent="Mechanisms/TimingPipeline/Slots" index="0"]
+position = Vector2(0, 0)
+enabled = true
+connected_socket_ids = Array[StringName]([&"c"])
+initial_definition = ExtResource("8_generator")
+initial_fixed = true
+source_id = &"battery_installed"
+
+[node name="SlotB" parent="Mechanisms/TimingPipeline/Slots" index="1"]
+position = Vector2(120, -120)
+enabled = true
+connected_socket_ids = Array[StringName]([&"c"])
+initial_definition = ExtResource("8_generator")
+initial_rotation_quarters = 1
+initial_fixed = true
+source_id = &"fuse_installed"
+
+[node name="SlotC" parent="Mechanisms/TimingPipeline/Slots" index="2"]
+position = Vector2(120, 0)
+enabled = true
+connected_socket_ids = Array[StringName]([&"a", &"b", &"d"])
+initial_definition = ExtResource("9_and")
+initial_fixed = true
+
+[node name="SlotD" parent="Mechanisms/TimingPipeline/Slots" index="3"]
+position = Vector2(240, 0)
+enabled = true
+connected_socket_ids = Array[StringName]([&"c", &"e", &"f"])
+initial_definition = ExtResource("10_tee")
+initial_fixed = true
+
+[node name="SlotE" parent="Mechanisms/TimingPipeline/Slots" index="4"]
+position = Vector2(240, -120)
+enabled = true
+connected_socket_ids = Array[StringName]([&"d", &"h"])
+allowed_part_types = Array[int]([5])
+
+[node name="SlotF" parent="Mechanisms/TimingPipeline/Slots" index="5"]
+position = Vector2(360, 0)
+enabled = true
+connected_socket_ids = Array[StringName]([&"d", &"g", &"m"])
+initial_definition = ExtResource("11_straight")
+initial_fixed = true
+
+[node name="SlotG" parent="Mechanisms/TimingPipeline/Slots" index="6"]
+position = Vector2(480, 0)
+enabled = true
+connected_socket_ids = Array[StringName]([&"f", &"i", &"k"])
+initial_definition = ExtResource("10_tee")
+initial_fixed = true
+
+[node name="SlotH" parent="Mechanisms/TimingPipeline/Slots" instance=ExtResource("5_pipeline_socket")]
+position = Vector2(240, -240)
+socket_id = &"h"
+connected_socket_ids = Array[StringName]([&"e"])
+initial_definition = ExtResource("15_output")
+initial_rotation_quarters = 3
+initial_fixed = true
+output_id = &"early_platform"
+output_link_id = &"ch3_r1_early_platform"
+
+[node name="SlotI" parent="Mechanisms/TimingPipeline/Slots" instance=ExtResource("5_pipeline_socket")]
+position = Vector2(480, -120)
+socket_id = &"i"
+connected_socket_ids = Array[StringName]([&"g", &"j"])
+allowed_part_types = Array[int]([5])
+initial_definition = ExtResource("14_timer_6")
+initial_rotation_quarters = 3
+
+[node name="SlotJ" parent="Mechanisms/TimingPipeline/Slots" instance=ExtResource("5_pipeline_socket")]
+position = Vector2(480, -240)
+socket_id = &"j"
+connected_socket_ids = Array[StringName]([&"i"])
+initial_definition = ExtResource("15_output")
+initial_rotation_quarters = 3
+initial_fixed = true
+output_id = &"middle_door"
+output_link_id = &"ch3_r1_middle_door"
+
+[node name="SlotK" parent="Mechanisms/TimingPipeline/Slots" instance=ExtResource("5_pipeline_socket")]
+position = Vector2(600, 0)
+socket_id = &"k"
+connected_socket_ids = Array[StringName]([&"g", &"l"])
+allowed_part_types = Array[int]([5])
+initial_definition = ExtResource("12_timer_1")
+initial_rotation_quarters = 2
+
+[node name="SlotL" parent="Mechanisms/TimingPipeline/Slots" instance=ExtResource("5_pipeline_socket")]
+position = Vector2(720, 0)
+socket_id = &"l"
+connected_socket_ids = Array[StringName]([&"k"])
+initial_definition = ExtResource("15_output")
+initial_fixed = true
+output_id = &"late_airlock"
+output_link_id = &"ch3_r1_late_airlock"
+
+[node name="SlotM" parent="Mechanisms/TimingPipeline/Slots" instance=ExtResource("5_pipeline_socket")]
+position = Vector2(360, -120)
+socket_id = &"m"
+connected_socket_ids = Array[StringName]([&"f"])
+allowed_part_types = Array[int]([5])
+initial_definition = ExtResource("13_timer_3")
+initial_rotation_quarters = 2
+
+[node name="ServiceRackGuide" type="Line2D" parent="Mechanisms/TimingPipeline"]
+points = PackedVector2Array(360, -76, 360, -44)
+width = 5.0
+default_color = Color(0.72, 0.65, 0.54, 0.62)
+z_index = -1
+
+[node name="ServiceRackLabel" type="Label" parent="Mechanisms/TimingPipeline"]
+offset_left = 304.0
+offset_top = -194.0
+offset_right = 430.0
+offset_bottom = -164.0
+theme_override_colors/font_color = Color(0.82, 0.75, 0.62, 0.96)
+theme_override_colors/font_outline_color = Color(0.01, 0.03, 0.035, 0.95)
+theme_override_constants/outline_size = 3
+theme_override_font_sizes/font_size = 17
+text = "维护架"
+horizontal_alignment = 1
+
+[node name="TimerOneLabel" type="Label" parent="Mechanisms/TimingPipeline"]
+offset_left = 194.0
+offset_top = -168.0
+offset_right = 340.0
+offset_bottom = -136.0
+theme_override_colors/font_color = Color(0.42, 1, 0.82, 1)
+theme_override_colors/font_outline_color = Color(0.01, 0.03, 0.035, 0.95)
+theme_override_constants/outline_size = 3
+theme_override_font_sizes/font_size = 18
+text = "目标 1s · 平台"
+
+[node name="TimerThreeLabel" type="Label" parent="Mechanisms/TimingPipeline"]
+offset_left = 438.0
+offset_top = -168.0
+offset_right = 590.0
+offset_bottom = -136.0
+theme_override_colors/font_color = Color(0.98, 0.82, 0.42, 1)
+theme_override_colors/font_outline_color = Color(0.01, 0.03, 0.035, 0.95)
+theme_override_constants/outline_size = 3
+theme_override_font_sizes/font_size = 18
+text = "目标 3s · 中门"
+
+[node name="TimerSixLabel" type="Label" parent="Mechanisms/TimingPipeline"]
+offset_left = 570.0
+offset_top = 28.0
+offset_right = 730.0
+offset_bottom = 60.0
+theme_override_colors/font_color = Color(1, 0.58, 0.28, 1)
+theme_override_colors/font_outline_color = Color(0.01, 0.03, 0.035, 0.95)
+theme_override_constants/outline_size = 3
+theme_override_font_sizes/font_size = 18
+text = "目标 6s · 气闸"
+
+[node name="BatterySocket" parent="Mechanisms" instance=ExtResource("3_socket")]
+position = Vector2(1080, 600)
+accepted_kinds = Array[StringName]([&"battery"])
+preview_texture = ExtResource("16_battery")
+completion_link_id = &"ch3_r1_battery"
+side = 0
+
+[node name="FuseSocket" parent="Mechanisms" instance=ExtResource("3_socket")]
+position = Vector2(1260, 600)
+accepted_kinds = Array[StringName]([&"fuse"])
+dock_texture = ExtResource("18_fuse_dock")
+preview_texture = ExtResource("17_fuse")
+preview_scale = Vector2(0.78, 0.78)
+completion_link_id = &"ch3_r1_fuse"
+side = 0
+
+[node name="BatteryInput" parent="Mechanisms" instance=ExtResource("6_source_relay")]
+pipeline_path = NodePath("../TimingPipeline")
+source_id = &"battery_installed"
+side = 0
+
+[node name="FuseInput" parent="Mechanisms" instance=ExtResource("6_source_relay")]
+pipeline_path = NodePath("../TimingPipeline")
+source_id = &"fuse_installed"
+side = 0
+
+[node name="WaveCounter" parent="Mechanisms" instance=ExtResource("7_counter")]
+link_id = &"ch3_r1_wave_member"
+side = 0
+required_count = 3
+completion_link_id = &"ch3_r1_wave_cleared"
+
+[node name="Battery" parent="Props" instance=ExtResource("2_object")]
+position = Vector2(1480, 608)
+object_kind = &"battery"
+prop_texture = ExtResource("16_battery")
+
+[node name="Fuse" parent="Props" instance=ExtResource("2_object")]
+position = Vector2(1640, 608)
+object_kind = &"fuse"
+prop_texture = ExtResource("17_fuse")
+prop_scale = Vector2(0.78, 0.78)
+
+[connection signal="occupied_changed" from="Mechanisms/BatterySocket" to="Mechanisms/BatteryInput" method="set_local_value"]
+[connection signal="occupied_changed" from="Mechanisms/FuseSocket" to="Mechanisms/FuseInput" method="set_local_value"]
+
+[editable path="Mechanisms/TimingPipeline"]

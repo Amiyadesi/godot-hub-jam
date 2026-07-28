@@ -109,12 +109,12 @@ horizontal_alignment = 1
 layout_mode = 2
 
 [node name="ButtonBox" type="VBoxContainer" parent="PanelRoot/OuterMargin/ShellPanel/ShellMargin/MainVBox"]
-custom_minimum_size = Vector2(0, 360)
+custom_minimum_size = Vector2(0, 430)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 alignment = 1
-theme_override_constants/separation = 28
+theme_override_constants/separation = 14
 
 [node name="ContinueButton" parent="PanelRoot/OuterMargin/ShellPanel/ShellMargin/MainVBox/ButtonBox" instance=ExtResource("5_button")]
 unique_name_in_owner = true
@@ -123,6 +123,22 @@ layout_mode = 2
 size_flags_horizontal = 4
 theme_override_font_sizes/font_size = 30
 text = "继续游戏"
+
+[node name="RestartButton" parent="PanelRoot/OuterMargin/ShellPanel/ShellMargin/MainVBox/ButtonBox" instance=ExtResource("5_button")]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(240, 64)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_font_sizes/font_size = 30
+text = "重开本关"
+
+[node name="HintButton" parent="PanelRoot/OuterMargin/ShellPanel/ShellMargin/MainVBox/ButtonBox" instance=ExtResource("5_button")]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(240, 64)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_font_sizes/font_size = 30
+text = "查看提示"
 
 [node name="SettingButton" parent="PanelRoot/OuterMargin/ShellPanel/ShellMargin/MainVBox/ButtonBox" instance=ExtResource("5_button")]
 unique_name_in_owner = true

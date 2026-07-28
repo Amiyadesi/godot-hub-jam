@@ -1,0 +1,29 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://Scripts/PhaseLag/Devices/phase_objective_zone.gd" id="1_zone"]
+
+[sub_resource type="RectangleShape2D" id="Rectangle_zone"]
+size = Vector2(180, 260)
+
+[node name="PhaseObjectiveZone" type="Area2D"]
+collision_layer = 0
+collision_mask = 1
+monitoring = true
+script = ExtResource("1_zone")
+
+[node name="Core" type="Polygon2D" parent="."]
+polygon = PackedVector2Array(-70, -120, 70, -120, 70, 120, -70, 120)
+color = Color(1, 0.36, 0.12, 0.12)
+z_index = -1
+
+[node name="Frame" type="Line2D" parent="."]
+points = PackedVector2Array(-76, -124, -44, -124, -76, -124, -76, 124, -44, 124, -76, 124, 76, 124, 44, 124, 76, 124, 76, -124, 44, -124)
+width = 7.0
+default_color = Color(1, 0.42, 0.14, 0.82)
+
+[node name="Arrow" type="Polygon2D" parent="."]
+polygon = PackedVector2Array(-34, -12, 8, -12, 8, -28, 44, 0, 8, 28, 8, 12, -34, 12)
+color = Color(1, 0.62, 0.2, 0.88)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("Rectangle_zone")

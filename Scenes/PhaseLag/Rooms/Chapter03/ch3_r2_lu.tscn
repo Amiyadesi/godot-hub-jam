@@ -1,0 +1,155 @@
+[gd_scene load_steps=11 format=3]
+
+[ext_resource type="PackedScene" path="res://Scenes/PhaseLag/Rooms/phase_room_side_base.tscn" id="1_base"]
+[ext_resource type="PackedScene" path="res://Scenes/PhaseLag/Circuit/phase_causal_pipeline.tscn" id="2_pipeline"]
+[ext_resource type="PackedScene" path="res://Scenes/PhaseLag/Devices/pressure_plate.tscn" id="3_plate"]
+[ext_resource type="PackedScene" path="res://Scenes/PhaseLag/Circuit/circuit_source_relay.tscn" id="4_relay"]
+[ext_resource type="Resource" path="res://resources/phase_lag/circuit_parts/generator.tres" id="5_generator"]
+[ext_resource type="Resource" path="res://resources/phase_lag/circuit_parts/inverter.tres" id="6_inverter"]
+[ext_resource type="Resource" path="res://resources/phase_lag/circuit_parts/and_gate.tres" id="7_and"]
+[ext_resource type="Resource" path="res://resources/phase_lag/circuit_parts/wire_straight.tres" id="8_wire"]
+[ext_resource type="Resource" path="res://resources/phase_lag/circuit_parts/output.tres" id="9_output"]
+[ext_resource type="PackedScene" path="res://Scenes/PhaseLag/Tools/magnetic_object.tscn" id="10_weight"]
+[ext_resource type="Texture2D" path="res://assets/phase_lag/environment/props/ganamoda/random_device_3.png" id="11_weight_texture"]
+
+[node name="Ch3R2Lu" instance=ExtResource("1_base")]
+room_id = &"ch3_r2"
+side = 0
+checkpoint_id = &"dual_switch"
+
+[node name="DualPipeline" parent="Mechanisms" instance=ExtResource("2_pipeline")]
+position = Vector2(260, 390)
+side = 0
+source_pulse_seconds = 8.0
+
+[node name="Conduit1" parent="Mechanisms/DualPipeline/Conduits" index="0"]
+visible = true
+points = PackedVector2Array(0, 0, 120, 0)
+
+[node name="Conduit2" parent="Mechanisms/DualPipeline/Conduits" index="1"]
+visible = true
+points = PackedVector2Array(120, 0, 240, 0)
+
+[node name="Conduit3" parent="Mechanisms/DualPipeline/Conduits" index="2"]
+visible = true
+points = PackedVector2Array(240, 0, 360, 0)
+
+[node name="Conduit4" parent="Mechanisms/DualPipeline/Conduits" index="3"]
+visible = true
+points = PackedVector2Array(120, -240, 120, -120)
+
+[node name="Conduit5" parent="Mechanisms/DualPipeline/Conduits" index="4"]
+visible = true
+points = PackedVector2Array(120, -120, 120, 0)
+
+[node name="SlotA" parent="Mechanisms/DualPipeline/Slots" index="0"]
+position = Vector2(0, 0)
+enabled = true
+connected_socket_ids = Array[StringName]([&"b"])
+initial_definition = ExtResource("5_generator")
+initial_fixed = true
+source_id = &"lu_plate"
+
+[node name="SlotB" parent="Mechanisms/DualPipeline/Slots" index="1"]
+position = Vector2(120, 0)
+enabled = true
+connected_socket_ids = Array[StringName]([&"a", &"c", &"e"])
+initial_definition = ExtResource("7_and")
+initial_fixed = true
+
+[node name="SlotC" parent="Mechanisms/DualPipeline/Slots" index="2"]
+position = Vector2(120, -120)
+enabled = true
+connected_socket_ids = Array[StringName]([&"b", &"d"])
+initial_definition = ExtResource("6_inverter")
+initial_rotation_quarters = 0
+
+[node name="SlotD" parent="Mechanisms/DualPipeline/Slots" index="3"]
+position = Vector2(120, -240)
+enabled = true
+connected_socket_ids = Array[StringName]([&"c"])
+initial_definition = ExtResource("5_generator")
+initial_rotation_quarters = 1
+initial_fixed = true
+source_id = &"xing_plate"
+
+[node name="SlotE" parent="Mechanisms/DualPipeline/Slots" index="4"]
+position = Vector2(240, 0)
+enabled = true
+connected_socket_ids = Array[StringName]([&"b", &"f"])
+initial_definition = ExtResource("8_wire")
+initial_rotation_quarters = 3
+
+[node name="SlotF" parent="Mechanisms/DualPipeline/Slots" index="5"]
+position = Vector2(360, 0)
+enabled = true
+connected_socket_ids = Array[StringName]([&"e"])
+initial_definition = ExtResource("9_output")
+initial_fixed = true
+output_id = &"lift"
+output_link_id = &"ch3_r2_lift"
+
+[node name="SlotG" parent="Mechanisms/DualPipeline/Slots" index="6"]
+enabled = false
+
+[node name="DualRouteGuide" type="Label" parent="Mechanisms/DualPipeline"]
+offset_left = -24.0
+offset_top = -76.0
+offset_right = 360.0
+offset_bottom = -42.0
+theme_override_colors/font_color = Color(0.72, 0.9, 0.86, 0.92)
+theme_override_colors/font_outline_color = Color(0.01, 0.03, 0.035, 0.95)
+theme_override_constants/outline_size = 3
+theme_override_font_sizes/font_size = 19
+text = "双输入 → 反相 → 升降台"
+
+[node name="InvertLabel" type="Label" parent="Mechanisms/DualPipeline"]
+offset_left = 68.0
+offset_top = -168.0
+offset_right = 210.0
+offset_bottom = -136.0
+theme_override_colors/font_color = Color(1, 0.72, 0.38, 1)
+theme_override_colors/font_outline_color = Color(0.01, 0.03, 0.035, 0.95)
+theme_override_constants/outline_size = 3
+theme_override_font_sizes/font_size = 18
+text = "反相盒"
+
+[node name="LiftLabel" type="Label" parent="Mechanisms/DualPipeline"]
+offset_left = 370.0
+offset_top = -28.0
+offset_right = 500.0
+offset_bottom = 6.0
+theme_override_colors/font_color = Color(0.42, 1, 0.82, 1)
+theme_override_colors/font_outline_color = Color(0.01, 0.03, 0.035, 0.95)
+theme_override_constants/outline_size = 3
+theme_override_font_sizes/font_size = 18
+text = "升降台"
+
+[node name="WeightPlate" parent="Mechanisms" instance=ExtResource("3_plate")]
+position = Vector2(1080, 620)
+side = 0
+
+[node name="LuPlateInput" parent="Mechanisms" instance=ExtResource("4_relay")]
+pipeline_path = NodePath("../DualPipeline")
+source_id = &"lu_plate"
+side = 0
+
+[node name="XingPlateInput" parent="Mechanisms" instance=ExtResource("4_relay")]
+pipeline_path = NodePath("../DualPipeline")
+source_id = &"xing_plate"
+link_id = &"ch3_r2_xing_plate"
+side = 0
+starts_active = true
+invert_value = true
+
+[node name="Counterweight" parent="Props" instance=ExtResource("10_weight")]
+position = Vector2(820, 590)
+mode = 1
+object_kind = &"counterweight"
+prop_texture = ExtResource("11_weight_texture")
+prop_scale = Vector2(1.75, 1.75)
+pressure_weight = 1.0
+
+[connection signal="pressed_changed" from="Mechanisms/WeightPlate" to="Mechanisms/LuPlateInput" method="set_local_value"]
+
+[editable path="Mechanisms/DualPipeline"]

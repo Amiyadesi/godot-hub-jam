@@ -125,26 +125,44 @@ theme_override_constants/separation = 16
 layout_mode = 2
 theme_override_colors/font_color = Color(0.92, 0.9, 0.84, 0.92)
 theme_override_font_sizes/font_size = 22
-text = "感谢参与这个项目。"
+text = "感谢这些创作者以开放许可提供素材。"
 horizontal_alignment = 1
 
 [node name="CreditsText" type="RichTextLabel" parent="PanelRoot/OuterMargin/ShellPanel/ShellMargin/MainVBox/Body"]
+unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 theme_override_colors/default_color = Color(0.86, 0.84, 0.78, 0.96)
+theme_override_colors/font_meta_color = Color(0.48, 0.95, 0.88, 1)
+theme_override_colors/font_meta_hover_color = Color(1, 0.82, 0.42, 1)
 theme_override_font_sizes/normal_font_size = 20
 bbcode_enabled = true
 text = "[b]制作[/b]
-Your Team
+Amiya_desi & Codex & Claude Code
 
-[b]工具[/b]
-Godot Engine
+[b]环境、设施与机械敌人 · CC0[/b]
+[url=https://opengameart.org/content/sideview-sci-fi-patreon-collection]ansimuz[/url]
 
-[b]Template[/b]
-这个页面保留了设置页同款玻璃、扫描线和局部光风格。你可以直接替换这里的名单、鸣谢和授权信息。"
-fit_content = true
-scroll_active = false
+[b]星遥过渡素材 · CC0[/b]
+[url=https://luizmelo.itch.io/huntress]LuizMelo[/url]
+
+[b]UI 与音效 · CC0[/b]
+[url=https://kenney.nl/assets/ui-pack-sci-fi]Kenney[/url]
+
+[b]早期候选与参考[/b]
+[url=https://opengameart.org/content/super-dead-gunner-fleabot-enemy]Emcee Flesher[/url] · [url=https://opengameart.org/content/pixel-art-drone]RUOK[/url]
+
+[b]音乐与环境音 · CC0[/b]
+[url=https://opengameart.org/content/tragic-ambient-main-menu]HaelDB[/url] · [url=https://opengameart.org/content/menacing-otherworld]Ruskerdax[/url] · [url=https://opengameart.org/content/factory-ambiance]yd[/url]
+
+[b]引擎与对话工具[/b]
+[url=https://godotengine.org/]Godot Engine[/url] · [url=https://github.com/nathanhoad/godot_dialogue_manager]Dialogue Manager[/url]
+
+[url=https://github.com/Amiyadesi/godot-hub-jam/blob/main/docs/phase-lag-asset-sources.md]完整来源与处理记录[/url]"
+fit_content = false
+scroll_active = true
+meta_underlined = true
 
 [node name="Footer" type="HBoxContainer" parent="PanelRoot/OuterMargin/ShellPanel/ShellMargin/MainVBox"]
 layout_mode = 2

@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="ChapterDefinition" load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://Scripts/PhaseLag/Core/chapter_definition.gd" id="1_chapter"]
+[ext_resource type="Resource" path="res://resources/phase_lag/rooms/ch3_r1.tres" id="2_r1"]
+[ext_resource type="Resource" path="res://resources/phase_lag/rooms/ch3_r2.tres" id="3_r2"]
+[ext_resource type="Resource" path="res://resources/phase_lag/rooms/ch3_r3.tres" id="4_r3"]
+[ext_resource type="Script" path="res://Scripts/PhaseLag/Core/phase_room_definition.gd" id="5_room_type"]
+
+[resource]
+script = ExtResource("1_chapter")
+chapter_id = &"chapter_03"
+chapter_number = 3
+display_name = "余震"
+flow_kind = "rooms"
+chapter_scene_path = "res://Scenes/PhaseLag/Chapters/chapter_03.tscn"
+next_scene_path = "res://Scenes/PhaseLag/Chapters/chapter_04.tscn"
+base_delay = 3.0
+layout_mode = 1
+checkpoint_id = &"start"
+opening_dialogue_title = &"chapter_03_open"
+completion_dialogue_title = &"chapter_03_complete"
+rooms = Array[ExtResource("5_room_type")]([ExtResource("2_r1"), ExtResource("3_r2"), ExtResource("4_r3")])

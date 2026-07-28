@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="CircuitPartDefinition" format=3 uid="uid://t755x73ya3g5"]
+
+[ext_resource type="Script" uid="uid://c33oilsa5r66p" path="res://Scripts/PhaseLag/Circuit/circuit_part_definition.gd" id="1_definition"]
+[ext_resource type="Texture2D" path="res://assets/phase_lag/environment/props/ganamoda/small_machine_3.png" id="2_chip"]
+
+[resource]
+script = ExtResource("1_definition")
+part_type = 5
+display_name = "6秒计时器"
+input_port_mask = 8
+output_port_mask = 2
+delay_seconds = 6.0
+visual_texture = ExtResource("2_chip")
+visual_scale = Vector2(1.7, 1.7)

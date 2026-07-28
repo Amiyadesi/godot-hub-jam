@@ -2,25 +2,25 @@ extends Button
 class_name ShaderButton
 ## 着色器风格按钮
 ##
-## 职责：视觉交互（shader 动画、悬停辉光、点击波纹）
+## 职责：视觉交互（稳定描边、焦点状态、克制的点击反馈）
 ## 不负责：业务逻辑、对话触发、提示系统
 
 const ButtonShader := preload("res://Scenes/UIorgan/ShaderButton/shader_button.tres")
+const HIGHLIGHT_GLOW := 0.22
+const HIGHLIGHT_PROGRESS := 1.0
 
-@export var h_expend: float = 10
-@export var v_expend: float = 5
 @export var panel_style_box: StyleBox
+@export var outline_color: Color = Color(0.45, 0.95, 0.88, 1.0)
 @export_group("BBcode")
 @export_multiline var bb_text: String
 
 @onready var text_label: RichTextLabel = $Label
 @onready var panel: Panel = $Panel
 
-var _exit_tween: Tween
+var _feedback_tween: Tween
 var _is_mouse_over: bool = false
+var _has_keyboard_focus: bool = false
 var _original_label_modulate: Color = Color.WHITE
-var _center_click: Vector2 = Vector2(0.5, 0.5)
-var _center_hover: Vector2 = Vector2(0.5, 0.5)
 
 
 func _ready() -> void:
@@ -32,69 +32,54 @@ func _ready() -> void:
 	text = ""
 
 	material = ButtonShader.duplicate()
-	material.set("shader_parameter/size", size)
 	material.set("shader_parameter/time1", 1.0)
 	material.set("shader_parameter/time2", 0.0)
-	material.set("shader_parameter/center1", _center_click)
-	material.set("shader_parameter/center2", _center_hover)
-
-	var normal_style = get_theme_stylebox("normal")
-	if normal_style is StyleBoxFlat:
-		material.set("shader_parameter/corner_radius", normal_style.corner_radius_top_left / size.y * 2)
-
-	material.set("shader_parameter/color", modulate)
+	material.set("shader_parameter/center1", Vector2(0.5, 0.5))
+	material.set("shader_parameter/center2", Vector2(0.5, 0.5))
 
 	pressed.connect(_on_pressed)
 	mouse_entered.connect(_on_mouse_entered)
 	mouse_exited.connect(_on_mouse_exited)
+	focus_entered.connect(_on_focus_entered)
+	focus_exited.connect(_on_focus_exited)
+	resized.connect(_sync_shader_geometry)
 
 	_original_label_modulate = text_label.modulate
-
-	# 等一帧让布局稳定后再居中文字
-	await get_tree().process_frame
-	_center_label()
+	_sync_shader_geometry()
 
 
 func _process(_delta: float) -> void:
-	if disabled:
-		modulate.a = 0.5
-		return
-	var local_mouse := (get_global_transform().affine_inverse() * get_global_mouse_position()) / size
-	if _is_mouse_over:
-		_center_hover = local_mouse
-		material.set("shader_parameter/center2", _center_hover)
-	material.set("shader_parameter/center1", _center_click)
+	modulate.a = 0.48 if disabled else 1.0
 
 
 # ─────────────────────────────────────────────
 # 公开 API
 # ─────────────────────────────────────────────
 
+# Replaces the displayed rich text without rebuilding the authored button scene.
 func set_bbtext(bbtext: String) -> void:
 	bb_text = bbtext
 	if text_label != null:
 		text_label.text = bbtext
-		await get_tree().process_frame
-		_center_label()
 
 
+# Applies an authored panel resource supplied by the owning scene.
 func set_panel_box(style_box: StyleBox) -> void:
 	panel_style_box = style_box
 	if panel != null:
 		panel.add_theme_stylebox_override("panel", style_box)
 
 
+# Returns pooled buttons to their neutral interaction state.
 func reset_visuals() -> void:
-	## 重置到初始视觉状态（用于对象池回收时调用）
 	_is_mouse_over = false
-	_center_click = Vector2(0.5, 0.5)
-	_center_hover = Vector2(0.5, 0.5)
+	_has_keyboard_focus = false
+	if _feedback_tween:
+		_feedback_tween.kill()
 	if material:
 		material.set("shader_parameter/time1", 1.0)
 		material.set("shader_parameter/time2", 0.0)
 		material.set("shader_parameter/glow", 0.0)
-		material.set("shader_parameter/center1", _center_click)
-		material.set("shader_parameter/center2", _center_hover)
 	if text_label:
 		text_label.modulate = _original_label_modulate
 	modulate.a = 1.0
@@ -104,51 +89,78 @@ func reset_visuals() -> void:
 # 信号处理
 # ─────────────────────────────────────────────
 
+# Plays a short centered confirmation trace without following the pointer position.
 func _on_pressed() -> void:
 	_play_press_sound()
-	_center_click = (get_global_transform().affine_inverse() * get_global_mouse_position()) / size
-	create_tween().tween_property(material, "shader_parameter/time1", 1.0, 0.5).from(0.0)
+	if _feedback_tween:
+		_feedback_tween.kill()
+	_feedback_tween = create_tween().set_ignore_time_scale(true)
+	_feedback_tween.tween_property(material, "shader_parameter/time1", 1.0, 0.24).from(0.0)
 
 
+# Marks pointer hover as one source of the shared focus outline.
 func _on_mouse_entered() -> void:
 	if disabled:
 		return
+	grab_focus()
 	_play_select_sound()
 	_is_mouse_over = true
-	if _exit_tween:
-		_exit_tween.kill()
-	create_tween().tween_property(material, "shader_parameter/glow", 2.0, 0.2)
-	create_tween().tween_property(material, "shader_parameter/time2", 0.35, 0.2)
-	text_label.modulate = _original_label_modulate * 2
+	_update_highlight()
 
 
+# Removes pointer hover while preserving keyboard/controller focus when present.
 func _on_mouse_exited() -> void:
-	if disabled:
-		return
 	_is_mouse_over = false
-	var exit_target := Vector2(0.5, 0.5) + (_center_hover - Vector2(0.5, 0.5)).normalized() * 2.0
-	_exit_tween = create_tween()
-	_exit_tween.parallel().tween_property(self, "_center_hover", exit_target, 0.3)
-	_exit_tween.parallel().tween_property(material, "shader_parameter/time2", 0.0, 0.3)
-	_exit_tween.parallel().tween_property(material, "shader_parameter/glow", 0.0, 0.2)
-	_exit_tween.tween_callback(func():
-		_center_hover = Vector2(0.5, 0.5)
+	_update_highlight()
+
+
+# Marks keyboard/controller focus as the same stable outline used by hover.
+func _on_focus_entered() -> void:
+	_has_keyboard_focus = true
+	_update_highlight()
+
+
+# Clears keyboard/controller focus while preserving pointer hover when present.
+func _on_focus_exited() -> void:
+	_has_keyboard_focus = false
+	_update_highlight()
+
+
+# Transitions between neutral and focused outlines without scale, rotation, or text overbrightening.
+func _update_highlight() -> void:
+	if material == null:
+		return
+	var highlighted := not disabled and (_is_mouse_over or _has_keyboard_focus)
+	if _feedback_tween:
+		_feedback_tween.kill()
+	_feedback_tween = create_tween().set_parallel().set_ignore_time_scale(true)
+	_feedback_tween.tween_property(
+		material,
+		"shader_parameter/time2",
+		HIGHLIGHT_PROGRESS if highlighted else 0.0,
+		0.16
+	)
+	_feedback_tween.tween_property(
+		material,
+		"shader_parameter/glow",
+		HIGHLIGHT_GLOW if highlighted else 0.0,
+		0.16
 	)
 	text_label.modulate = _original_label_modulate
 
 
-# ─────────────────────────────────────────────
-# 内部工具
-# ─────────────────────────────────────────────
-
-func _center_label() -> void:
-	if text_label != null and size.x > 0:
-		text_label.position.x = (size.x / 2.0 - text_label.size.x / 2.0)
-
-
-func _on_label_resized() -> void:
-	if text_label != null and size < text_label.size:
-		size = text_label.size + Vector2(h_expend, v_expend)
+# Keeps the outline distance field aligned with the authored control bounds.
+func _sync_shader_geometry() -> void:
+	if material == null or size.y <= 0.0:
+		return
+	material.set("shader_parameter/size", size)
+	material.set("shader_parameter/color", outline_color)
+	var normal_style := get_theme_stylebox("normal")
+	if normal_style is StyleBoxFlat:
+		material.set(
+			"shader_parameter/corner_radius",
+			(normal_style as StyleBoxFlat).corner_radius_top_left / size.y * 2.0
+		)
 
 
 # 通过全局音频路由播放按钮按下音，确保设置里的音量滑杆生效。

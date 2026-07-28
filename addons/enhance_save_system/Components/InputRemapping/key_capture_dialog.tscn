@@ -18,18 +18,3 @@ offset_bottom = 60.0
 horizontal_alignment = 1
 vertical_alignment = 1
 autowrap_mode = 3
-
-[node name="ConflictDialog" type="ConfirmationDialog" parent="."]
-unique_name_in_owner = true
-title = "按键冲突"
-exclusive = true
-ok_button_text = "覆盖"
-cancel_button_text = "取消"
-
-[node name="ConflictLabel" type="Label" parent="ConflictDialog"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(280, 96)
-offset_right = 280.0
-offset_bottom = 96.0
-vertical_alignment = 1
-autowrap_mode = 3

@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="PhaseRoomDefinition" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://Scripts/PhaseLag/Core/phase_room_definition.gd" id="1_room"]
+[ext_resource type="PackedScene" path="res://Scenes/PhaseLag/Rooms/Chapter03/ch3_r3_lu.tscn" id="2_lu"]
+[ext_resource type="PackedScene" path="res://Scenes/PhaseLag/Rooms/Chapter03/ch3_r3_xing.tscn" id="3_xing"]
+
+[resource]
+script = ExtResource("1_room")
+room_id = &"ch3_r3"
+chapter_id = &"chapter_03"
+room_number = 3
+display_name = "留住回声"
+lu_heng_scene = ExtResource("2_lu")
+xing_yao_scene = ExtResource("3_xing")
+layout_mode = 1
+completion_links = Array[StringName]([&"ch3_r3_memory_door"])
+opening_dialogue_title = &"ch3_r3_open"
+completion_dialogue_title = &"ch3_r3_complete"
+hint_dialogue_title = &"memory_latch"

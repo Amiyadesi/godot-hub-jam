@@ -197,6 +197,7 @@ static func _serialize_key_event(event: InputEventKey) -> Dictionary:
 		"keycode"     : event.keycode,
 		"physical"    : event.physical_keycode,
 		"key_label"   : event.key_label,
+		"location"    : event.location,
 		"ctrl"        : event.ctrl_pressed,
 		"shift"       : event.shift_pressed,
 		"alt"         : event.alt_pressed,
@@ -234,6 +235,7 @@ static func _deserialize_key_event(data: Dictionary) -> InputEventKey:
 	ev.keycode          = int(data.get("keycode",    0))
 	ev.physical_keycode = int(data.get("physical",   0))
 	ev.key_label        = int(data.get("key_label",  0))
+	ev.location         = int(data.get("location",   0))
 	ev.ctrl_pressed     = bool(data.get("ctrl",      false))
 	ev.shift_pressed    = bool(data.get("shift",     false))
 	ev.alt_pressed      = bool(data.get("alt",       false))

@@ -2,10 +2,12 @@
 
 [ext_resource type="Script" uid="uid://bj5gndwwp7gnn" path="res://Scenes/UI/Menu/setting_screen.gd" id="1_g8frt"]
 [ext_resource type="Shader" uid="uid://dtcjm8c7boghc" path="res://resources/shader/blur.gdshader" id="2_cob4t"]
-[ext_resource type="PackedScene" uid="uid://cre0p744n82p7" path="res://addons/enhance_save_system/Components/InputRemapping/keybinding_ui.tscn" id="2_keybind"]
+[ext_resource type="PackedScene" path="res://Scenes/PhaseLag/UI/phase_keybinding_ui.tscn" id="2_keybind"]
 [ext_resource type="PackedScene" uid="uid://c8eisrp4kcf52" path="res://Scenes/UI/Menu/setting_ambient_vfx.tscn" id="3_ambient"]
 [ext_resource type="PackedScene" uid="uid://uacp5p6j6svs" path="res://Scenes/UI/Menu/setting_local_light_vfx.tscn" id="4_light"]
+[ext_resource type="Theme" path="res://resources/phase_lag/ui/phase_settings_theme.tres" id="5_theme"]
 [ext_resource type="PackedScene" uid="uid://dssid7iw4aqb6" path="res://Scenes/UIorgan/ShaderButton/shader_button.tscn" id="6_4xm8e"]
+[ext_resource type="Texture2D" path="res://assets/phase_lag/ui/kenney/settings_panel.png" id="7_panel"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_1ajee"]
 shader = ExtResource("2_cob4t")
@@ -30,6 +32,7 @@ grow_vertical = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 script = ExtResource("1_g8frt")
+theme = ExtResource("5_theme")
 color = Color(0, 0, 0, 0.68)
 close_modal_on_clicked = false
 modal_offset_unit = 2
@@ -81,6 +84,22 @@ layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 
+[node name="AuthoredPanel" type="NinePatchRect" parent="PanelRoot/OuterMargin/ShellPanel"]
+texture_filter = 1
+self_modulate = Color(0.2, 0.34, 0.37, 0.92)
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("7_panel")
+patch_margin_left = 8
+patch_margin_top = 22
+patch_margin_right = 8
+patch_margin_bottom = 8
+
 [node name="ShellMargin" type="MarginContainer" parent="PanelRoot/OuterMargin/ShellPanel" unique_id=420910952]
 layout_mode = 1
 anchors_preset = 15
@@ -111,6 +130,7 @@ custom_minimum_size = Vector2(0, 54)
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 25
+toggle_mode = true
 text = "通用设置"
 
 [node name="ControlsTab" type="Button" parent="PanelRoot/OuterMargin/ShellPanel/ShellMargin/MainVBox/TopTabs" unique_id=1691251863]
@@ -119,6 +139,7 @@ custom_minimum_size = Vector2(0, 54)
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 25
+toggle_mode = true
 text = "按键设置"
 
 [node name="HSeparator" type="HSeparator" parent="PanelRoot/OuterMargin/ShellPanel/ShellMargin/MainVBox" unique_id=1636192371]
@@ -209,10 +230,10 @@ vertical_alignment = 1
 
 [node name="VSyncToggle" type="CheckButton" parent="PanelRoot/OuterMargin/ShellPanel/ShellMargin/MainVBox/Pages/AudioPage/VBoxContainer/PageMargin/GeneralVBox/VSyncRow/RowContent" unique_id=1288698377]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(320, 44)
+custom_minimum_size = Vector2(56, 44)
 layout_mode = 2
-size_flags_horizontal = 3
-text = "开启"
+size_flags_horizontal = 8
+text = ""
 
 [node name="Underline" type="ColorRect" parent="PanelRoot/OuterMargin/ShellPanel/ShellMargin/MainVBox/Pages/AudioPage/VBoxContainer/PageMargin/GeneralVBox/VSyncRow" unique_id=1434535820]
 custom_minimum_size = Vector2(0, 1)
@@ -252,6 +273,8 @@ unique_name_in_owner = true
 custom_minimum_size = Vector2(320, 44)
 layout_mode = 2
 size_flags_horizontal = 3
+max_value = 1.0
+step = 0.01
 
 [node name="MasterValue" type="Label" parent="PanelRoot/OuterMargin/ShellPanel/ShellMargin/MainVBox/Pages/AudioPage/VBoxContainer/PageMargin/GeneralVBox/Rows/MasterRow/RowContent" unique_id=1237243148]
 unique_name_in_owner = true
@@ -288,6 +311,8 @@ unique_name_in_owner = true
 custom_minimum_size = Vector2(320, 44)
 layout_mode = 2
 size_flags_horizontal = 3
+max_value = 1.0
+step = 0.01
 
 [node name="MusicValue" type="Label" parent="PanelRoot/OuterMargin/ShellPanel/ShellMargin/MainVBox/Pages/AudioPage/VBoxContainer/PageMargin/GeneralVBox/Rows/MusicRow/RowContent" unique_id=813139078]
 unique_name_in_owner = true
@@ -324,6 +349,8 @@ unique_name_in_owner = true
 custom_minimum_size = Vector2(320, 44)
 layout_mode = 2
 size_flags_horizontal = 3
+max_value = 1.0
+step = 0.01
 
 [node name="SfxValue" type="Label" parent="PanelRoot/OuterMargin/ShellPanel/ShellMargin/MainVBox/Pages/AudioPage/VBoxContainer/PageMargin/GeneralVBox/Rows/SfxRow/RowContent" unique_id=1161772615]
 unique_name_in_owner = true
@@ -360,6 +387,8 @@ unique_name_in_owner = true
 custom_minimum_size = Vector2(320, 44)
 layout_mode = 2
 size_flags_horizontal = 3
+max_value = 1.0
+step = 0.01
 
 [node name="UIValue" type="Label" parent="PanelRoot/OuterMargin/ShellPanel/ShellMargin/MainVBox/Pages/AudioPage/VBoxContainer/PageMargin/GeneralVBox/Rows/UIRow/RowContent" unique_id=1797450776]
 unique_name_in_owner = true
@@ -396,6 +425,8 @@ unique_name_in_owner = true
 custom_minimum_size = Vector2(320, 44)
 layout_mode = 2
 size_flags_horizontal = 3
+max_value = 1.0
+step = 0.01
 
 [node name="AmbientValue" type="Label" parent="PanelRoot/OuterMargin/ShellPanel/ShellMargin/MainVBox/Pages/AudioPage/VBoxContainer/PageMargin/GeneralVBox/Rows/AmbientRow/RowContent" unique_id=199364852]
 unique_name_in_owner = true
@@ -438,6 +469,8 @@ unique_name_in_owner = true
 custom_minimum_size = Vector2(320, 44)
 layout_mode = 2
 size_flags_horizontal = 3
+max_value = 1.0
+step = 0.01
 
 [node name="ScreenShakeValue" type="Label" parent="PanelRoot/OuterMargin/ShellPanel/ShellMargin/MainVBox/Pages/AudioPage/VBoxContainer/PageMargin/GeneralVBox/ScreenShakeRow/RowContent" unique_id=451028860]
 unique_name_in_owner = true
@@ -448,6 +481,35 @@ horizontal_alignment = 2
 vertical_alignment = 1
 
 [node name="Underline" type="ColorRect" parent="PanelRoot/OuterMargin/ShellPanel/ShellMargin/MainVBox/Pages/AudioPage/VBoxContainer/PageMargin/GeneralVBox/ScreenShakeRow" unique_id=995615319]
+custom_minimum_size = Vector2(0, 1)
+layout_mode = 2
+color = Color(0.5, 0.43, 0.24, 0.9)
+
+[node name="LowFlashRow" type="VBoxContainer" parent="PanelRoot/OuterMargin/ShellPanel/ShellMargin/MainVBox/Pages/AudioPage/VBoxContainer/PageMargin/GeneralVBox" unique_id=2112473886]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="RowContent" type="HBoxContainer" parent="PanelRoot/OuterMargin/ShellPanel/ShellMargin/MainVBox/Pages/AudioPage/VBoxContainer/PageMargin/GeneralVBox/LowFlashRow" unique_id=632291059]
+layout_mode = 2
+theme_override_constants/separation = 28
+
+[node name="Title" type="Label" parent="PanelRoot/OuterMargin/ShellPanel/ShellMargin/MainVBox/Pages/AudioPage/VBoxContainer/PageMargin/GeneralVBox/LowFlashRow/RowContent" unique_id=927811468]
+custom_minimum_size = Vector2(210, 44)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.9, 0.9, 0.92, 1)
+text = "低闪烁模式"
+vertical_alignment = 1
+
+[node name="LowFlashToggle" type="CheckButton" parent="PanelRoot/OuterMargin/ShellPanel/ShellMargin/MainVBox/Pages/AudioPage/VBoxContainer/PageMargin/GeneralVBox/LowFlashRow/RowContent" unique_id=342181822]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(56, 44)
+layout_mode = 2
+size_flags_horizontal = 8
+text = ""
+
+[node name="Underline" type="ColorRect" parent="PanelRoot/OuterMargin/ShellPanel/ShellMargin/MainVBox/Pages/AudioPage/VBoxContainer/PageMargin/GeneralVBox/LowFlashRow" unique_id=1169038133]
 custom_minimum_size = Vector2(0, 1)
 layout_mode = 2
 color = Color(0.5, 0.43, 0.24, 0.9)
@@ -489,17 +551,8 @@ theme_override_constants/margin_right = 14
 [node name="KeybindingUI" parent="PanelRoot/OuterMargin/ShellPanel/ShellMargin/MainVBox/Pages/ControlsPage/PageMargin" unique_id=1774433162 instance=ExtResource("2_keybind")]
 unique_name_in_owner = true
 layout_mode = 2
-size_flags_horizontal = 3
+size_flags_horizontal = 4
 size_flags_vertical = 3
-label_map = {
-"attack": "主要操作",
-"down": "向下",
-"left": "向左",
-"pause": "暂停",
-"right": "向右",
-"sprint": "奔跑",
-"up": "向上"
-}
 
 [node name="HintLabel" type="Label" parent="PanelRoot/OuterMargin/ShellPanel/ShellMargin/MainVBox" unique_id=1883273207]
 unique_name_in_owner = true
@@ -545,4 +598,3 @@ grow_horizontal = 0
 grow_vertical = 0
 theme_override_font_sizes/font_size = 30
 text = "感谢"
-

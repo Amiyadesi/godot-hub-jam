@@ -1,0 +1,16 @@
+[remap]
+
+importer="dialogue_manager"
+importer_version=15
+type="Resource"
+uid="uid://bymw11io5oi1k"
+path="res://.godot/imported/phase_barks.dialogue-014ac1e6c00ebcbbdf5931b18e943b44.tres"
+
+[deps]
+
+source_file="res://Dialogue/PhaseLag/phase_barks.dialogue"
+dest_files=["res://.godot/imported/phase_barks.dialogue-014ac1e6c00ebcbbdf5931b18e943b44.tres"]
+
+[params]
+
+defaults=true

@@ -1,0 +1,148 @@
+[gd_scene load_steps=13 format=3]
+
+[ext_resource type="PackedScene" path="res://Scenes/PhaseLag/Rooms/phase_room_side_base.tscn" id="1_base"]
+[ext_resource type="PackedScene" path="res://Scenes/PhaseLag/Circuit/phase_causal_pipeline.tscn" id="2_pipeline"]
+[ext_resource type="Resource" path="res://resources/phase_lag/circuit_parts/generator.tres" id="3_generator"]
+[ext_resource type="Resource" path="res://resources/phase_lag/circuit_parts/wire_straight.tres" id="4_straight"]
+[ext_resource type="Resource" path="res://resources/phase_lag/circuit_parts/output.tres" id="5_output"]
+[ext_resource type="PackedScene" path="res://Scenes/PhaseLag/Devices/powered_platform.tscn" id="6_platform"]
+[ext_resource type="PackedScene" path="res://Scenes/PhaseLag/Devices/pressure_plate.tscn" id="8_plate"]
+[ext_resource type="PackedScene" path="res://Scenes/PhaseLag/Enemies/facility_guard.tscn" id="9_guard"]
+[ext_resource type="PackedScene" path="res://Scenes/PhaseLag/Core/entangled_destruction_receiver.tscn" id="10_receiver"]
+[ext_resource type="PackedScene" path="res://Scenes/PhaseLag/Circuit/circuit_local_device_relay.tscn" id="12_relay"]
+
+[sub_resource type="RectangleShape2D" id="Rectangle_transfer_bulkhead"]
+size = Vector2(128, 176)
+
+[sub_resource type="RectangleShape2D" id="Rectangle_transfer_deck"]
+size = Vector2(980, 32)
+
+[sub_resource type="RectangleShape2D" id="Rectangle_guard_backstop"]
+size = Vector2(72, 112)
+
+[node name="Ch2R3Lu" instance=ExtResource("1_base")]
+room_id = &"ch2_r3"
+side = 0
+room_width_px = 1920
+
+[node name="TransferBulkhead" type="StaticBody2D" parent="StaticGeometry" index="3"]
+position = Vector2(900, 552)
+collision_layer = 4
+collision_mask = 11
+
+[node name="Body" type="Polygon2D" parent="StaticGeometry/TransferBulkhead"]
+polygon = PackedVector2Array(-64, -88, 64, -88, 64, 88, -64, 88)
+color = Color(0.055, 0.14, 0.15, 1)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="StaticGeometry/TransferBulkhead"]
+shape = SubResource("Rectangle_transfer_bulkhead")
+
+[node name="TransferDeck" type="StaticBody2D" parent="StaticGeometry" index="4"]
+position = Vector2(1190, 352)
+collision_layer = 4
+collision_mask = 11
+
+[node name="Body" type="Polygon2D" parent="StaticGeometry/TransferDeck"]
+polygon = PackedVector2Array(-490, -16, 490, -16, 490, 16, -490, 16)
+color = Color(0.12, 0.29, 0.29, 1)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="StaticGeometry/TransferDeck"]
+shape = SubResource("Rectangle_transfer_deck")
+
+[node name="GuardBackstop" type="StaticBody2D" parent="StaticGeometry" index="5"]
+position = Vector2(1580, 584)
+collision_layer = 16
+collision_mask = 2
+
+[node name="Body" type="Polygon2D" parent="StaticGeometry/GuardBackstop"]
+polygon = PackedVector2Array(-36, -56, 36, -56, 36, 56, -36, 56)
+color = Color(0.1, 0.27, 0.27, 1)
+
+[node name="ImpactFace" type="Polygon2D" parent="StaticGeometry/GuardBackstop"]
+position = Vector2(-28, 0)
+polygon = PackedVector2Array(-8, -46, 8, -46, 8, 46, -8, 46)
+color = Color(0.44, 0.92, 0.82, 0.76)
+
+[node name="Stripe" type="Polygon2D" parent="StaticGeometry/GuardBackstop"]
+position = Vector2(0, 18)
+polygon = PackedVector2Array(-36, -10, 36, -36, 36, -16, -36, 10)
+color = Color(0.45, 0.92, 0.82, 0.56)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="StaticGeometry/GuardBackstop"]
+shape = SubResource("Rectangle_guard_backstop")
+
+[node name="LiftPipeline" parent="Mechanisms" instance=ExtResource("2_pipeline")]
+position = Vector2(260, 300)
+side = 0
+
+[node name="Conduit1" parent="Mechanisms/LiftPipeline/Conduits" index="0"]
+visible = true
+
+[node name="Conduit2" parent="Mechanisms/LiftPipeline/Conduits" index="1"]
+visible = true
+
+[node name="SlotA" parent="Mechanisms/LiftPipeline/Slots" index="0"]
+enabled = true
+connected_socket_ids = Array[StringName]([&"b"])
+initial_definition = ExtResource("3_generator")
+initial_fixed = true
+
+[node name="SlotB" parent="Mechanisms/LiftPipeline/Slots" index="1"]
+enabled = true
+connected_socket_ids = Array[StringName]([&"a", &"c"])
+initial_definition = ExtResource("4_straight")
+initial_rotation_quarters = 1
+
+[node name="SlotC" parent="Mechanisms/LiftPipeline/Slots" index="2"]
+enabled = true
+connected_socket_ids = Array[StringName]([&"b"])
+initial_definition = ExtResource("5_output")
+initial_fixed = true
+output_id = &"bridge"
+
+[node name="SlotD" parent="Mechanisms/LiftPipeline/Slots" index="3"]
+enabled = false
+
+[node name="SlotE" parent="Mechanisms/LiftPipeline/Slots" index="4"]
+enabled = false
+
+[node name="SlotF" parent="Mechanisms/LiftPipeline/Slots" index="5"]
+enabled = false
+
+[node name="SlotG" parent="Mechanisms/LiftPipeline/Slots" index="6"]
+enabled = false
+
+[node name="LuBridge" parent="Mechanisms" instance=ExtResource("6_platform")]
+position = Vector2(620, 654)
+powered_offset = Vector2(0, -192)
+travel_speed = 480.0
+
+[node name="BridgeRelay" parent="Mechanisms" instance=ExtResource("12_relay")]
+pipeline_path = NodePath("../LiftPipeline")
+output_id = &"bridge"
+device_path = NodePath("../LuBridge")
+
+[node name="CorpsePlate" parent="Mechanisms" instance=ExtResource("8_plate")]
+position = Vector2(1450, 670)
+link_id = &"ch2_r3_plate"
+side = 0
+required_weight = 1.5
+
+[node name="FutureGuard" parent="Enemies" instance=ExtResource("9_guard")]
+position = Vector2(1160, 594)
+collision_mask = 20
+side = 0
+auto_hunt_player = true
+
+[node name="DestructionReceiver" parent="Enemies" instance=ExtResource("10_receiver")]
+link_id = &"ch2_r3_guard"
+side = 0
+target_path = NodePath("../FutureGuard")
+
+[node name="LiftShaft" type="Polygon2D" parent="Props"]
+position = Vector2(620, 544)
+polygon = PackedVector2Array(-112, -112, 112, -112, 112, 96, -112, 96)
+color = Color(0.025, 0.075, 0.085, 0.72)
+z_index = -2
+
+[editable path="Mechanisms/LiftPipeline"]

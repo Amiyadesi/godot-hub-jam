@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="CircuitPartDefinition" format=3 uid="uid://cd0f142bxvapx"]
+
+[ext_resource type="Script" uid="uid://c33oilsa5r66p" path="res://Scripts/PhaseLag/Circuit/circuit_part_definition.gd" id="1_definition"]
+[ext_resource type="Texture2D" path="res://assets/phase_lag/environment/props/ganamoda/small_machine_1.png" id="2_chip"]
+
+[resource]
+script = ExtResource("1_definition")
+part_type = 1
+display_name = "发电机"
+output_port_mask = 2
+movable = false
+visual_texture = ExtResource("2_chip")
+visual_scale = Vector2(2.2, 2.2)

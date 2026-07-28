@@ -1,0 +1,16 @@
+[remap]
+
+importer="dialogue_manager"
+importer_version=15
+type="Resource"
+uid="uid://bdorqren7fcj0"
+path="res://.godot/imported/phase_story.dialogue-49abd817e3ec94dce257c84ce3cd479b.tres"
+
+[deps]
+
+source_file="res://Dialogue/PhaseLag/phase_story.dialogue"
+dest_files=["res://.godot/imported/phase_story.dialogue-49abd817e3ec94dce257c84ce3cd479b.tres"]
+
+[params]
+
+defaults=true

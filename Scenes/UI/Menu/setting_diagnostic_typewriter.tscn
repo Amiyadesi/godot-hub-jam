@@ -5,4 +5,8 @@
 [node name="DiagnosticTypewriter" type="Label"]
 custom_minimum_size = Vector2(360, 28)
 mouse_filter = 2
+theme_override_colors/font_color = Color(1, 0.78, 0.42, 0.78)
+theme_override_font_sizes/font_size = 14
+horizontal_alignment = 2
+vertical_alignment = 2
 script = ExtResource("1_script")

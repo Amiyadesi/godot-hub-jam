@@ -1,22 +1,13 @@
-[gd_scene load_steps=9 format=3]
+[gd_scene format=3 uid="uid://dvt5m7mo6n1d6"]
 
-[ext_resource type="Script" path="res://Scenes/UI/Menu/menu.gd" id="1_menu"]
-[ext_resource type="Shader" path="res://resources/shader/god_ray.gdshader" id="2_godray"]
-[ext_resource type="PackedScene" path="res://Scenes/UIorgan/ShaderButton/shader_button.tscn" id="3_button"]
-[ext_resource type="PackedScene" path="res://Scenes/UI/Menu/setting_screen.tscn" id="4_settings"]
-[ext_resource type="PackedScene" path="res://Scenes/UI/Menu/thank_screen.tscn" id="5_thanks"]
-
-[sub_resource type="Gradient" id="Gradient_background"]
-offsets = PackedFloat32Array(0, 0.58, 1)
-colors = PackedColorArray(0.055, 0.045, 0.052, 1, 0.13, 0.095, 0.06, 1, 0.02, 0.018, 0.02, 1)
-
-[sub_resource type="GradientTexture2D" id="GradientTexture2D_background"]
-gradient = SubResource("Gradient_background")
-width = 1920
-height = 1080
-fill = 1
-fill_from = Vector2(0.18, 0.08)
-fill_to = Vector2(0.96, 0.92)
+[ext_resource type="Script" uid="uid://bp3qbmklg2a2k" path="res://Scenes/UI/Menu/menu.gd" id="1_menu"]
+[ext_resource type="Shader" uid="uid://difxg3c23x3f5" path="res://resources/shader/god_ray.gdshader" id="2_godray"]
+[ext_resource type="PackedScene" uid="uid://dssid7iw4aqb6" path="res://Scenes/UIorgan/ShaderButton/shader_button.tscn" id="3_button"]
+[ext_resource type="PackedScene" uid="uid://b7hivg2dnaer8" path="res://Scenes/UI/Menu/setting_screen.tscn" id="4_settings"]
+[ext_resource type="PackedScene" uid="uid://bbq46x1emgrc3" path="res://Scenes/UI/Menu/thank_screen.tscn" id="5_thanks"]
+[ext_resource type="AudioStream" uid="uid://c38rf52rmifd4" path="res://assets/phase_lag/audio/music/tragic_ambient_main_menu.ogg" id="6_music"]
+[ext_resource type="Texture2D" uid="uid://diw48gsfa4lts" path="res://assets/phase_lag/environment/facility_corridor_strip.png" id="7_background"]
+[ext_resource type="Theme" uid="uid://136hg33mma1d" path="res://resources/main_theme.tres" id="8_theme"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_rays"]
 shader = ExtResource("2_godray")
@@ -27,24 +18,330 @@ shader_parameter/spread = 0.5
 shader_parameter/cutoff = 0.1
 shader_parameter/falloff = 0.2
 shader_parameter/edge_fade = 0.15
-shader_parameter/speed = 1.0
-shader_parameter/ray1_density = 8.0
-shader_parameter/ray2_density = 30.0
-shader_parameter/ray2_intensity = 0.3
-shader_parameter/color = Color(1, 0.9, 0.65, 0.8)
+shader_parameter/speed = 0.18
+shader_parameter/ray1_density = 7.0
+shader_parameter/ray2_density = 22.0
+shader_parameter/ray2_intensity = 0.16
+shader_parameter/color = Color(0.65, 0.95, 0.9, 0.16)
 shader_parameter/hdr = false
 shader_parameter/seed = 0.0
 
-[node name="Menu" type="Control"]
+[sub_resource type="StyleBoxFlat" id="Style_menu_warm"]
+bg_color = Color(0.035, 0.025, 0.022, 0.86)
+border_width_left = 3
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.95, 0.52, 0.28, 0.68)
+corner_radius_top_left = 2
+corner_radius_top_right = 2
+corner_radius_bottom_right = 2
+corner_radius_bottom_left = 2
+shadow_color = Color(0, 0, 0, 0.34)
+shadow_size = 2
+
+[sub_resource type="StyleBoxFlat" id="Style_menu_cold"]
+bg_color = Color(0.008, 0.035, 0.042, 0.86)
+border_width_left = 3
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.32, 0.9, 0.82, 0.72)
+corner_radius_top_left = 2
+corner_radius_top_right = 2
+corner_radius_bottom_right = 2
+corner_radius_bottom_left = 2
+shadow_color = Color(0, 0, 0, 0.34)
+shadow_size = 2
+
+[sub_resource type="StyleBoxFlat" id="Style_menu_neutral"]
+bg_color = Color(0.012, 0.022, 0.028, 0.84)
+border_width_left = 2
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.46, 0.58, 0.57, 0.52)
+corner_radius_top_left = 2
+corner_radius_top_right = 2
+corner_radius_bottom_right = 2
+corner_radius_bottom_left = 2
+shadow_color = Color(0, 0, 0, 0.3)
+shadow_size = 2
+
+[sub_resource type="StyleBoxFlat" id="Style_menu_danger"]
+bg_color = Color(0.032, 0.016, 0.019, 0.82)
+border_width_left = 2
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.78, 0.29, 0.28, 0.52)
+corner_radius_top_left = 2
+corner_radius_top_right = 2
+corner_radius_bottom_right = 2
+corner_radius_bottom_left = 2
+shadow_color = Color(0, 0, 0, 0.3)
+shadow_size = 2
+
+[sub_resource type="Animation" id="Animation_menu_enter"]
+resource_name = "menu_enter"
+length = 1.45
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("CalibrationVeil:modulate")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {"times": PackedFloat32Array(0, 1.02), "transitions": PackedFloat32Array(0.45, 1), "update": 0, "values": [Color(1, 1, 1, 0.18), Color(1, 1, 1, 0)]}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Background:self_modulate")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {"times": PackedFloat32Array(0, 1.28), "transitions": PackedFloat32Array(0.55, 1), "update": 0, "values": [Color(0.48, 0.62, 0.64, 0.94), Color(0.56, 0.72, 0.74, 1)]}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("PhaseEcho:self_modulate")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {"times": PackedFloat32Array(0, 0.92), "transitions": PackedFloat32Array(0.55, 1), "update": 0, "values": [Color(0.48, 0.98, 0.9, 0.045), Color(0.48, 0.98, 0.9, 0)]}
+tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("ButtonLayer/Header:self_modulate")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {"times": PackedFloat32Array(0, 0.14, 0.68), "transitions": PackedFloat32Array(1, 0.45, 1), "update": 0, "values": [Color(1, 1, 1, 0), Color(1, 1, 1, 0), Color(1, 1, 1, 1)]}
+tracks/4/type = "value"
+tracks/4/imported = false
+tracks/4/enabled = true
+tracks/4/path = NodePath("ButtonLayer/Header/TechnicalMark:self_modulate")
+tracks/4/interp = 1
+tracks/4/loop_wrap = true
+tracks/4/keys = {"times": PackedFloat32Array(0, 0.2, 0.74), "transitions": PackedFloat32Array(1, 0.45, 1), "update": 0, "values": [Color(1, 1, 1, 0), Color(1, 1, 1, 0), Color(1, 1, 1, 1)]}
+tracks/5/type = "value"
+tracks/5/imported = false
+tracks/5/enabled = true
+tracks/5/path = NodePath("ButtonLayer/MenuButtons:offset_left")
+tracks/5/interp = 1
+tracks/5/loop_wrap = true
+tracks/5/keys = {"times": PackedFloat32Array(0, 0.42, 1.18), "transitions": PackedFloat32Array(1, 0.55, 1), "update": 0, "values": [-422.0, -422.0, -450.0]}
+tracks/6/type = "value"
+tracks/6/imported = false
+tracks/6/enabled = true
+tracks/6/path = NodePath("ButtonLayer/MenuButtons:offset_right")
+tracks/6/interp = 1
+tracks/6/loop_wrap = true
+tracks/6/keys = {"times": PackedFloat32Array(0, 0.42, 1.18), "transitions": PackedFloat32Array(1, 0.55, 1), "update": 0, "values": [-52.0, -52.0, -80.0]}
+tracks/7/type = "value"
+tracks/7/imported = false
+tracks/7/enabled = true
+tracks/7/path = NodePath("ButtonLayer/MenuButtons/StartButton:self_modulate")
+tracks/7/interp = 1
+tracks/7/loop_wrap = true
+tracks/7/keys = {"times": PackedFloat32Array(0, 0.58, 0.82), "transitions": PackedFloat32Array(1, 0.5, 1), "update": 0, "values": [Color(1, 1, 1, 0), Color(1, 1, 1, 0), Color(1, 1, 1, 1)]}
+tracks/8/type = "value"
+tracks/8/imported = false
+tracks/8/enabled = true
+tracks/8/path = NodePath("ButtonLayer/MenuButtons/ContinueButton:self_modulate")
+tracks/8/interp = 1
+tracks/8/loop_wrap = true
+tracks/8/keys = {"times": PackedFloat32Array(0, 0.68, 0.92), "transitions": PackedFloat32Array(1, 0.5, 1), "update": 0, "values": [Color(1, 1, 1, 0), Color(1, 1, 1, 0), Color(1, 1, 1, 1)]}
+tracks/9/type = "value"
+tracks/9/imported = false
+tracks/9/enabled = true
+tracks/9/path = NodePath("ButtonLayer/MenuButtons/SettingButton:self_modulate")
+tracks/9/interp = 1
+tracks/9/loop_wrap = true
+tracks/9/keys = {"times": PackedFloat32Array(0, 0.78, 1.02), "transitions": PackedFloat32Array(1, 0.5, 1), "update": 0, "values": [Color(1, 1, 1, 0), Color(1, 1, 1, 0), Color(1, 1, 1, 1)]}
+tracks/10/type = "value"
+tracks/10/imported = false
+tracks/10/enabled = true
+tracks/10/path = NodePath("ButtonLayer/MenuButtons/ThanksButton:self_modulate")
+tracks/10/interp = 1
+tracks/10/loop_wrap = true
+tracks/10/keys = {"times": PackedFloat32Array(0, 0.88, 1.12), "transitions": PackedFloat32Array(1, 0.5, 1), "update": 0, "values": [Color(1, 1, 1, 0), Color(1, 1, 1, 0), Color(1, 1, 1, 1)]}
+tracks/11/type = "value"
+tracks/11/imported = false
+tracks/11/enabled = true
+tracks/11/path = NodePath("ButtonLayer/MenuButtons/ExitButton:self_modulate")
+tracks/11/interp = 1
+tracks/11/loop_wrap = true
+tracks/11/keys = {"times": PackedFloat32Array(0, 0.98, 1.22), "transitions": PackedFloat32Array(1, 0.5, 1), "update": 0, "values": [Color(1, 1, 1, 0), Color(1, 1, 1, 0), Color(1, 1, 1, 1)]}
+tracks/12/type = "value"
+tracks/12/imported = false
+tracks/12/enabled = true
+tracks/12/path = NodePath("ButtonLayer/MenuButtons/SystemStatus:self_modulate")
+tracks/12/interp = 1
+tracks/12/loop_wrap = true
+tracks/12/keys = {"times": PackedFloat32Array(0, 1.08, 1.36), "transitions": PackedFloat32Array(1, 0.5, 1), "update": 0, "values": [Color(1, 1, 1, 0), Color(1, 1, 1, 0), Color(1, 1, 1, 1)]}
+tracks/13/type = "value"
+tracks/13/imported = false
+tracks/13/enabled = true
+tracks/13/path = NodePath("PhaseEcho:offset_left")
+tracks/13/interp = 1
+tracks/13/loop_wrap = true
+tracks/13/keys = {"times": PackedFloat32Array(0, 1.06), "transitions": PackedFloat32Array(0.55, 1), "update": 0, "values": [18.0, 0.0]}
+tracks/14/type = "value"
+tracks/14/imported = false
+tracks/14/enabled = true
+tracks/14/path = NodePath("PhaseEcho:offset_right")
+tracks/14/interp = 1
+tracks/14/loop_wrap = true
+tracks/14/keys = {"times": PackedFloat32Array(0, 1.06), "transitions": PackedFloat32Array(0.55, 1), "update": 0, "values": [18.0, 0.0]}
+tracks/15/type = "value"
+tracks/15/imported = false
+tracks/15/enabled = true
+tracks/15/path = NodePath("RayOverlay:self_modulate")
+tracks/15/interp = 1
+tracks/15/loop_wrap = true
+tracks/15/keys = {"times": PackedFloat32Array(0, 1.32), "transitions": PackedFloat32Array(0.55, 1), "update": 0, "values": [Color(0.75, 0.95, 0.9, 0.02), Color(0.75, 0.95, 0.9, 0.045)]}
+tracks/16/type = "value"
+tracks/16/imported = false
+tracks/16/enabled = true
+tracks/16/path = NodePath("ButtonLayer/MenuButtons/SectionLabel:self_modulate")
+tracks/16/interp = 1
+tracks/16/loop_wrap = true
+tracks/16/keys = {"times": PackedFloat32Array(0, 0.46, 0.72), "transitions": PackedFloat32Array(1, 0.5, 1), "update": 0, "values": [Color(1, 1, 1, 0), Color(1, 1, 1, 0), Color(1, 1, 1, 1)]}
+tracks/17/type = "value"
+tracks/17/imported = false
+tracks/17/enabled = true
+tracks/17/path = NodePath("ButtonLayer/MenuButtons/Divider:self_modulate")
+tracks/17/interp = 1
+tracks/17/loop_wrap = true
+tracks/17/keys = {"times": PackedFloat32Array(0, 0.52, 0.78), "transitions": PackedFloat32Array(1, 0.5, 1), "update": 0, "values": [Color(1, 1, 1, 0), Color(1, 1, 1, 0), Color(1, 1, 1, 1)]}
+tracks/18/type = "value"
+tracks/18/imported = false
+tracks/18/enabled = true
+tracks/18/path = NodePath("ButtonLayer/MenuButtons:self_modulate")
+tracks/18/interp = 1
+tracks/18/loop_wrap = true
+tracks/18/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 0, "values": [Color(1, 1, 1, 1)]}
+
+[sub_resource type="Animation" id="Animation_menu_enter_reduced"]
+resource_name = "menu_enter_reduced"
+length = 0.32
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("CalibrationVeil:modulate")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {"times": PackedFloat32Array(0, 0.24), "transitions": PackedFloat32Array(1, 1), "update": 0, "values": [Color(1, 1, 1, 0.06), Color(1, 1, 1, 0)]}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Background:self_modulate")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 0, "values": [Color(0.56, 0.72, 0.74, 1)]}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("PhaseEcho:self_modulate")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 0, "values": [Color(0.48, 0.98, 0.9, 0)]}
+tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("RayOverlay:self_modulate")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 0, "values": [Color(0.75, 0.95, 0.9, 0.045)]}
+tracks/4/type = "value"
+tracks/4/imported = false
+tracks/4/enabled = true
+tracks/4/path = NodePath("ButtonLayer/Header:self_modulate")
+tracks/4/interp = 1
+tracks/4/loop_wrap = true
+tracks/4/keys = {"times": PackedFloat32Array(0, 0.16), "transitions": PackedFloat32Array(1, 1), "update": 0, "values": [Color(1, 1, 1, 0), Color(1, 1, 1, 1)]}
+tracks/5/type = "value"
+tracks/5/imported = false
+tracks/5/enabled = true
+tracks/5/path = NodePath("ButtonLayer/MenuButtons:self_modulate")
+tracks/5/interp = 1
+tracks/5/loop_wrap = true
+tracks/5/keys = {"times": PackedFloat32Array(0.08, 0.28), "transitions": PackedFloat32Array(1, 1), "update": 0, "values": [Color(1, 1, 1, 0), Color(1, 1, 1, 1)]}
+
+[sub_resource type="Animation" id="Animation_menu_phase_cycle"]
+resource_name = "menu_phase_cycle"
+length = 24.0
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/path = NodePath("Background:self_modulate")
+tracks/0/interp = 1
+tracks/0/keys = {"times": PackedFloat32Array(0, 8, 12, 20, 24), "transitions": PackedFloat32Array(1, 1, 1, 1, 1), "update": 0, "values": [Color(0.56, 0.72, 0.74, 1), Color(0.56, 0.72, 0.74, 1), Color(0.71, 0.57, 0.48, 1), Color(0.71, 0.57, 0.48, 1), Color(0.56, 0.72, 0.74, 1)]}
+tracks/1/type = "value"
+tracks/1/path = NodePath("PhaseEcho:self_modulate")
+tracks/1/interp = 1
+tracks/1/keys = {"times": PackedFloat32Array(0, 8, 12, 20, 24), "transitions": PackedFloat32Array(1, 1, 1, 1, 1), "update": 0, "values": [Color(0.48, 0.98, 0.9, 0.025), Color(0.48, 0.98, 0.9, 0.025), Color(1, 0.52, 0.28, 0.075), Color(1, 0.52, 0.28, 0.075), Color(0.48, 0.98, 0.9, 0.025)]}
+tracks/2/type = "value"
+tracks/2/path = NodePath("PhaseEcho:offset_left")
+tracks/2/interp = 1
+tracks/2/keys = {"times": PackedFloat32Array(0, 8, 12, 20, 24), "transitions": PackedFloat32Array(1, 1, 1, 1, 1), "update": 0, "values": [0.0, 0.0, 8.0, 8.0, 0.0]}
+tracks/3/type = "value"
+tracks/3/path = NodePath("PhaseEcho:offset_right")
+tracks/3/interp = 1
+tracks/3/keys = {"times": PackedFloat32Array(0, 8, 12, 20, 24), "transitions": PackedFloat32Array(1, 1, 1, 1, 1), "update": 0, "values": [0.0, 0.0, 8.0, 8.0, 0.0]}
+tracks/4/type = "value"
+tracks/4/path = NodePath("RayOverlay:self_modulate")
+tracks/4/interp = 1
+tracks/4/keys = {"times": PackedFloat32Array(0, 8, 12, 20, 24), "transitions": PackedFloat32Array(1, 1, 1, 1, 1), "update": 0, "values": [Color(0.75, 0.95, 0.9, 0.045), Color(0.75, 0.95, 0.9, 0.045), Color(1, 0.72, 0.52, 0.038), Color(1, 0.72, 0.52, 0.038), Color(0.75, 0.95, 0.9, 0.045)]}
+tracks/5/type = "value"
+tracks/5/path = NodePath("Vignette:color")
+tracks/5/interp = 1
+tracks/5/keys = {"times": PackedFloat32Array(0, 8, 12, 20, 24), "transitions": PackedFloat32Array(1, 1, 1, 1, 1), "update": 0, "values": [Color(0.006, 0.012, 0.016, 0.42), Color(0.006, 0.012, 0.016, 0.42), Color(0.028, 0.012, 0.008, 0.46), Color(0.028, 0.012, 0.008, 0.46), Color(0.006, 0.012, 0.016, 0.42)]}
+
+[sub_resource type="Animation" id="Animation_menu_phase_cycle_reduced"]
+resource_name = "menu_phase_cycle_reduced"
+length = 28.0
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/path = NodePath("Background:self_modulate")
+tracks/0/interp = 1
+tracks/0/keys = {"times": PackedFloat32Array(0, 8, 14, 22, 28), "transitions": PackedFloat32Array(1, 1, 1, 1, 1), "update": 0, "values": [Color(0.56, 0.72, 0.74, 1), Color(0.56, 0.72, 0.74, 1), Color(0.69, 0.58, 0.5, 1), Color(0.69, 0.58, 0.5, 1), Color(0.56, 0.72, 0.74, 1)]}
+tracks/1/type = "value"
+tracks/1/path = NodePath("PhaseEcho:self_modulate")
+tracks/1/interp = 1
+tracks/1/keys = {"times": PackedFloat32Array(0, 8, 14, 22, 28), "transitions": PackedFloat32Array(1, 1, 1, 1, 1), "update": 0, "values": [Color(0.48, 0.98, 0.9, 0.018), Color(0.48, 0.98, 0.9, 0.018), Color(1, 0.52, 0.28, 0.045), Color(1, 0.52, 0.28, 0.045), Color(0.48, 0.98, 0.9, 0.018)]}
+tracks/2/type = "value"
+tracks/2/path = NodePath("PhaseEcho:offset_left")
+tracks/2/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 0, "values": [0.0]}
+tracks/3/type = "value"
+tracks/3/path = NodePath("PhaseEcho:offset_right")
+tracks/3/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 0, "values": [0.0]}
+tracks/4/type = "value"
+tracks/4/path = NodePath("RayOverlay:self_modulate")
+tracks/4/interp = 1
+tracks/4/keys = {"times": PackedFloat32Array(0, 8, 14, 22, 28), "transitions": PackedFloat32Array(1, 1, 1, 1, 1), "update": 0, "values": [Color(0.75, 0.95, 0.9, 0.038), Color(0.75, 0.95, 0.9, 0.038), Color(1, 0.72, 0.52, 0.032), Color(1, 0.72, 0.52, 0.032), Color(0.75, 0.95, 0.9, 0.038)]}
+tracks/5/type = "value"
+tracks/5/path = NodePath("Vignette:color")
+tracks/5/interp = 1
+tracks/5/keys = {"times": PackedFloat32Array(0, 8, 14, 22, 28), "transitions": PackedFloat32Array(1, 1, 1, 1, 1), "update": 0, "values": [Color(0.006, 0.012, 0.016, 0.42), Color(0.006, 0.012, 0.016, 0.42), Color(0.024, 0.014, 0.01, 0.44), Color(0.024, 0.014, 0.01, 0.44), Color(0.006, 0.012, 0.016, 0.42)]}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_menu"]
+_data = {&"menu_enter": SubResource("Animation_menu_enter"), &"menu_enter_reduced": SubResource("Animation_menu_enter_reduced")}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_phase_cycle"]
+_data = {&"menu_phase_cycle": SubResource("Animation_menu_phase_cycle"), &"menu_phase_cycle_reduced": SubResource("Animation_menu_phase_cycle_reduced")}
+
+[node name="Menu" type="Control" unique_id=1123206452]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+theme = ExtResource("8_theme")
 script = ExtResource("1_menu")
+start_scene_path = "res://Scenes/PhaseLag/Chapters/chapter_01.tscn"
+menu_music = ExtResource("6_music")
 
-[node name="Background" type="TextureRect" parent="."]
+[node name="Background" type="TextureRect" parent="." unique_id=177126973]
+self_modulate = Color(0.48, 0.62, 0.64, 0.94)
+texture_filter = 1
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -52,11 +349,26 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-texture = SubResource("GradientTexture2D_background")
+texture = ExtResource("7_background")
 expand_mode = 1
+stretch_mode = 6
 
-[node name="RayOverlay" type="ColorRect" parent="."]
-self_modulate = Color(0.95, 0.82, 0.62, 0.24)
+[node name="PhaseEcho" type="TextureRect" parent="."]
+self_modulate = Color(0.48, 0.98, 0.9, 0.045)
+texture_filter = 1
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("7_background")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="RayOverlay" type="ColorRect" parent="." unique_id=1442657247]
+self_modulate = Color(0.75, 0.95, 0.9, 0.02)
 material = SubResource("ShaderMaterial_rays")
 layout_mode = 1
 anchors_preset = 15
@@ -67,7 +379,7 @@ grow_vertical = 2
 mouse_filter = 2
 color = Color(0, 0, 0, 0)
 
-[node name="Vignette" type="ColorRect" parent="."]
+[node name="Vignette" type="ColorRect" parent="." unique_id=634276069]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -75,9 +387,20 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-color = Color(0.01, 0.008, 0.006, 0.24)
+color = Color(0.006, 0.012, 0.016, 0.42)
 
-[node name="ButtonLayer" type="Control" parent="."]
+[node name="CalibrationVeil" type="ColorRect" parent="."]
+modulate = Color(1, 1, 1, 0.18)
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.006, 0.024, 0.03, 0.92)
+
+[node name="ButtonLayer" type="Control" parent="." unique_id=275157490]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -85,114 +408,228 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="Header" type="VBoxContainer" parent="ButtonLayer"]
+[node name="Header" type="VBoxContainer" parent="ButtonLayer" unique_id=1565921217]
+self_modulate = Color(1, 1, 1, 0)
 layout_mode = 1
-anchors_preset = 5
-anchor_left = 0.5
-anchor_right = 0.5
-offset_left = -440.0
-offset_top = 82.0
-offset_right = 440.0
-offset_bottom = 230.0
-grow_horizontal = 2
+offset_left = 92.0
+offset_top = 76.0
+offset_right = 760.0
+offset_bottom = 286.0
+theme_override_constants/separation = 5
+
+[node name="TechnicalMark" type="Label" parent="ButtonLayer/Header"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.47, 0.88, 0.82, 0.78)
+theme_override_colors/font_outline_color = Color(0.004, 0.012, 0.016, 0.92)
+theme_override_constants/outline_size = 2
+theme_override_font_sizes/font_size = 17
+text = "PHASE LAG  //  CAUSAL CALIBRATION"
+
+[node name="Title" type="Label" parent="ButtonLayer/Header" unique_id=1907461744]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.94, 0.96, 0.91, 1)
+theme_override_colors/font_outline_color = Color(0.004, 0.012, 0.016, 0.94)
+theme_override_constants/outline_size = 5
+theme_override_font_sizes/font_size = 94
+text = "迟相"
+
+[node name="Subtitle" type="Label" parent="ButtonLayer/Header" unique_id=1571964643]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.79, 0.84, 0.8, 0.86)
+theme_override_colors/font_outline_color = Color(0.004, 0.012, 0.016, 0.9)
+theme_override_constants/outline_size = 3
+theme_override_font_sizes/font_size = 23
+text = "有些答案，总在错过之后才抵达。"
+
+[node name="MenuButtons" type="VBoxContainer" parent="ButtonLayer" unique_id=1680120959]
+self_modulate = Color(1, 1, 1, 0)
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -450.0
+offset_top = -520.0
+offset_right = -80.0
+offset_bottom = -70.0
+grow_horizontal = 0
+grow_vertical = 0
 theme_override_constants/separation = 10
 
-[node name="Title" type="Label" parent="ButtonLayer/Header"]
+[node name="SectionLabel" type="Label" parent="ButtonLayer/MenuButtons"]
 layout_mode = 2
-theme_override_colors/font_color = Color(1, 0.84, 0.45, 1)
-theme_override_font_sizes/font_size = 92
-text = "Game Jam Template"
-horizontal_alignment = 1
+theme_override_colors/font_color = Color(0.58, 0.73, 0.71, 0.8)
+theme_override_font_sizes/font_size = 15
+text = "TIMELINE COMMANDS  /  时间线命令"
 
-[node name="Subtitle" type="Label" parent="ButtonLayer/Header"]
+[node name="Divider" type="ColorRect" parent="ButtonLayer/MenuButtons"]
+custom_minimum_size = Vector2(0, 1)
 layout_mode = 2
-theme_override_colors/font_color = Color(0.92, 0.88, 0.74, 0.88)
-theme_override_font_sizes/font_size = 28
-text = "Menu · Settings · Credits · Audio"
-horizontal_alignment = 1
+mouse_filter = 2
+color = Color(0.31, 0.73, 0.68, 0.38)
 
-[node name="MenuButtons" type="VBoxContainer" parent="ButtonLayer"]
+[node name="StartButton" parent="ButtonLayer/MenuButtons" unique_id=2138551991 instance=ExtResource("3_button")]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(370, 50)
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+panel_style_box = SubResource("Style_menu_warm")
+outline_color = Color(0.95, 0.52, 0.28, 1)
+bb_text = "[color=#f0a36b]开始游戏"
+
+[node name="ContinueButton" parent="ButtonLayer/MenuButtons" unique_id=1024345183 instance=ExtResource("3_button")]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(370, 50)
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+panel_style_box = SubResource("Style_menu_cold")
+outline_color = Color(0.32, 0.9, 0.82, 1)
+bb_text = "[color=#82d8cf]继续游戏"
+
+[node name="SettingButton" parent="ButtonLayer/MenuButtons" unique_id=1867568161 instance=ExtResource("3_button")]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(370, 50)
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+panel_style_box = SubResource("Style_menu_neutral")
+outline_color = Color(0.5, 0.68, 0.66, 1)
+bb_text = "[color=#d8ece8]设置"
+
+[node name="ThanksButton" parent="ButtonLayer/MenuButtons" unique_id=1525053367 instance=ExtResource("3_button")]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(370, 50)
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+panel_style_box = SubResource("Style_menu_cold")
+outline_color = Color(0.32, 0.76, 0.72, 1)
+bb_text = "[color=#8ddbd4]感谢"
+
+[node name="ExitButton" parent="ButtonLayer/MenuButtons" unique_id=784002292 instance=ExtResource("3_button")]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(370, 50)
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+panel_style_box = SubResource("Style_menu_danger")
+outline_color = Color(0.78, 0.29, 0.28, 1)
+bb_text = "[color=#ff7169]退出"
+
+[node name="SystemStatus" type="Label" parent="ButtonLayer/MenuButtons"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.49, 0.68, 0.65, 0.72)
+theme_override_font_sizes/font_size = 14
+text = "CAUSAL LINK STABLE  ·  BASE DELAY 03.000s"
+horizontal_alignment = 2
+
+[node name="StatusLabel" type="Label" parent="ButtonLayer/MenuButtons" unique_id=130990905]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.61, 0.45, 0.92)
+theme_override_font_sizes/font_size = 15
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="MenuAnimationPlayer" type="AnimationPlayer" parent="."]
+unique_name_in_owner = true
+libraries = {&"": SubResource("AnimationLibrary_menu")}
+
+[node name="PhaseCycleAnimationPlayer" type="AnimationPlayer" parent="."]
+unique_name_in_owner = true
+libraries = {&"": SubResource("AnimationLibrary_phase_cycle")}
+
+[node name="ModeSelection" type="ColorRect" parent="." unique_id=844180808]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.004, 0.008, 0.012, 0.86)
+
+[node name="Panel" type="PanelContainer" parent="ModeSelection" unique_id=1674722922]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -108.0
-offset_top = -170.0
-offset_right = 108.0
-offset_bottom = 170.0
+offset_left = -330.0
+offset_top = -270.0
+offset_right = 330.0
+offset_bottom = 270.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/separation = 34
+theme_override_styles/panel = SubResource("Style_menu_neutral")
 
-[node name="StartButton" parent="ButtonLayer/MenuButtons" instance=ExtResource("3_button")]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(216, 58)
+[node name="Margin" type="MarginContainer" parent="ModeSelection/Panel" unique_id=2120745801]
 layout_mode = 2
-theme_override_font_sizes/font_size = 31
-bb_text = "[color=gold]开始"
+theme_override_constants/margin_left = 54
+theme_override_constants/margin_top = 42
+theme_override_constants/margin_right = 54
+theme_override_constants/margin_bottom = 42
 
-[node name="SettingButton" parent="ButtonLayer/MenuButtons" instance=ExtResource("3_button")]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(216, 58)
+[node name="VBox" type="VBoxContainer" parent="ModeSelection/Panel/Margin" unique_id=1417693024]
 layout_mode = 2
-theme_override_font_sizes/font_size = 31
-bb_text = "[color=yellow]设置"
+theme_override_constants/separation = 20
+alignment = 1
 
-[node name="ThanksButton" parent="ButtonLayer/MenuButtons" instance=ExtResource("3_button")]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(216, 58)
+[node name="Title" type="Label" parent="ModeSelection/Panel/Margin/VBox" unique_id=1212944076]
 layout_mode = 2
-theme_override_font_sizes/font_size = 31
-bb_text = "[color=cyan]感谢"
-
-[node name="ExitButton" parent="ButtonLayer/MenuButtons" instance=ExtResource("3_button")]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(216, 58)
-layout_mode = 2
-theme_override_font_sizes/font_size = 31
-bb_text = "[color=red]退出"
-
-[node name="StatusLabel" type="Label" parent="ButtonLayer"]
-unique_name_in_owner = true
-layout_mode = 1
-anchors_preset = 7
-anchor_left = 0.5
-anchor_top = 1.0
-anchor_right = 0.5
-anchor_bottom = 1.0
-offset_left = -420.0
-offset_top = -102.0
-offset_right = 420.0
-offset_bottom = -60.0
-grow_horizontal = 2
-grow_vertical = 0
-theme_override_colors/font_color = Color(0.9, 0.84, 0.68, 0.88)
-theme_override_font_sizes/font_size = 22
+theme_override_colors/font_color = Color(0.84, 1, 0.96, 1)
+theme_override_font_sizes/font_size = 38
+text = "选择游玩模式"
 horizontal_alignment = 1
-vertical_alignment = 1
 
-[node name="BootFlash" type="ColorRect" parent="ButtonLayer"]
+[node name="Description" type="Label" parent="ModeSelection/Panel/Margin/VBox" unique_id=1952662793]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.72, 0.82, 0.8, 0.92)
+theme_override_font_sizes/font_size = 19
+text = "模式将在本次时间线内锁定。"
+horizontal_alignment = 1
+
+[node name="SoloModeButton" parent="ModeSelection/Panel/Margin/VBox" unique_id=960340577 instance=ExtResource("3_button")]
 unique_name_in_owner = true
-visible = false
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-color = Color(1, 1, 1, 1)
+custom_minimum_size = Vector2(500, 72)
+layout_mode = 2
+theme_override_font_sizes/font_size = 29
+panel_style_box = SubResource("Style_menu_cold")
+bb_text = "[color=#73f1e4]单人模式  ·  Q 切换角色"
 
-[node name="SettingScreen" parent="." instance=ExtResource("4_settings")]
+[node name="CoopModeButton" parent="ModeSelection/Panel/Margin/VBox" unique_id=506463018 instance=ExtResource("3_button")]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(500, 72)
+layout_mode = 2
+theme_override_font_sizes/font_size = 29
+panel_style_box = SubResource("Style_menu_warm")
+bb_text = "[color=#ffb067]本地双人  ·  P2 使用手柄"
+
+[node name="ModeHint" type="Label" parent="ModeSelection/Panel/Margin/VBox" unique_id=1140241163]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.72, 0.78, 0.78, 0.86)
+theme_override_font_sizes/font_size = 17
+text = "双人模式未检测到手柄时，会等待玩家 2 连接。"
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="ModeCancelButton" parent="ModeSelection/Panel/Margin/VBox" unique_id=187243326 instance=ExtResource("3_button")]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(500, 58)
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+panel_style_box = SubResource("Style_menu_neutral")
+bb_text = "[color=#d8ece8]返回"
+
+[node name="SettingScreen" parent="." unique_id=1307681498 instance=ExtResource("4_settings")]
 unique_name_in_owner = true
 visible = false
 layout_mode = 1
 color = Color(0, 0, 0, 0)
 modal_offset = Vector2(0, 0)
 
-[node name="ThankScreen" parent="." instance=ExtResource("5_thanks")]
+[node name="ThankScreen" parent="." unique_id=1000698819 instance=ExtResource("5_thanks")]
 unique_name_in_owner = true
 visible = false
 layout_mode = 1

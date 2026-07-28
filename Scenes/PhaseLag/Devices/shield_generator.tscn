@@ -1,0 +1,58 @@
+[gd_scene load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://Scripts/PhaseLag/Devices/shield_generator.gd" id="1_shield"]
+[ext_resource type="PackedScene" path="res://Scenes/PhaseLag/VFX/remote_arrival_vfx.tscn" id="2_vfx"]
+[ext_resource type="Shader" path="res://resources/phase_lag/shaders/remote_arrival.gdshader" id="3_shader"]
+[ext_resource type="AudioStream" path="res://assets/phase_lag/audio/sfx/force_field.ogg" id="4_audio"]
+[ext_resource type="Texture2D" path="res://assets/phase_lag/environment/props/small_terminal.png" id="5_terminal"]
+
+[sub_resource type="RectangleShape2D" id="Rectangle_shield"]
+size = Vector2(75, 560)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_arrival"]
+resource_local_to_scene = true
+shader = ExtResource("3_shader")
+shader_parameter/sample_canvas_group = true
+
+[node name="ShieldGenerator" type="Node2D" groups=["phase_persistent"]]
+script = ExtResource("1_shield")
+remote_arrival_vfx_path = NodePath("RemoteArrivalVfx")
+
+[node name="ShieldBody" type="StaticBody2D" parent="."]
+position = Vector2(0, -168)
+collision_layer = 4
+collision_mask = 1
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ShieldBody"]
+disabled = true
+shape = SubResource("Rectangle_shield")
+
+[node name="VisualGroup" type="CanvasGroup" parent="."]
+position = Vector2(0, -168)
+scale = Vector2(2.5, 2.5)
+material = SubResource("ShaderMaterial_arrival")
+
+[node name="Base" type="Sprite2D" parent="VisualGroup"]
+position = Vector2(0, 98)
+texture = ExtResource("5_terminal")
+
+[node name="Field" type="Polygon2D" parent="VisualGroup"]
+visible = false
+polygon = PackedVector2Array(-12, -104, 12, -104, 12, 104, -12, 104)
+color = Color(0.2, 0.86, 1, 0.46)
+
+[node name="StatusLight" type="Polygon2D" parent="VisualGroup"]
+position = Vector2(0, 104)
+polygon = PackedVector2Array(-6, -5, 6, -5, 6, 5, -6, 5)
+color = Color(0.3, 0.38, 0.42, 0.9)
+
+[node name="ActivationAudio" type="AudioStreamPlayer2D" parent="."]
+stream = ExtResource("4_audio")
+volume_db = -10.0
+bus = &"SFX"
+max_distance = 820.0
+
+[node name="RemoteArrivalVfx" parent="." instance=ExtResource("2_vfx")]
+position = Vector2(0, -168)
+scale = Vector2(0.95, 4.25)
+visual_group_path = NodePath("../VisualGroup")

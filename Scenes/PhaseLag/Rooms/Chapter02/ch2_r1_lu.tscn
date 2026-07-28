@@ -1,0 +1,194 @@
+[gd_scene load_steps=14 format=3]
+
+[ext_resource type="PackedScene" path="res://Scenes/PhaseLag/Rooms/phase_room_side_base.tscn" id="1_base"]
+[ext_resource type="PackedScene" path="res://Scenes/PhaseLag/Circuit/phase_causal_pipeline.tscn" id="2_pipeline"]
+[ext_resource type="Resource" path="res://resources/phase_lag/circuit_parts/generator.tres" id="3_generator"]
+[ext_resource type="PackedScene" path="res://Scenes/PhaseLag/Devices/powered_platform.tscn" id="4_platform"]
+[ext_resource type="PackedScene" path="res://Scenes/PhaseLag/Circuit/circuit_local_device_relay.tscn" id="5_relay"]
+[ext_resource type="Resource" path="res://resources/phase_lag/circuit_parts/wire_straight.tres" id="6_straight"]
+[ext_resource type="Resource" path="res://resources/phase_lag/circuit_parts/wire_tee.tres" id="7_tee"]
+[ext_resource type="Resource" path="res://resources/phase_lag/circuit_parts/wire_corner.tres" id="8_corner"]
+[ext_resource type="Resource" path="res://resources/phase_lag/circuit_parts/output.tres" id="9_output"]
+
+[sub_resource type="RectangleShape2D" id="Rectangle_route_barrier"]
+size = Vector2(64, 288)
+
+[sub_resource type="RectangleShape2D" id="Rectangle_upper_catwalk"]
+size = Vector2(464, 32)
+
+[sub_resource type="Gradient" id="Gradient_lift_beacon"]
+offsets = PackedFloat32Array(0, 0.38, 1)
+colors = PackedColorArray(1, 1, 1, 0.72, 1, 1, 1, 0.2, 1, 1, 1, 0)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture_lift_beacon"]
+gradient = SubResource("Gradient_lift_beacon")
+width = 96
+height = 96
+fill = 1
+fill_from = Vector2(0.5, 0.5)
+fill_to = Vector2(1, 0.5)
+
+[node name="Ch2R1Lu" instance=ExtResource("1_base")]
+room_id = &"ch2_r1"
+side = 0
+room_width_px = 1920
+
+[node name="RouteBarrier" type="StaticBody2D" parent="StaticGeometry" index="3"]
+position = Vector2(832, 496)
+collision_layer = 4
+collision_mask = 11
+
+[node name="Body" type="Polygon2D" parent="StaticGeometry/RouteBarrier"]
+polygon = PackedVector2Array(-32, -144, 32, -144, 32, 144, -32, 144)
+color = Color(0.075, 0.16, 0.17, 1)
+
+[node name="Edge" type="Polygon2D" parent="StaticGeometry/RouteBarrier"]
+position = Vector2(0, -136)
+polygon = PackedVector2Array(-32, -8, 32, -8, 32, 8, -32, 8)
+color = Color(0.26, 0.74, 0.67, 0.9)
+
+[node name="WarningStripeA" type="Polygon2D" parent="StaticGeometry/RouteBarrier"]
+position = Vector2(0, 12)
+polygon = PackedVector2Array(-32, -10, 32, -42, 32, -22, -32, 10)
+color = Color(0.82, 0.48, 0.18, 0.54)
+
+[node name="WarningStripeB" type="Polygon2D" parent="StaticGeometry/RouteBarrier"]
+position = Vector2(0, 76)
+polygon = PackedVector2Array(-32, -10, 32, -42, 32, -22, -32, 10)
+color = Color(0.82, 0.48, 0.18, 0.42)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="StaticGeometry/RouteBarrier"]
+shape = SubResource("Rectangle_route_barrier")
+
+[node name="UpperCatwalk" type="StaticBody2D" parent="StaticGeometry" index="4"]
+position = Vector2(904, 368)
+collision_layer = 4
+collision_mask = 11
+
+[node name="Body" type="Polygon2D" parent="StaticGeometry/UpperCatwalk"]
+polygon = PackedVector2Array(-232, -16, 232, -16, 232, 16, -232, 16)
+color = Color(0.12, 0.27, 0.28, 1)
+
+[node name="Edge" type="Polygon2D" parent="StaticGeometry/UpperCatwalk"]
+position = Vector2(0, -13)
+polygon = PackedVector2Array(-232, -3, 232, -3, 232, 3, -232, 3)
+color = Color(0.38, 0.94, 0.82, 0.9)
+
+[node name="Underside" type="Polygon2D" parent="StaticGeometry/UpperCatwalk"]
+position = Vector2(0, 10)
+polygon = PackedVector2Array(-224, -4, 224, -4, 208, 4, -208, 4)
+color = Color(0.05, 0.11, 0.13, 0.92)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="StaticGeometry/UpperCatwalk"]
+shape = SubResource("Rectangle_upper_catwalk")
+
+[node name="SplitPipeline" parent="Mechanisms" instance=ExtResource("2_pipeline")]
+position = Vector2(150, 320)
+side = 0
+
+[node name="Conduit1" parent="Mechanisms/SplitPipeline/Conduits" index="0"]
+visible = true
+
+[node name="Conduit2" parent="Mechanisms/SplitPipeline/Conduits" index="1"]
+visible = true
+
+[node name="Conduit3" parent="Mechanisms/SplitPipeline/Conduits" index="2"]
+visible = true
+
+[node name="Conduit4" parent="Mechanisms/SplitPipeline/Conduits" index="3"]
+visible = true
+points = PackedVector2Array(240, 0, 240, -120)
+
+[node name="Conduit5" parent="Mechanisms/SplitPipeline/Conduits" index="4"]
+visible = true
+points = PackedVector2Array(240, -120, 120, -120)
+
+[node name="SlotA" parent="Mechanisms/SplitPipeline/Slots" index="0"]
+enabled = true
+connected_socket_ids = Array[StringName]([&"b"])
+initial_definition = ExtResource("3_generator")
+initial_fixed = true
+
+[node name="SlotB" parent="Mechanisms/SplitPipeline/Slots" index="1"]
+enabled = true
+connected_socket_ids = Array[StringName]([&"a", &"c"])
+initial_definition = ExtResource("6_straight")
+initial_rotation_quarters = 1
+
+[node name="SlotC" parent="Mechanisms/SplitPipeline/Slots" index="2"]
+enabled = true
+connected_socket_ids = Array[StringName]([&"b", &"d", &"e"])
+initial_definition = ExtResource("7_tee")
+initial_fixed = true
+
+[node name="SlotD" parent="Mechanisms/SplitPipeline/Slots" index="3"]
+enabled = true
+connected_socket_ids = Array[StringName]([&"c"])
+initial_definition = ExtResource("9_output")
+initial_fixed = true
+output_id = &"bridge"
+
+[node name="SlotE" parent="Mechanisms/SplitPipeline/Slots" index="4"]
+position = Vector2(240, -120)
+enabled = true
+connected_socket_ids = Array[StringName]([&"c", &"f"])
+initial_definition = ExtResource("8_corner")
+initial_rotation_quarters = 1
+
+[node name="SlotF" parent="Mechanisms/SplitPipeline/Slots" index="5"]
+position = Vector2(120, -120)
+enabled = true
+connected_socket_ids = Array[StringName]([&"e"])
+initial_definition = ExtResource("9_output")
+initial_rotation_quarters = 2
+initial_fixed = true
+output_id = &"shield"
+output_link_id = &"ch2_r1_shield"
+
+[node name="SlotG" parent="Mechanisms/SplitPipeline/Slots" index="6"]
+enabled = false
+
+[node name="LuBridge" parent="Mechanisms" instance=ExtResource("4_platform")]
+position = Vector2(608, 654)
+powered_offset = Vector2(0, -288)
+travel_speed = 480.0
+latch_effective_state = 1
+
+[node name="BridgeRelay" parent="Mechanisms" instance=ExtResource("5_relay")]
+pipeline_path = NodePath("../SplitPipeline")
+output_id = &"bridge"
+device_path = NodePath("../LuBridge")
+
+[node name="LiftShaft" type="Polygon2D" parent="Props"]
+position = Vector2(608, 496)
+polygon = PackedVector2Array(-104, -176, 104, -176, 104, 144, -104, 144)
+color = Color(0.035, 0.09, 0.1, 0.62)
+z_index = -2
+
+[node name="LiftRailLeft" type="Line2D" parent="Props"]
+points = PackedVector2Array(528, 352, 528, 640)
+width = 7.0
+default_color = Color(0.18, 0.5, 0.48, 0.7)
+z_index = -1
+
+[node name="LiftRailRight" type="Line2D" parent="Props"]
+points = PackedVector2Array(688, 352, 688, 640)
+width = 7.0
+default_color = Color(0.18, 0.5, 0.48, 0.7)
+z_index = -1
+
+[node name="LocalBranchConduit" type="Line2D" parent="Props"]
+points = PackedVector2Array(492, 492, 528, 492, 528, 608, 572, 608)
+width = 5.0
+default_color = Color(0.28, 0.78, 0.69, 0.66)
+z_index = -1
+
+[node name="LiftBeacon" type="PointLight2D" parent="Props"]
+position = Vector2(608, 352)
+texture = SubResource("GradientTexture_lift_beacon")
+texture_scale = 2.6
+energy = 0.48
+color = Color(0.28, 0.92, 0.78, 1)
+z_index = -1
+
+[editable path="Mechanisms/SplitPipeline"]

@@ -1,0 +1,200 @@
+[gd_scene load_steps=23 format=3]
+
+[ext_resource type="Script" path="res://Scripts/PhaseLag/Enemies/phase_drone.gd" id="1_drone"]
+[ext_resource type="Texture2D" path="res://assets/phase_lag/enemies/phase_drone_ship.png" id="2_ship"]
+[ext_resource type="AudioStream" path="res://assets/phase_lag/audio/sfx/impact_metal.ogg" id="3_hit"]
+[ext_resource type="AudioStream" path="res://assets/phase_lag/audio/sfx/explosion_crunch.ogg" id="4_death"]
+[ext_resource type="AudioStream" path="res://assets/phase_lag/audio/sfx/drone_engine.ogg" id="5_engine"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ship_0"]
+atlas = ExtResource("2_ship")
+region = Rect2(106, 0, 106, 77)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ship_1"]
+atlas = ExtResource("2_ship")
+region = Rect2(212, 0, 106, 77)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ship_2"]
+atlas = ExtResource("2_ship")
+region = Rect2(318, 0, 106, 77)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ship_3"]
+atlas = ExtResource("2_ship")
+region = Rect2(424, 0, 106, 77)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ship_4"]
+atlas = ExtResource("2_ship")
+region = Rect2(530, 0, 106, 77)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ship_5"]
+atlas = ExtResource("2_ship")
+region = Rect2(636, 0, 106, 77)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ship_6"]
+atlas = ExtResource("2_ship")
+region = Rect2(742, 0, 106, 77)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_drone"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ship_0")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ship_1")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ship_2")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ship_3")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ship_4")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ship_5")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ship_6")
+}],
+"loop": true,
+"name": &"idle",
+"speed": 10.0
+}]
+
+[sub_resource type="CircleShape2D" id="Circle_drone"]
+radius = 42.0
+
+[sub_resource type="CircleShape2D" id="Circle_contact"]
+radius = 72.0
+
+[sub_resource type="Gradient" id="Gradient_particle"]
+offsets = PackedFloat32Array(0, 0.45, 1)
+colors = PackedColorArray(1, 1, 1, 1, 1, 1, 1, 0.7, 1, 1, 1, 0)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture_particle"]
+gradient = SubResource("Gradient_particle")
+width = 24
+height = 24
+fill = 1
+fill_from = Vector2(0.5, 0.5)
+fill_to = Vector2(1, 0.5)
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcess_hit"]
+direction = Vector3(1, 0, 0)
+spread = 180.0
+initial_velocity_min = 80.0
+initial_velocity_max = 170.0
+gravity = Vector3(0, 120, 0)
+scale_min = 0.18
+scale_max = 0.42
+color = Color(1, 0.42, 0.2, 0.94)
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcess_death"]
+direction = Vector3(0, -1, 0)
+spread = 180.0
+initial_velocity_min = 110.0
+initial_velocity_max = 240.0
+gravity = Vector3(0, 150, 0)
+scale_min = 0.25
+scale_max = 0.58
+color = Color(0.4, 0.94, 1, 0.94)
+
+[sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_add"]
+blend_mode = 1
+
+[sub_resource type="Gradient" id="Gradient_light"]
+offsets = PackedFloat32Array(0, 0.5, 1)
+colors = PackedColorArray(1, 1, 1, 1, 1, 1, 1, 0.3, 1, 1, 1, 0)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture_light"]
+gradient = SubResource("Gradient_light")
+width = 96
+height = 96
+fill = 1
+fill_from = Vector2(0.5, 0.5)
+fill_to = Vector2(1, 0.5)
+
+[node name="PhaseDrone" type="CharacterBody2D" groups=["phase_enemies"]]
+texture_filter = 1
+collision_layer = 2
+collision_mask = 4
+script = ExtResource("1_drone")
+
+[node name="VisualGroup" type="Node2D" parent="."]
+scale = Vector2(2.5, 2.5)
+
+[node name="Sprite" type="AnimatedSprite2D" parent="VisualGroup"]
+sprite_frames = SubResource("SpriteFrames_drone")
+animation = &"idle"
+scale = Vector2(0.72, 0.72)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("Circle_drone")
+
+[node name="SightRay" type="RayCast2D" parent="."]
+target_position = Vector2(320, 0)
+collision_mask = 4
+enabled = true
+
+[node name="ContactArea" type="Area2D" parent="."]
+collision_layer = 0
+collision_mask = 1
+monitoring = true
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ContactArea"]
+shape = SubResource("Circle_contact")
+
+[node name="ContactWarning" type="Line2D" parent="."]
+visible = false
+position = Vector2(0, -4)
+z_index = 3
+points = PackedVector2Array(-38, -30, -4, 0, -38, 30, -4, 0, 66, 0)
+width = 4.0
+default_color = Color(1, 0.42, 0.18, 0.86)
+
+[node name="CoreLight" type="PointLight2D" parent="."]
+texture = SubResource("GradientTexture_light")
+texture_scale = 2.8
+energy = 0.42
+color = Color(0.26, 0.92, 1, 1)
+
+[node name="HitParticles" type="GPUParticles2D" parent="."]
+material = SubResource("CanvasItemMaterial_add")
+emitting = false
+amount = 12
+lifetime = 0.3
+one_shot = true
+explosiveness = 1.0
+process_material = SubResource("ParticleProcess_hit")
+texture = SubResource("GradientTexture_particle")
+
+[node name="DeathParticles" type="GPUParticles2D" parent="."]
+material = SubResource("CanvasItemMaterial_add")
+emitting = false
+amount = 24
+lifetime = 0.52
+one_shot = true
+explosiveness = 1.0
+process_material = SubResource("ParticleProcess_death")
+texture = SubResource("GradientTexture_particle")
+
+[node name="EngineAudio" type="AudioStreamPlayer2D" parent="."]
+stream = ExtResource("5_engine")
+volume_db = -18.0
+pitch_scale = 1.08
+bus = &"SFX"
+max_distance = 760.0
+
+[node name="HitAudio" type="AudioStreamPlayer2D" parent="."]
+stream = ExtResource("3_hit")
+volume_db = -10.0
+bus = &"SFX"
+max_distance = 720.0
+
+[node name="DeathAudio" type="AudioStreamPlayer2D" parent="."]
+stream = ExtResource("4_death")
+volume_db = -9.0
+bus = &"SFX"
+max_distance = 820.0

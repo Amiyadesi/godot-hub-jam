@@ -1,0 +1,85 @@
+[gd_scene load_steps=7 format=3]
+
+[ext_resource type="PackedScene" path="res://Scenes/PhaseLag/Rooms/phase_room_side_base.tscn" id="1_base"]
+[ext_resource type="PackedScene" path="res://Scenes/PhaseLag/Enemies/facility_guard.tscn" id="2_guard"]
+[ext_resource type="PackedScene" path="res://Scenes/PhaseLag/Devices/powered_laser.tscn" id="3_laser"]
+[ext_resource type="Texture2D" path="res://assets/phase_lag/environment/props/ganamoda/machine_3.png" id="4_armor_feed"]
+
+[sub_resource type="Gradient" id="Gradient_armor_feed"]
+offsets = PackedFloat32Array(0, 0.42, 1)
+colors = PackedColorArray(1, 1, 1, 0.72, 1, 1, 1, 0.18, 1, 1, 1, 0)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture_armor_feed"]
+gradient = SubResource("Gradient_armor_feed")
+width = 128
+height = 128
+fill = 1
+fill_from = Vector2(0.5, 0.5)
+fill_to = Vector2(1, 0.5)
+
+[node name="Ch2R2Xing" instance=ExtResource("1_base")]
+room_id = &"ch2_r2"
+side = 1
+room_width_px = 1920
+
+[node name="ArmoredGuard" parent="Enemies" instance=ExtResource("2_guard")]
+position = Vector2(1120, 580)
+max_health = 3
+destroyed_link_id = &"ch2_r2_guard_defeated"
+side = 1
+auto_hunt_player = true
+
+[node name="PowerReceiver" parent="Enemies/ArmoredGuard" index="8"]
+link_id = &"ch2_r2_guard_armor"
+side = 1
+active_high = false
+
+[node name="TimedHazard" parent="Mechanisms" instance=ExtResource("3_laser")]
+position = Vector2(760, 516)
+link_id = &"ch2_r2_guard_armor"
+side = 1
+
+[node name="ArmorFeedStation" type="Node2D" parent="Props"]
+position = Vector2(1100, 344)
+z_index = -3
+
+[node name="Backplate" type="Polygon2D" parent="Props/ArmorFeedStation"]
+polygon = PackedVector2Array(-316, -116, 316, -116, 316, 132, -316, 132)
+color = Color(0.18, 0.045, 0.03, 0.92)
+
+[node name="Inset" type="Polygon2D" parent="Props/ArmorFeedStation"]
+polygon = PackedVector2Array(-288, -92, 288, -92, 288, 108, -288, 108)
+color = Color(0.34, 0.085, 0.045, 0.72)
+
+[node name="ArmorFeedMachine" type="Sprite2D" parent="Props/ArmorFeedStation"]
+position = Vector2(0, 4)
+texture = ExtResource("4_armor_feed")
+scale = Vector2(3, 3)
+modulate = Color(1, 0.58, 0.36, 1)
+
+[node name="FeedConduitLeft" type="Line2D" parent="Props/ArmorFeedStation"]
+points = PackedVector2Array(-288, 0, -430, 0, -430, 248, -500, 248)
+width = 8.0
+default_color = Color(0.9, 0.22, 0.06, 0.66)
+
+[node name="FeedConduitRight" type="Line2D" parent="Props/ArmorFeedStation"]
+points = PackedVector2Array(288, 0, 430, 0, 430, 248, 500, 248)
+width = 8.0
+default_color = Color(0.9, 0.22, 0.06, 0.66)
+
+[node name="ArmorFeedLight" type="PointLight2D" parent="Props/ArmorFeedStation"]
+texture = SubResource("GradientTexture_armor_feed")
+texture_scale = 3.8
+energy = 0.72
+color = Color(1, 0.24, 0.06, 1)
+
+[node name="FloorChevronLeft" type="Polygon2D" parent="Props"]
+position = Vector2(820, 620)
+polygon = PackedVector2Array(-48, -8, 24, -8, 48, 0, 24, 8, -48, 8, -24, 0)
+color = Color(1, 0.42, 0.1, 0.7)
+
+[node name="FloorChevronRight" type="Polygon2D" parent="Props"]
+position = Vector2(1380, 620)
+scale = Vector2(-1, 1)
+polygon = PackedVector2Array(-48, -8, 24, -8, 48, 0, 24, 8, -48, 8, -24, 0)
+color = Color(1, 0.42, 0.1, 0.7)

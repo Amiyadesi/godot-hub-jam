@@ -1,0 +1,46 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="PackedScene" path="res://Scenes/PhaseLag/Rooms/phase_room_side_base.tscn" id="1_base"]
+[ext_resource type="PackedScene" path="res://Scenes/PhaseLag/Enemies/phase_parasite.tscn" id="2_parasite"]
+[ext_resource type="PackedScene" path="res://Scenes/PhaseLag/Enemies/phase_drone.tscn" id="3_drone"]
+[ext_resource type="PackedScene" path="res://Scenes/PhaseLag/Devices/powered_platform.tscn" id="4_platform"]
+[ext_resource type="PackedScene" path="res://Scenes/PhaseLag/Devices/powered_door.tscn" id="5_door"]
+
+[node name="Ch3R1Xing" instance=ExtResource("1_base")]
+room_id = &"ch3_r1"
+side = 1
+
+[node name="WaveParasiteA" parent="Enemies" instance=ExtResource("2_parasite")]
+position = Vector2(600, 596)
+destroyed_link_id = &"ch3_r1_wave_member"
+side = 1
+auto_hunt_player = true
+
+[node name="WaveDrone" parent="Enemies" instance=ExtResource("3_drone")]
+position = Vector2(1040, 390)
+destroyed_link_id = &"ch3_r1_wave_member"
+side = 1
+
+[node name="WaveParasiteB" parent="Enemies" instance=ExtResource("2_parasite")]
+position = Vector2(1460, 596)
+destroyed_link_id = &"ch3_r1_wave_member"
+side = 1
+auto_hunt_player = true
+
+[node name="EarlyPlatform" parent="Mechanisms" instance=ExtResource("4_platform")]
+position = Vector2(820, 654)
+link_id = &"ch3_r1_early_platform"
+side = 1
+powered_offset = Vector2(0, -220)
+travel_speed = 480.0
+
+[node name="MiddleDoor" parent="Mechanisms" instance=ExtResource("5_door")]
+position = Vector2(1220, 640)
+link_id = &"ch3_r1_middle_door"
+side = 1
+
+[node name="LateAirlock" parent="Mechanisms" instance=ExtResource("5_door")]
+position = Vector2(1640, 640)
+link_id = &"ch3_r1_late_airlock"
+side = 1
+latch_open = true

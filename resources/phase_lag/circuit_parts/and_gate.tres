@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="CircuitPartDefinition" format=3 uid="uid://cl5v6ucqu38ob"]
+
+[ext_resource type="Script" uid="uid://c33oilsa5r66p" path="res://Scripts/PhaseLag/Circuit/circuit_part_definition.gd" id="1_definition"]
+[ext_resource type="Texture2D" path="res://assets/phase_lag/environment/props/ganamoda/computer_2.png" id="2_chip"]
+
+[resource]
+script = ExtResource("1_definition")
+part_type = 7
+display_name = "双路开关"
+input_port_mask = 9
+output_port_mask = 2
+visual_texture = ExtResource("2_chip")
+visual_scale = Vector2(2.35, 2.35)
