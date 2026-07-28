@@ -1,6 +1,0 @@
-[gd_scene load_steps=2 format=3]
-
-[ext_resource type="Script" path="res://Scripts/PhaseLag/Core/entanglement_event_counter.gd" id="1_counter"]
-
-[node name="EntanglementEventCounter" type="Node2D"]
-script = ExtResource("1_counter")

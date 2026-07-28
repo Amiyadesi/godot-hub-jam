@@ -1,0 +1,97 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://Scripts/EchoChase/UI/echo_keybinding_ui.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://addons/enhance_save_system/Components/InputRemapping/key_capture_dialog.tscn" id="2_capture"]
+
+[sub_resource type="StyleBoxFlat" id="Style_row"]
+bg_color = Color(0.012, 0.03, 0.038, 0.84)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.28, 0.62, 0.62, 0.72)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[node name="EchoKeybindingUI" type="VBoxContainer"]
+custom_minimum_size = Vector2(600, 0)
+size_flags_horizontal = 4
+theme_override_constants/separation = 10
+script = ExtResource("1_script")
+
+[node name="Header" type="Label" parent="."]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.62, 0.95, 0.9, 1)
+theme_override_font_sizes/font_size = 24
+text = "动作 / 当前键位"
+
+[node name="Hint" type="Label" parent="."]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.72, 0.82, 0.8, 0.82)
+theme_override_font_sizes/font_size = 15
+text = "点击一项后按下新键。"
+
+[node name="Rows" type="VBoxContainer" parent="."]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="MoveLeftButton" type="Button" parent="Rows"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = SubResource("Style_row")
+
+[node name="MoveRightButton" type="Button" parent="Rows"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = SubResource("Style_row")
+
+[node name="MoveUpButton" type="Button" parent="Rows"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = SubResource("Style_row")
+
+[node name="MoveDownButton" type="Button" parent="Rows"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = SubResource("Style_row")
+
+[node name="DashButton" type="Button" parent="Rows"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = SubResource("Style_row")
+
+[node name="JumpButton" type="Button" parent="Rows"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = SubResource("Style_row")
+
+[node name="RecallButton" type="Button" parent="Rows"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = SubResource("Style_row")
+
+[node name="PauseButton" type="Button" parent="Rows"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = SubResource("Style_row")
+
+[node name="KeyCaptureDialog" parent="." instance=ExtResource("2_capture")]
+unique_name_in_owner = true

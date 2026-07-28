@@ -18,3 +18,8 @@ screenshots/
 .env
 .env.*
 !.env.example
+
+# Local Codex state and non-shipping asset research cache
+.omx/
+downloads/.cache/
+downloads/echo_chase_candidates/

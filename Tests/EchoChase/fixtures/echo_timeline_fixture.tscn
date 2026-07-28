@@ -1,0 +1,31 @@
+[gd_scene load_steps=7 format=3]
+
+[ext_resource type="PackedScene" path="res://Scenes/EchoChase/Prefabs/echo_timeline_controller.tscn" id="1_timeline"]
+[ext_resource type="PackedScene" path="res://Scenes/EchoChase/Prefabs/echo_player.tscn" id="2_player"]
+[ext_resource type="PackedScene" path="res://Scenes/EchoChase/Prefabs/future_recorder.tscn" id="3_recorder"]
+[ext_resource type="PackedScene" path="res://Scenes/EchoChase/Prefabs/delay_pickup.tscn" id="4_pickup"]
+[ext_resource type="PackedScene" path="res://Scenes/EchoChase/Prefabs/temporal_pressure_plate.tscn" id="5_plate"]
+[ext_resource type="PackedScene" path="res://Scenes/EchoChase/Prefabs/temporal_door.tscn" id="6_door"]
+
+[node name="EchoTimelineFixture" type="Node2D"]
+
+[node name="EchoTimelineController" parent="." node_paths=PackedStringArray("player") instance=ExtResource("1_timeline")]
+player = NodePath("../EchoPlayer")
+
+[node name="EchoPlayer" parent="." node_paths=PackedStringArray("timeline") instance=ExtResource("2_player")]
+timeline = NodePath("../EchoTimelineController")
+
+[node name="FutureRecorder" parent="." node_paths=PackedStringArray("timeline") instance=ExtResource("3_recorder")]
+position = Vector2(10000, 10000)
+timeline = NodePath("../EchoTimelineController")
+
+[node name="DelayPickup" parent="." node_paths=PackedStringArray("timeline") instance=ExtResource("4_pickup")]
+position = Vector2(10000, 10000)
+timeline = NodePath("../EchoTimelineController")
+
+[node name="TemporalDoor" parent="." instance=ExtResource("6_door")]
+position = Vector2(1000, 0)
+
+[node name="TemporalPressurePlate" parent="." node_paths=PackedStringArray("target_door") instance=ExtResource("5_plate")]
+position = Vector2(800, 0)
+target_door = NodePath("../TemporalDoor")

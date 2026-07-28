@@ -2,10 +2,9 @@
 
 [ext_resource type="Script" uid="uid://bj5gndwwp7gnn" path="res://Scenes/UI/Menu/setting_screen.gd" id="1_g8frt"]
 [ext_resource type="Shader" uid="uid://dtcjm8c7boghc" path="res://resources/shader/blur.gdshader" id="2_cob4t"]
-[ext_resource type="PackedScene" path="res://Scenes/PhaseLag/UI/phase_keybinding_ui.tscn" id="2_keybind"]
+[ext_resource type="PackedScene" path="res://Scenes/EchoChase/UI/echo_keybinding_ui.tscn" id="2_keybind"]
 [ext_resource type="PackedScene" uid="uid://c8eisrp4kcf52" path="res://Scenes/UI/Menu/setting_ambient_vfx.tscn" id="3_ambient"]
 [ext_resource type="PackedScene" uid="uid://uacp5p6j6svs" path="res://Scenes/UI/Menu/setting_local_light_vfx.tscn" id="4_light"]
-[ext_resource type="Theme" path="res://resources/phase_lag/ui/phase_settings_theme.tres" id="5_theme"]
 [ext_resource type="PackedScene" uid="uid://dssid7iw4aqb6" path="res://Scenes/UIorgan/ShaderButton/shader_button.tscn" id="6_4xm8e"]
 [ext_resource type="Texture2D" path="res://assets/phase_lag/ui/kenney/settings_panel.png" id="7_panel"]
 
@@ -32,7 +31,6 @@ grow_vertical = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 script = ExtResource("1_g8frt")
-theme = ExtResource("5_theme")
 color = Color(0, 0, 0, 0.68)
 close_modal_on_clicked = false
 modal_offset_unit = 2

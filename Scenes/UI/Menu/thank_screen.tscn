@@ -141,25 +141,19 @@ bbcode_enabled = true
 text = "[b]制作[/b]
 Amiya_desi & Codex & Claude Code
 
-[b]环境、设施与机械敌人 · CC0[/b]
+[b]当前菜单背景 · CC0[/b]
 [url=https://opengameart.org/content/sideview-sci-fi-patreon-collection]ansimuz[/url]
 
-[b]星遥过渡素材 · CC0[/b]
-[url=https://luizmelo.itch.io/huntress]LuizMelo[/url]
-
-[b]UI 与音效 · CC0[/b]
+[b]当前 UI 与界面音效 · CC0[/b]
 [url=https://kenney.nl/assets/ui-pack-sci-fi]Kenney[/url]
 
-[b]早期候选与参考[/b]
-[url=https://opengameart.org/content/super-dead-gunner-fleabot-enemy]Emcee Flesher[/url] · [url=https://opengameart.org/content/pixel-art-drone]RUOK[/url]
-
-[b]音乐与环境音 · CC0[/b]
-[url=https://opengameart.org/content/tragic-ambient-main-menu]HaelDB[/url] · [url=https://opengameart.org/content/menacing-otherworld]Ruskerdax[/url] · [url=https://opengameart.org/content/factory-ambiance]yd[/url]
+[b]当前菜单音乐 · CC0[/b]
+[url=https://opengameart.org/content/tragic-ambient-main-menu]HaelDB[/url]
 
 [b]引擎与对话工具[/b]
 [url=https://godotengine.org/]Godot Engine[/url] · [url=https://github.com/nathanhoad/godot_dialogue_manager]Dialogue Manager[/url]
 
-[url=https://github.com/Amiyadesi/godot-hub-jam/blob/main/docs/phase-lag-asset-sources.md]完整来源与处理记录[/url]"
+[url=https://github.com/Amiyadesi/godot-hub-jam/blob/main/docs/asset-attributions.md]当前保留资源的完整来源与处理记录[/url]"
 fit_content = false
 scroll_active = true
 meta_underlined = true

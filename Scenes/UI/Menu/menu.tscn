@@ -336,7 +336,7 @@ grow_horizontal = 2
 grow_vertical = 2
 theme = ExtResource("8_theme")
 script = ExtResource("1_menu")
-start_scene_path = "res://Scenes/PhaseLag/Chapters/chapter_01.tscn"
+echo_chase_entry_scene_path = ""
 menu_music = ExtResource("6_music")
 
 [node name="Background" type="TextureRect" parent="." unique_id=177126973]
@@ -423,7 +423,7 @@ theme_override_colors/font_color = Color(0.47, 0.88, 0.82, 0.78)
 theme_override_colors/font_outline_color = Color(0.004, 0.012, 0.016, 0.92)
 theme_override_constants/outline_size = 2
 theme_override_font_sizes/font_size = 17
-text = "PHASE LAG  //  CAUSAL CALIBRATION"
+text = "ECHO CHASE  //  TEMPORAL TRACE"
 
 [node name="Title" type="Label" parent="ButtonLayer/Header" unique_id=1907461744]
 layout_mode = 2
@@ -431,7 +431,7 @@ theme_override_colors/font_color = Color(0.94, 0.96, 0.91, 1)
 theme_override_colors/font_outline_color = Color(0.004, 0.012, 0.016, 0.94)
 theme_override_constants/outline_size = 5
 theme_override_font_sizes/font_size = 94
-text = "迟相"
+text = "回声追猎"
 
 [node name="Subtitle" type="Label" parent="ButtonLayer/Header" unique_id=1571964643]
 layout_mode = 2
@@ -439,7 +439,7 @@ theme_override_colors/font_color = Color(0.79, 0.84, 0.8, 0.86)
 theme_override_colors/font_outline_color = Color(0.004, 0.012, 0.016, 0.9)
 theme_override_constants/outline_size = 3
 theme_override_font_sizes/font_size = 23
-text = "有些答案，总在错过之后才抵达。"
+text = "你的过去，正在追上你。"
 
 [node name="MenuButtons" type="VBoxContainer" parent="ButtonLayer" unique_id=1680120959]
 self_modulate = Color(1, 1, 1, 0)
@@ -461,7 +461,7 @@ theme_override_constants/separation = 10
 layout_mode = 2
 theme_override_colors/font_color = Color(0.58, 0.73, 0.71, 0.8)
 theme_override_font_sizes/font_size = 15
-text = "TIMELINE COMMANDS  /  时间线命令"
+text = "RUN COMMANDS  /  行动命令"
 
 [node name="Divider" type="ColorRect" parent="ButtonLayer/MenuButtons"]
 custom_minimum_size = Vector2(0, 1)
@@ -518,7 +518,7 @@ bb_text = "[color=#ff7169]退出"
 layout_mode = 2
 theme_override_colors/font_color = Color(0.49, 0.68, 0.65, 0.72)
 theme_override_font_sizes/font_size = 14
-text = "CAUSAL LINK STABLE  ·  BASE DELAY 03.000s"
+text = "GRAYBOX REQUIRED  ·  TEMPORAL TRACE OFFLINE"
 horizontal_alignment = 2
 
 [node name="StatusLabel" type="Label" parent="ButtonLayer/MenuButtons" unique_id=130990905]
@@ -587,7 +587,7 @@ horizontal_alignment = 1
 layout_mode = 2
 theme_override_colors/font_color = Color(0.72, 0.82, 0.8, 0.92)
 theme_override_font_sizes/font_size = 19
-text = "模式将在本次时间线内锁定。"
+text = "灰盒入口尚未接入。"
 horizontal_alignment = 1
 
 [node name="SoloModeButton" parent="ModeSelection/Panel/Margin/VBox" unique_id=960340577 instance=ExtResource("3_button")]
@@ -596,7 +596,7 @@ custom_minimum_size = Vector2(500, 72)
 layout_mode = 2
 theme_override_font_sizes/font_size = 29
 panel_style_box = SubResource("Style_menu_cold")
-bb_text = "[color=#73f1e4]单人模式  ·  Q 切换角色"
+bb_text = "[color=#73f1e4]单人模式"
 
 [node name="CoopModeButton" parent="ModeSelection/Panel/Margin/VBox" unique_id=506463018 instance=ExtResource("3_button")]
 unique_name_in_owner = true
@@ -604,7 +604,7 @@ custom_minimum_size = Vector2(500, 72)
 layout_mode = 2
 theme_override_font_sizes/font_size = 29
 panel_style_box = SubResource("Style_menu_warm")
-bb_text = "[color=#ffb067]本地双人  ·  P2 使用手柄"
+bb_text = "[color=#ffb067]当前不可用"
 
 [node name="ModeHint" type="Label" parent="ModeSelection/Panel/Margin/VBox" unique_id=1140241163]
 layout_mode = 2

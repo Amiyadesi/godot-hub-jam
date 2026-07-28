@@ -1,0 +1,22 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://Scripts/EchoChase/past_echo.gd" id="1_script"]
+
+[sub_resource type="CircleShape2D" id="Shape_past"]
+radius = 18.0
+
+[node name="PastEcho" type="Area2D" groups=["temporal_past"]]
+collision_layer = 2
+collision_mask = 5
+monitoring = true
+monitorable = true
+script = ExtResource("1_script")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+unique_name_in_owner = true
+shape = SubResource("Shape_past")
+
+[node name="Visual" type="Polygon2D" parent="."]
+unique_name_in_owner = true
+polygon = PackedVector2Array(-18, 18, -18, -18, 0, -28, 18, -18, 18, 18)
+color = Color(0.35, 0.88, 1, 0.68)

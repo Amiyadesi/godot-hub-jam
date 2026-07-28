@@ -69,7 +69,7 @@ var is_in_menu_flag: bool
 @onready var screen_shake_value: Label = %ScreenShakeValue
 @onready var low_flash_row: VBoxContainer = %LowFlashRow
 @onready var low_flash_toggle: CheckButton = %LowFlashToggle
-@onready var keybinding_ui: PhaseKeybindingUI = %KeybindingUI
+@onready var keybinding_ui: EchoKeybindingUI = %KeybindingUI
 
 var _setting_rows: Array[Dictionary] = []
 var _current_tab := 0

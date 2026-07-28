@@ -1,0 +1,20 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://Scripts/EchoChase/temporal_door.gd" id="1_script"]
+
+[sub_resource type="RectangleShape2D" id="Shape_door"]
+size = Vector2(32, 128)
+
+[node name="TemporalDoor" type="StaticBody2D"]
+collision_layer = 8
+collision_mask = 0
+script = ExtResource("1_script")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+unique_name_in_owner = true
+shape = SubResource("Shape_door")
+
+[node name="Visual" type="Polygon2D" parent="."]
+unique_name_in_owner = true
+polygon = PackedVector2Array(-16, 64, -16, -64, 16, -64, 16, 64)
+color = Color(0.92, 0.34, 0.32, 0.88)

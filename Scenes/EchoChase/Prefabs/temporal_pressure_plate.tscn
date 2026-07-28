@@ -1,0 +1,20 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://Scripts/EchoChase/temporal_pressure_plate.gd" id="1_script"]
+
+[sub_resource type="RectangleShape2D" id="Shape_plate"]
+size = Vector2(64, 16)
+
+[node name="TemporalPressurePlate" type="Area2D"]
+collision_layer = 16
+collision_mask = 7
+monitoring = true
+monitorable = true
+script = ExtResource("1_script")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("Shape_plate")
+
+[node name="Visual" type="Polygon2D" parent="."]
+polygon = PackedVector2Array(-32, 8, -32, -8, 32, -8, 32, 8)
+color = Color(0.86, 0.4, 0.26, 0.86)
