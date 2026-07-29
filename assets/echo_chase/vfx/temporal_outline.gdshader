@@ -12,6 +12,10 @@ void fragment() {
 	neighbor_alpha = max(neighbor_alpha, texture(TEXTURE, UV - vec2(TEXTURE_PIXEL_SIZE.x, 0.0)).a);
 	neighbor_alpha = max(neighbor_alpha, texture(TEXTURE, UV + vec2(0.0, TEXTURE_PIXEL_SIZE.y)).a);
 	neighbor_alpha = max(neighbor_alpha, texture(TEXTURE, UV - vec2(0.0, TEXTURE_PIXEL_SIZE.y)).a);
+	neighbor_alpha = max(neighbor_alpha, texture(TEXTURE, UV + vec2(TEXTURE_PIXEL_SIZE.x, TEXTURE_PIXEL_SIZE.y)).a);
+	neighbor_alpha = max(neighbor_alpha, texture(TEXTURE, UV + vec2(-TEXTURE_PIXEL_SIZE.x, TEXTURE_PIXEL_SIZE.y)).a);
+	neighbor_alpha = max(neighbor_alpha, texture(TEXTURE, UV + vec2(TEXTURE_PIXEL_SIZE.x, -TEXTURE_PIXEL_SIZE.y)).a);
+	neighbor_alpha = max(neighbor_alpha, texture(TEXTURE, UV + vec2(-TEXTURE_PIXEL_SIZE.x, -TEXTURE_PIXEL_SIZE.y)).a);
 	float outline = max(neighbor_alpha - source.a, 0.0) * outline_alpha;
 	float fill = source.a * fill_alpha;
 	COLOR = vec4(temporal_color.rgb, max(outline, fill) * temporal_color.a);

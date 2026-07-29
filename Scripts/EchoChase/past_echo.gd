@@ -9,6 +9,8 @@ const MATERIALIZE_PREVIEW_SECONDS := 0.35
 @onready var collision_shape: CollisionShape2D = %CollisionShape2D
 @onready var visual: AnimatedSprite2D = %Visual
 @onready var outline_visual: AnimatedSprite2D = %OutlineVisual
+@onready var history_trail: AnimatedSprite2D = %HistoryTrail
+@onready var history_trail_far: AnimatedSprite2D = %HistoryTrailFar
 @onready var pixel_burst: GPUParticles2D = %PixelBurst
 @onready var vfx_animation_player: AnimationPlayer = %VfxAnimationPlayer
 @onready var departure_vfx: TemporalDepartureVfx = %DepartureVfx
@@ -25,6 +27,8 @@ var _last_velocity := Vector2.ZERO
 func _ready() -> void:
 	body_entered.connect(_on_body_entered)
 	area_entered.connect(_on_area_entered)
+	if SettingsModule.instance != null:
+		SettingsModule.instance.settings_changed.connect(_on_setting_changed)
 	reset_echo()
 
 
@@ -61,7 +65,7 @@ func begin_phase_shift() -> void:
 	_active = false
 	collision_shape.set_deferred("disabled", true)
 	if visible:
-		departure_vfx.play_from_sprite(outline_visual, _last_velocity)
+		departure_vfx.play_from_sprites(visual, outline_visual, _last_velocity)
 
 
 # 将切档轮廓放到目标历史位置，并从既有预警进度继续播放。
@@ -94,8 +98,12 @@ func reset_echo() -> void:
 	visible = false
 	visual.flip_h = false
 	outline_visual.flip_h = false
+	history_trail.flip_h = false
+	history_trail_far.flip_h = false
 	visual.play(&"idle")
 	outline_visual.play(&"idle")
+	history_trail.play(&"idle")
+	history_trail_far.play(&"idle")
 	pixel_burst.emitting = false
 	departure_vfx.reset_vfx()
 	_last_velocity = Vector2.ZERO
@@ -134,8 +142,17 @@ func _apply_frame_visual(frame: TemporalFrame) -> void:
 		visual.play(frame.animation_name)
 	if outline_visual.animation != frame.animation_name:
 		outline_visual.play(frame.animation_name)
+	if history_trail.animation != frame.animation_name:
+		history_trail.play(frame.animation_name)
+	if history_trail_far.animation != frame.animation_name:
+		history_trail_far.play(frame.animation_name)
 	visual.flip_h = frame.facing < 0.0
 	outline_visual.flip_h = visual.flip_h
+	history_trail.flip_h = visual.flip_h
+	history_trail_far.flip_h = visual.flip_h
+	var trail_direction := frame.velocity.normalized() if not frame.velocity.is_zero_approx() else Vector2(frame.facing, 0.0)
+	history_trail.position = -trail_direction * 5.0 + Vector2(0.0, 1.0)
+	history_trail_far.position = -trail_direction * 10.0 + Vector2(0.0, 2.0)
 
 
 # 只抓取不在相位期的当前玩家。
@@ -165,6 +182,28 @@ func _begin_materialization(frame: TemporalFrame) -> void:
 	visible = true
 	collision_shape.set_deferred("disabled", true)
 	vfx_animation_player.play(&"materialize_reduced" if _uses_low_flash_mode() else &"materialize")
+
+
+# 实体化或切档途中切换低闪时保留当前预警进度。
+func _on_setting_changed(key: String, _value: Variant) -> void:
+	if key != "low_flash_mode":
+		return
+	if _uses_low_flash_mode():
+		pixel_burst.emitting = false
+	match vfx_animation_player.current_animation:
+		&"materialize", &"materialize_reduced":
+			_switch_vfx_animation(&"materialize_reduced" if _uses_low_flash_mode() else &"materialize")
+		&"phase_target", &"phase_target_reduced":
+			_switch_vfx_animation(&"phase_target_reduced" if _uses_low_flash_mode() else &"phase_target")
+
+
+# 在成对 authored 动画之间保留归一化进度。
+func _switch_vfx_animation(animation_name: StringName) -> void:
+	var progress_ratio := 0.0
+	if vfx_animation_player.current_animation_length > 0.0:
+		progress_ratio = vfx_animation_player.current_animation_position / vfx_animation_player.current_animation_length
+	vfx_animation_player.play(animation_name)
+	vfx_animation_player.seek(progress_ratio * vfx_animation_player.current_animation_length, true)
 
 
 # 读取低闪烁模式，缺少设置模块时使用标准特效。

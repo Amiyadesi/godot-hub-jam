@@ -14,6 +14,8 @@ const ENTRY_STATE_PAST := &"past"
 const MENU_INTRO := &"menu_enter"
 const MENU_INTRO_REDUCED := &"menu_enter_reduced"
 const MENU_IDLE := &"menu_idle"
+const FRAME_STANDARD := &"frame_standard"
+const FRAME_REDUCED := &"frame_reduced"
 const PULSE_PRESENT := &"pulse_present"
 const PULSE_PAST := &"pulse_past"
 const BACKGROUND_ORIGIN := Vector2(-32.0, -32.0)
@@ -37,8 +39,9 @@ const BACKGROUND_FOLLOW_SPEED := 7.0
 @onready var status_label: Label = %StatusLabel
 @onready var menu_animation_player: AnimationPlayer = %MenuAnimationPlayer
 @onready var phase_cycle_animation_player: AnimationPlayer = %PhaseCycleAnimationPlayer
+@onready var frame_animation_player: AnimationPlayer = %FrameAnimationPlayer
 @onready var transition_animation_player: AnimationPlayer = %TransitionAnimationPlayer
-@onready var background: TextureRect = %Background
+@onready var background: Control = %Background
 
 var _credits_origin: CreditsOrigin = CreditsOrigin.MAIN_MENU
 var _settings_tab_before_credits := 0
@@ -59,6 +62,7 @@ func _ready() -> void:
 	refresh_progress_controls()
 	SceneManager.transition_start(ENTER_TRANSITION, true)
 	_play_menu_intro()
+	_play_frame_animation(false)
 	if menu_music != null:
 		GameAudio.play_music("menu", menu_music, 0.4)
 
@@ -86,6 +90,8 @@ func _connect_signals() -> void:
 	setting_screen.return_completed.connect(setting_button.grab_focus)
 	thank_screen.return_requested.connect(_on_thank_return_requested)
 	menu_animation_player.animation_finished.connect(_on_menu_animation_finished)
+	if SettingsModule.instance != null:
+		SettingsModule.instance.settings_changed.connect(_on_setting_changed)
 
 
 # 复用共享音频服务配置全部菜单按钮反馈。
@@ -165,7 +171,7 @@ func _transition_to_game(scene_path: String, temporal_state: StringName) -> bool
 	SceneManager.transition_clear()
 	_transition_active = false
 	_set_main_menu_input_enabled(true)
-	push_error("Menu failed to load Echo Chase scene: %s" % scene_path)
+	push_error("Menu failed to load Delay Trace scene: %s" % scene_path)
 	if temporal_state == ENTRY_STATE_PRESENT:
 		start_button.grab_focus()
 	else:
@@ -245,6 +251,36 @@ func _finish_menu_intro() -> void:
 # 开始三个固定剪影的错相位漂浮循环。
 func _start_menu_phase_cycle() -> void:
 	phase_cycle_animation_player.play(MENU_IDLE)
+
+
+# 低闪切换时同步入场和边框动画，不改变菜单流程。
+func _on_setting_changed(key: String, _value: Variant) -> void:
+	if key != "low_flash_mode":
+		return
+	if _intro_active:
+		_switch_animation_preserving_progress(
+			menu_animation_player,
+			MENU_INTRO_REDUCED if _uses_reduced_intro() else MENU_INTRO
+		)
+	_play_frame_animation(true)
+
+
+# 选择呼吸边框或固定细线，并按需保留循环进度。
+func _play_frame_animation(preserve_progress: bool) -> void:
+	var animation_name := FRAME_REDUCED if _uses_reduced_intro() else FRAME_STANDARD
+	if preserve_progress:
+		_switch_animation_preserving_progress(frame_animation_player, animation_name)
+	else:
+		frame_animation_player.play(animation_name)
+
+
+# 在同一阶段的 authored 动画之间保留归一化进度。
+func _switch_animation_preserving_progress(animation_player: AnimationPlayer, animation_name: StringName) -> void:
+	var progress_ratio := 0.0
+	if animation_player.current_animation_length > 0.0:
+		progress_ratio = animation_player.current_animation_position / animation_player.current_animation_length
+	animation_player.play(animation_name)
+	animation_player.seek(progress_ratio * animation_player.current_animation_length, true)
 
 
 # 跳过时先应用 authored 最终帧，避免残留半入场状态。

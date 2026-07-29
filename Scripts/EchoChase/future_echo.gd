@@ -8,10 +8,13 @@ signal dissipated(future_echo: FutureEcho)
 @onready var collision_shape: CollisionShape2D = %CollisionShape2D
 @onready var visual: AnimatedSprite2D = %Visual
 @onready var outline_visual: AnimatedSprite2D = %OutlineVisual
+@onready var outer_outline_visual: AnimatedSprite2D = %OuterOutlineVisual
+@onready var prediction_visual: AnimatedSprite2D = %PredictionVisual
 @onready var pixel_burst: GPUParticles2D = %PixelBurst
 @onready var vfx_animation_player: AnimationPlayer = %VfxAnimationPlayer
 @onready var departure_vfx: TemporalDepartureVfx = %DepartureVfx
 @onready var appear_audio: AudioStreamPlayer2D = %AppearAudio
+@onready var dissipate_audio: AudioStreamPlayer2D = %DissipateAudio
 
 var _track: TemporalTrack
 var _duration := 0.0
@@ -25,6 +28,8 @@ var _last_velocity := Vector2.ZERO
 func _ready() -> void:
 	body_entered.connect(_on_body_entered)
 	departure_vfx.finished.connect(_on_departure_finished)
+	if SettingsModule.instance != null:
+		SettingsModule.instance.settings_changed.connect(_on_setting_changed)
 	reset_echo()
 
 
@@ -37,6 +42,9 @@ func start_playback(track: TemporalTrack, duration: float, phase_seconds: float)
 	_active = true
 	visible = true
 	visual.visible = true
+	outline_visual.visible = true
+	outer_outline_visual.visible = true
+	prediction_visual.visible = true
 	collision_shape.set_deferred("disabled", false)
 	vfx_animation_player.play(&"materialize_reduced" if _uses_low_flash_mode() else &"materialize")
 	appear_audio.play()
@@ -62,9 +70,14 @@ func advance(delta: float) -> void:
 
 
 # 立即停止未来体世界影响，只保留短暂视觉尾段。
-func dissipate() -> void:
+func dissipate(impact_velocity := Vector2.ZERO) -> void:
 	if not _active:
 		return
+	if not impact_velocity.is_zero_approx():
+		_last_velocity = impact_velocity
+	pixel_burst.restart()
+	pixel_burst.emitting = not _uses_low_flash_mode()
+	dissipate_audio.play()
 	_release_slot()
 
 
@@ -88,8 +101,12 @@ func reset_echo() -> void:
 	visible = false
 	visual.flip_h = false
 	outline_visual.flip_h = false
+	outer_outline_visual.flip_h = false
+	prediction_visual.flip_h = false
 	visual.play(&"idle")
 	outline_visual.play(&"idle")
+	outer_outline_visual.play(&"idle")
+	prediction_visual.play(&"idle")
 	pixel_burst.emitting = false
 	departure_vfx.reset_vfx()
 	vfx_animation_player.play(&"RESET")
@@ -101,7 +118,7 @@ func _on_body_entered(body: Node2D) -> void:
 	var echo_player := body as EchoPlayer
 	if not _active or echo_player == null or echo_player.is_temporally_phased() or _phase_remaining > 0.0:
 		return
-	dissipate()
+	dissipate(echo_player.velocity)
 
 
 # 回放录制帧携带的动画与朝向，不重新模拟输入。
@@ -110,19 +127,29 @@ func _apply_frame_visual(frame: TemporalFrame) -> void:
 		visual.play(frame.animation_name)
 	if outline_visual.animation != frame.animation_name:
 		outline_visual.play(frame.animation_name)
+	if outer_outline_visual.animation != frame.animation_name:
+		outer_outline_visual.play(frame.animation_name)
+	if prediction_visual.animation != frame.animation_name:
+		prediction_visual.play(frame.animation_name)
 	visual.flip_h = frame.facing < 0.0
 	outline_visual.flip_h = visual.flip_h
+	outer_outline_visual.flip_h = visual.flip_h
+	prediction_visual.flip_h = visual.flip_h
+	var prediction_direction := frame.velocity.normalized() if not frame.velocity.is_zero_approx() else Vector2(frame.facing, 0.0)
+	prediction_visual.position = prediction_direction * 6.0
 
 
 # 先移除碰撞，让压力板在视觉尾帧结束前释放。
 func _release_slot() -> void:
 	if not _active:
 		return
-	departure_vfx.play_from_sprite(outline_visual, _last_velocity)
+	departure_vfx.play_from_sprites(visual, outline_visual, _last_velocity)
 	_active = false
 	collision_shape.set_deferred("disabled", true)
 	visual.visible = false
 	outline_visual.visible = false
+	outer_outline_visual.visible = false
+	prediction_visual.visible = false
 	slot_released.emit(self)
 
 
@@ -131,6 +158,28 @@ func _on_departure_finished() -> void:
 	if not _active:
 		visible = false
 	dissipated.emit(self)
+
+
+# 生成或主体消散动画途中切换低闪时保留当前进度。
+func _on_setting_changed(key: String, _value: Variant) -> void:
+	if key != "low_flash_mode":
+		return
+	if _uses_low_flash_mode():
+		pixel_burst.emitting = false
+	match vfx_animation_player.current_animation:
+		&"materialize", &"materialize_reduced":
+			_switch_vfx_animation(&"materialize_reduced" if _uses_low_flash_mode() else &"materialize")
+		&"dissipate", &"dissipate_reduced":
+			_switch_vfx_animation(&"dissipate_reduced" if _uses_low_flash_mode() else &"dissipate")
+
+
+# 在成对 authored 动画之间保留归一化进度。
+func _switch_vfx_animation(animation_name: StringName) -> void:
+	var progress_ratio := 0.0
+	if vfx_animation_player.current_animation_length > 0.0:
+		progress_ratio = vfx_animation_player.current_animation_position / vfx_animation_player.current_animation_length
+	vfx_animation_player.play(animation_name)
+	vfx_animation_player.seek(progress_ratio * vfx_animation_player.current_animation_length, true)
 
 
 # 读取低闪烁模式，缺少设置模块时使用标准特效。

@@ -20,7 +20,7 @@ region = Rect2(32, 128, 16, 16)
 
 [node name="TemporalPressurePlate" type="Area2D"]
 collision_layer = 16
-collision_mask = 7
+collision_mask = 14
 monitoring = true
 monitorable = true
 script = ExtResource("1_script")

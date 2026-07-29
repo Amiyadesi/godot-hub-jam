@@ -10,7 +10,9 @@ const DRIFT_SPEED := 48.0
 
 @export var temporal_color := Color.WHITE
 
+@onready var core_snapshot: Sprite2D = %CoreSnapshot
 @onready var snapshot: Sprite2D = %Snapshot
+@onready var impact_ring: Sprite2D = %ImpactRing
 @onready var particles: GPUParticles2D = %Particles
 @onready var animation_player: AnimationPlayer = %AnimationPlayer
 @onready var departure_audio: AudioStreamPlayer2D = %DepartureAudio
@@ -22,24 +24,27 @@ var _drift_velocity := Vector2.ZERO
 # 连接 authored 尾效节点，并保持未播放快照不可见。
 func _ready() -> void:
 	animation_player.animation_finished.connect(_on_animation_finished)
+	if SettingsModule.instance != null:
+		SettingsModule.instance.settings_changed.connect(_on_setting_changed)
 	reset_vfx()
 
 
 # 从当前动画帧复制视觉合同，不再依赖来源节点后续位置或生命周期。
 func play_from_sprite(source: AnimatedSprite2D, velocity: Vector2) -> void:
-	assert(source != null, "TemporalDepartureVfx requires an AnimatedSprite2D source")
-	var frames := source.sprite_frames
-	assert(frames != null, "TemporalDepartureVfx source requires SpriteFrames")
-	var frame_texture := frames.get_frame_texture(source.animation, source.frame)
-	assert(frame_texture != null, "TemporalDepartureVfx source frame requires a texture")
-	global_position = source.global_position
-	global_rotation = source.global_rotation
-	snapshot.texture = frame_texture
-	snapshot.material = source.material
-	snapshot.flip_h = source.flip_h
-	snapshot.flip_v = source.flip_v
-	snapshot.scale = source.global_scale
-	snapshot.self_modulate = Color.WHITE
+	play_from_sprites(source, null, velocity)
+
+
+# 同时复制 Core 与 Outline，让退场仍保留完整角色轮廓和内部像素。
+func play_from_sprites(core: AnimatedSprite2D, outline: AnimatedSprite2D, velocity: Vector2) -> void:
+	assert(core != null, "TemporalDepartureVfx requires an AnimatedSprite2D core")
+	global_position = core.global_position
+	global_rotation = core.global_rotation
+	_copy_sprite_frame(core_snapshot, core)
+	if outline != null:
+		_copy_sprite_frame(snapshot, outline)
+	else:
+		_copy_sprite_frame(snapshot, core)
+	impact_ring.modulate = temporal_color
 	particles.modulate = temporal_color
 	particles.rotation = velocity.angle() if not velocity.is_zero_approx() else 0.0
 	particles.restart()
@@ -58,7 +63,9 @@ func reset_vfx() -> void:
 	animation_player.stop()
 	particles.emitting = false
 	departure_audio.stop()
+	core_snapshot.texture = null
 	snapshot.texture = null
+	impact_ring.visible = false
 	visible = false
 
 
@@ -82,6 +89,34 @@ func _on_animation_finished(animation_name: StringName) -> void:
 	particles.emitting = false
 	visible = false
 	finished.emit()
+
+
+# 尾效播放中切换低闪时保留进度，并立即清掉高频粒子。
+func _on_setting_changed(key: String, _value: Variant) -> void:
+	if key != "low_flash_mode" or not _active:
+		return
+	if _uses_low_flash_mode():
+		particles.emitting = false
+	var progress_ratio := 0.0
+	if animation_player.current_animation_length > 0.0:
+		progress_ratio = animation_player.current_animation_position / animation_player.current_animation_length
+	animation_player.play(REDUCED_ANIMATION if _uses_low_flash_mode() else STANDARD_ANIMATION)
+	animation_player.seek(progress_ratio * animation_player.current_animation_length, true)
+
+
+# 将 AnimatedSprite2D 当前帧复制到独立快照节点。
+func _copy_sprite_frame(target: Sprite2D, source: AnimatedSprite2D) -> void:
+	var frames := source.sprite_frames
+	assert(frames != null, "TemporalDepartureVfx source requires SpriteFrames")
+	var frame_texture := frames.get_frame_texture(source.animation, source.frame)
+	assert(frame_texture != null, "TemporalDepartureVfx source frame requires a texture")
+	target.texture = frame_texture
+	target.material = source.material
+	target.flip_h = source.flip_h
+	target.flip_v = source.flip_v
+	target.scale = source.global_scale
+	target.modulate = Color(source.self_modulate.r, source.self_modulate.g, source.self_modulate.b, 1.0)
+	target.self_modulate = Color(1.0, 1.0, 1.0, source.self_modulate.a)
 
 
 # 低闪烁模式保留稳定淡出，禁用密集裂解粒子。

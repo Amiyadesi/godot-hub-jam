@@ -1,6 +1,6 @@
 class_name LevelModule
 extends ISaveModule
-## 仅保存一个稳定的《回声追猎》复活点。
+## 仅保存一个稳定的《延迟追迹》复活点。
 
 static var instance: LevelModule
 

@@ -1,4 +1,4 @@
-[gd_scene load_steps=14 format=3]
+[gd_scene load_steps=16 format=3]
 
 [ext_resource type="Script" path="res://Scripts/EchoChase/echo_player.gd" id="1_script"]
 [ext_resource type="SpriteFrames" path="res://assets/echo_chase/character/echo_character_frames.tres" id="2_frames"]
@@ -6,9 +6,13 @@
 [ext_resource type="AudioStream" path="res://assets/echo_chase/audio/phaseJump2.ogg" id="4_dash_audio"]
 [ext_resource type="AudioStream" path="res://assets/echo_chase/audio/impactGeneric_light_001.ogg" id="5_land_audio"]
 [ext_resource type="Shader" path="res://assets/echo_chase/vfx/temporal_outline.gdshader" id="6_outline_shader"]
+[ext_resource type="PackedScene" path="res://Scenes/EchoChase/Prefabs/echo_dash_vfx.tscn" id="7_dash_vfx"]
 
 [sub_resource type="RectangleShape2D" id="Shape_player"]
 size = Vector2(10, 15)
+
+[sub_resource type="RectangleShape2D" id="Shape_hurtbox"]
+size = Vector2(9, 14)
 
 [sub_resource type="ShaderMaterial" id="Material_recording_outline"]
 shader = ExtResource("6_outline_shader")
@@ -50,7 +54,8 @@ tracks/2/keys = {"times": PackedFloat32Array(0, 0.5, 1), "transitions": PackedFl
 
 [sub_resource type="Animation" id="Animation_recording_reduced"]
 resource_name = "recording_reduced"
-length = 0.1
+length = 1.0
+loop_mode = 1
 tracks/0/type = "value"
 tracks/0/path = NodePath("RecordingOutline:visible")
 tracks/0/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 1, "values": [true]}
@@ -64,14 +69,24 @@ tracks/2/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Arr
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_recording"]
 _data = {&"inactive": SubResource("Animation_recording_inactive"), &"recording": SubResource("Animation_recording"), &"recording_reduced": SubResource("Animation_recording_reduced")}
 
-[node name="EchoPlayer" type="CharacterBody2D" groups=["temporal_player"]]
-collision_layer = 1
-collision_mask = 8
+[node name="EchoPlayer" type="CharacterBody2D"]
+collision_layer = 2
+collision_mask = 1
 script = ExtResource("1_script")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 unique_name_in_owner = true
 shape = SubResource("Shape_player")
+
+[node name="Hurtbox" type="Area2D" parent="."]
+unique_name_in_owner = true
+collision_layer = 0
+collision_mask = 32
+monitoring = true
+monitorable = false
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Hurtbox"]
+shape = SubResource("Shape_hurtbox")
 
 [node name="TemporalOutline" type="AnimatedSprite2D" parent="."]
 unique_name_in_owner = true
@@ -96,6 +111,9 @@ animation = &"idle"
 [node name="RecordingAnimationPlayer" type="AnimationPlayer" parent="."]
 unique_name_in_owner = true
 libraries = {&"": SubResource("AnimationLibrary_recording")}
+
+[node name="DashVfx" parent="." instance=ExtResource("7_dash_vfx")]
+unique_name_in_owner = true
 
 [node name="DashAudio" type="AudioStreamPlayer2D" parent="."]
 stream = ExtResource("4_dash_audio")

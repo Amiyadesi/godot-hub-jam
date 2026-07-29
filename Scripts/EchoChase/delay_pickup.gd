@@ -27,6 +27,8 @@ func _ready() -> void:
 	body_entered.connect(_on_body_entered)
 	timeline.past_delay_switch_started.connect(_on_past_delay_switch_started)
 	timeline.past_delay_changed.connect(_on_past_delay_changed)
+	if SettingsModule.instance != null:
+		SettingsModule.instance.settings_changed.connect(_on_setting_changed)
 	_set_state(State.ACTIVE if default_active else State.INACTIVE)
 
 
@@ -65,6 +67,20 @@ func get_delay_switch_id() -> StringName:
 # 通过 authored 动画切换视觉状态，不在脚本中拼装样式。
 func _set_state(value: State) -> void:
 	_state = value
+	_play_state_animation(false)
+
+
+# 当前延迟台切换低闪时只替换已有状态动画。
+func _on_setting_changed(key: String, _value: Variant) -> void:
+	if key == "low_flash_mode" and _state != State.INACTIVE:
+		_play_state_animation(true)
+
+
+# 在同一状态的标准与稳定动画之间保留归一化进度。
+func _play_state_animation(preserve_progress: bool) -> void:
+	var progress_ratio := 0.0
+	if preserve_progress and state_animation_player.current_animation_length > 0.0:
+		progress_ratio = state_animation_player.current_animation_position / state_animation_player.current_animation_length
 	match _state:
 		State.INACTIVE:
 			state_animation_player.play(&"inactive")
@@ -72,6 +88,8 @@ func _set_state(value: State) -> void:
 			state_animation_player.play(&"pending_reduced" if _uses_low_flash_mode() else &"pending")
 		State.ACTIVE:
 			state_animation_player.play(&"active_reduced" if _uses_low_flash_mode() else &"active")
+	if preserve_progress:
+		state_animation_player.seek(progress_ratio * state_animation_player.current_animation_length, true)
 
 
 # 读取全局低闪烁偏好，缺少模块时使用正常表现。

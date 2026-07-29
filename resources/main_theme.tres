@@ -1,117 +1,116 @@
-[gd_resource type="Theme" load_steps=16 format=3 uid="uid://136hg33mma1d"]
+[gd_resource type="Theme" format=3 uid="uid://136hg33mma1d"]
 
-[ext_resource type="FontFile" path="res://assets/fonts/fusion-pixel-12px-proportional-zh_hans.ttf" id="1_font"]
+[ext_resource type="FontFile" uid="uid://bk23nmiva6eei" path="res://assets/fonts/fusion-pixel-12px-proportional-zh_hans.ttf" id="1_font"]
 
-[sub_resource type="FontVariation" id="FontVariation_main"]
-base_font = ExtResource("1_font")
-
-[sub_resource type="StyleBoxFlat" id="Style_transparent"]
-bg_color = Color(0, 0, 0, 0)
+[sub_resource type="StyleBoxFlat" id="Style_disabled"]
 content_margin_left = 12.0
 content_margin_top = 7.0
 content_margin_right = 12.0
 content_margin_bottom = 7.0
+bg_color = Color(0, 0, 0, 0)
+
+[sub_resource type="StyleBoxFlat" id="Style_focus"]
+content_margin_left = 12.0
+content_margin_top = 7.0
+content_margin_right = 12.0
+content_margin_bottom = 7.0
+bg_color = Color(0.96, 0.96, 0.92, 1)
 
 [sub_resource type="StyleBoxFlat" id="Style_selected"]
-bg_color = Color(0.96, 0.96, 0.92, 1)
 content_margin_left = 12.0
 content_margin_top = 7.0
 content_margin_right = 12.0
 content_margin_bottom = 7.0
+bg_color = Color(0.96, 0.96, 0.92, 1)
 
 [sub_resource type="StyleBoxFlat" id="Style_pressed"]
-bg_color = Color(0.78, 0.78, 0.74, 1)
 content_margin_left = 12.0
 content_margin_top = 9.0
 content_margin_right = 12.0
 content_margin_bottom = 5.0
+bg_color = Color(0.78, 0.78, 0.74, 1)
 
-[sub_resource type="StyleBoxFlat" id="Style_disabled"]
+[sub_resource type="StyleBoxFlat" id="Style_transparent"]
+content_margin_left = 12.0
+content_margin_top = 7.0
+content_margin_right = 12.0
+content_margin_bottom = 7.0
 bg_color = Color(0, 0, 0, 0)
-content_margin_left = 12.0
-content_margin_top = 7.0
-content_margin_right = 12.0
-content_margin_bottom = 7.0
 
-[sub_resource type="StyleBoxFlat" id="Style_focus"]
+[sub_resource type="StyleBoxFlat" id="Style_scroll_grabber"]
+content_margin_left = 3.0
+content_margin_top = 3.0
+content_margin_right = 3.0
+content_margin_bottom = 3.0
+bg_color = Color(0.88, 0.88, 0.84, 1)
+
+[sub_resource type="StyleBoxFlat" id="Style_scrollbar"]
+content_margin_left = 2.0
+content_margin_top = 2.0
+content_margin_right = 2.0
+content_margin_bottom = 2.0
+bg_color = Color(0.22, 0.22, 0.21, 1)
+
+[sub_resource type="StyleBoxLine" id="Style_separator"]
+color = Color(0.64, 0.64, 0.61, 1)
+
+[sub_resource type="StyleBoxFlat" id="Style_slider_fill"]
+content_margin_top = 2.0
+content_margin_bottom = 2.0
 bg_color = Color(0.96, 0.96, 0.92, 1)
-content_margin_left = 12.0
-content_margin_top = 7.0
-content_margin_right = 12.0
-content_margin_bottom = 7.0
+
+[sub_resource type="StyleBoxFlat" id="Style_slider"]
+content_margin_top = 1.0
+content_margin_bottom = 1.0
+bg_color = Color(0.38, 0.38, 0.36, 1)
 
 [sub_resource type="StyleBoxFlat" id="Style_panel"]
+content_margin_left = 20.0
+content_margin_top = 18.0
+content_margin_right = 20.0
+content_margin_bottom = 18.0
 bg_color = Color(0.025, 0.025, 0.022, 0.96)
 border_width_left = 2
 border_width_top = 2
 border_width_right = 2
 border_width_bottom = 2
 border_color = Color(0.92, 0.92, 0.88, 1)
-content_margin_left = 20.0
-content_margin_top = 18.0
-content_margin_right = 20.0
-content_margin_bottom = 18.0
 
 [sub_resource type="StyleBoxFlat" id="Style_popup"]
+content_margin_left = 8.0
+content_margin_top = 8.0
+content_margin_right = 8.0
+content_margin_bottom = 8.0
 bg_color = Color(0.025, 0.025, 0.022, 1)
 border_width_left = 1
 border_width_top = 1
 border_width_right = 1
 border_width_bottom = 1
 border_color = Color(0.92, 0.92, 0.88, 1)
-content_margin_left = 8.0
-content_margin_top = 8.0
-content_margin_right = 8.0
-content_margin_bottom = 8.0
-
-[sub_resource type="StyleBoxFlat" id="Style_slider"]
-bg_color = Color(0.38, 0.38, 0.36, 1)
-content_margin_top = 1.0
-content_margin_bottom = 1.0
-
-[sub_resource type="StyleBoxFlat" id="Style_slider_fill"]
-bg_color = Color(0.96, 0.96, 0.92, 1)
-content_margin_top = 2.0
-content_margin_bottom = 2.0
-
-[sub_resource type="StyleBoxLine" id="Style_separator"]
-color = Color(0.64, 0.64, 0.61, 1)
-thickness = 1
-
-[sub_resource type="StyleBoxFlat" id="Style_scrollbar"]
-bg_color = Color(0.22, 0.22, 0.21, 1)
-content_margin_left = 2.0
-content_margin_top = 2.0
-content_margin_right = 2.0
-content_margin_bottom = 2.0
-
-[sub_resource type="StyleBoxFlat" id="Style_scroll_grabber"]
-bg_color = Color(0.88, 0.88, 0.84, 1)
-content_margin_left = 3.0
-content_margin_top = 3.0
-content_margin_right = 3.0
-content_margin_bottom = 3.0
 
 [sub_resource type="StyleBoxFlat" id="Style_toggle_normal"]
-bg_color = Color(0, 0, 0, 0)
 content_margin_left = 12.0
 content_margin_top = 7.0
 content_margin_right = 12.0
 content_margin_bottom = 7.0
+bg_color = Color(0, 0, 0, 0)
 
 [sub_resource type="StyleBoxFlat" id="Style_toggle_underline"]
+content_margin_left = 12.0
+content_margin_top = 7.0
+content_margin_right = 12.0
+content_margin_bottom = 7.0
 bg_color = Color(0, 0, 0, 0)
 border_width_bottom = 2
 border_color = Color(0.96, 0.96, 0.92, 0.9)
-content_margin_left = 12.0
-content_margin_top = 7.0
-content_margin_right = 12.0
-content_margin_bottom = 7.0
+
+[sub_resource type="FontVariation" id="FontVariation_main"]
+base_font = ExtResource("1_font")
 
 [resource]
+default_base_scale = 1.0
 default_font = SubResource("FontVariation_main")
 default_font_size = 22
-default_base_scale = 1.0
 Button/colors/font_color = Color(0.94, 0.94, 0.9, 1)
 Button/colors/font_disabled_color = Color(0.42, 0.42, 0.4, 1)
 Button/colors/font_focus_color = Color(0.015, 0.015, 0.014, 1)

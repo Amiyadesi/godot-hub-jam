@@ -122,6 +122,7 @@ func _resolve_delay_switches() -> void:
 # 连接场景内唯一的玩家失败、出界和 checkpoint 请求。
 func _connect_gameplay_signals() -> void:
 	timeline.player_caught.connect(_on_player_caught)
+	player.failure_requested.connect(_on_player_failure_requested)
 	fall_reset_area.body_entered.connect(_on_fall_reset_body_entered)
 	for checkpoint in _checkpoints:
 		checkpoint.activation_requested.connect(_on_checkpoint_activation_requested)
@@ -246,6 +247,11 @@ func _on_checkpoint_activation_requested(checkpoint: EchoCheckpoint) -> void:
 # 过去体抓到玩家时播放失败反馈并排入复位。
 func _on_player_caught() -> void:
 	_begin_failure_reset(&"hit")
+
+
+# 玩家 Hurtbox 和过去体共用带动画语义的 checkpoint 失败入口。
+func _on_player_failure_requested(animation_name: StringName) -> void:
+	_begin_failure_reset(animation_name)
 
 
 # 只有当前玩家进入 authored 出界区域时才触发跌落复位。

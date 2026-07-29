@@ -18,6 +18,8 @@ var _active := false
 func _ready() -> void:
 	assert(not checkpoint_id.is_empty(), "EchoCheckpoint requires a non-empty authored checkpoint_id")
 	body_entered.connect(_on_body_entered)
+	if SettingsModule.instance != null:
+		SettingsModule.instance.settings_changed.connect(_on_setting_changed)
 	set_active(false)
 
 
@@ -39,13 +41,25 @@ func set_active(value: bool, play_feedback := false) -> void:
 	if not value:
 		animation_player.play(&"RESET")
 		return
-	if _uses_low_flash_mode():
-		animation_player.stop()
-		visual.modulate = Color(0.32, 1.0, 0.94, 1.0)
-	else:
-		animation_player.play(&"active")
+	_play_active_animation(false)
 	if play_feedback:
 		activation_audio.play()
+
+
+# 激活期间切换低闪时只替换循环表现，不重复触发存档反馈。
+func _on_setting_changed(key: String, _value: Variant) -> void:
+	if key == "low_flash_mode" and _active:
+		_play_active_animation(true)
+
+
+# 在标准与稳定循环之间保留归一化进度。
+func _play_active_animation(preserve_progress: bool) -> void:
+	var progress_ratio := 0.0
+	if preserve_progress and animation_player.current_animation_length > 0.0:
+		progress_ratio = animation_player.current_animation_position / animation_player.current_animation_length
+	animation_player.play(&"active_reduced" if _uses_low_flash_mode() else &"active")
+	if preserve_progress:
+		animation_player.seek(progress_ratio * animation_player.current_animation_length, true)
 
 
 # 读取全局低闪烁设置，缺少模块时使用正常慢脉冲。

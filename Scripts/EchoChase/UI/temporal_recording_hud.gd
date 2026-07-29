@@ -71,8 +71,8 @@ func _on_recording_finished() -> void:
 # 低闪烁设置变化时切换为稳定金边，不重新开始录像。
 func _on_setting_changed(key: String, _value: Variant) -> void:
 	if key == "low_flash_mode" and visible:
-		_play_recording_animation()
-		player.set_recording_feedback(true, _uses_low_flash_mode())
+		_play_recording_animation(true)
+		player.set_recording_feedback(true, _uses_low_flash_mode(), true)
 
 
 # 同步 HUD 与玩家轮廓的可见状态。
@@ -80,14 +80,19 @@ func _set_recording_visible(value: bool) -> void:
 	visible = value
 	player.set_recording_feedback(value, _uses_low_flash_mode())
 	if value:
-		_play_recording_animation()
+		_play_recording_animation(false)
 	else:
 		animation_player.play(&"RESET")
 
 
-# 根据低闪烁设置选择脉冲或稳定 authored 动画。
-func _play_recording_animation() -> void:
+# 根据低闪烁设置选择脉冲或稳定 authored 动画，并按需保留进度。
+func _play_recording_animation(preserve_progress: bool) -> void:
+	var progress_ratio := 0.0
+	if preserve_progress and animation_player.current_animation_length > 0.0:
+		progress_ratio = animation_player.current_animation_position / animation_player.current_animation_length
 	animation_player.play(&"recording_reduced" if _uses_low_flash_mode() else &"recording")
+	if preserve_progress:
+		animation_player.seek(progress_ratio * animation_player.current_animation_length, true)
 
 
 # 读取当前低闪烁开关。

@@ -161,6 +161,7 @@ func reset_timeline(
 	if initial_switch_id.is_empty():
 		push_error("EchoTimelineController.reset_timeline requires a delay switch id")
 		return
+	var cancelled_recorder := _recording_recorder
 	_timeline_seconds = 0.0
 	_past_delay_seconds = initial_delay_seconds
 	_pending_past_delay_seconds = initial_delay_seconds
@@ -170,6 +171,8 @@ func reset_timeline(
 	_run_track.clear()
 	_recording_track = null
 	_recording_recorder = null
+	if cancelled_recorder != null:
+		cancelled_recorder.recording_cancelled()
 	_future_slots_used = 0
 	past_echo.reset_echo()
 	future_echo_a.reset_echo()

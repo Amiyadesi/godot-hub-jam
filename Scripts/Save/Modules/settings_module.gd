@@ -113,8 +113,12 @@ func set_value(key: String, value: Variant) -> void:
 
 # Restores all settings to defaults and queues persistence.
 func reset_to_defaults() -> void:
+	var previous_values := _values.duplicate(true)
 	_values = DEFAULTS.duplicate(true)
 	apply_all()
+	for key: String in DEFAULTS:
+		if previous_values.get(key) != _values[key]:
+			settings_changed.emit(key, _values[key])
 	_queue_save()
 
 # Returns a defensive copy of all current settings.

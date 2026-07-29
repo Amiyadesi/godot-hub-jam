@@ -19,9 +19,12 @@ func _run() -> void:
 	_test_track_keeps_recall_until_its_exact_time()
 	_test_character_sprite_frames_contract()
 	_test_checkpoint_save_schema()
+	_test_settings_reset_emits_changed_values()
 	await _test_temporal_prefab_visual_contract()
+	await _test_temporal_entities_follow_low_flash_mode()
 	await _test_temporal_departure_snapshots()
 	await _test_checkpoint_activation_contract()
+	await _test_active_devices_follow_low_flash_mode()
 	await _test_start_scene_contract()
 	await _test_gameplay_entry_intro()
 	await _test_start_scene_checkpoint_and_reset()
@@ -29,14 +32,22 @@ func _run() -> void:
 	await _test_start_scene_pause_settings_route()
 	await _test_temporal_recording_hud()
 	_test_menu_entry_scene_contract()
+	await _test_menu_follows_low_flash_mode()
 	_test_ui_visual_contract()
 	await _test_toggle_changes_on_release()
 	await _test_feedback_toast_mouse_passthrough()
+	_test_player_state_and_tuning_contract()
+	await _test_player_movement_state_transitions()
 	await _test_player_moves_from_authored_input()
+	await _test_dash_vfx_follows_low_flash_mode()
+	await _test_physics_layer_and_trap_contract()
 	await _test_past_echo_starts_out_of_the_world()
 	await _test_past_echo_previews_each_clean_timeline()
 	await _test_future_echo_releases_a_pressure_plate()
+	await _test_future_echoes_use_independent_durations()
+	await _test_past_dissipates_overlapping_futures_together()
 	await _test_recorder_commits_a_future_echo_from_recall_input()
+	await _test_recorder_state_feedback_and_reuse()
 	await _test_first_frame_recording_and_past_contact_commit()
 	await _test_delay_pickup_values_apply_after_a_phase_warning()
 	await _test_delay_station_reuses_authored_node()
@@ -126,6 +137,24 @@ func _test_checkpoint_save_schema() -> void:
 	LevelModule.instance = previous_instance
 
 
+# 验证恢复默认值会通知真实变化项，未变化设置不会产生伪事件。
+func _test_settings_reset_emits_changed_values() -> void:
+	var original_values := SettingsModule.instance.get_all()
+	SettingsModule.instance.set_value("low_flash_mode", true)
+	SettingsModule.instance.set_value("screen_shake", 0.25)
+	var changed_keys: Array[String] = []
+	var listener := func(key: String, _value: Variant) -> void:
+		changed_keys.append(key)
+	SettingsModule.instance.settings_changed.connect(listener)
+	SettingsModule.instance.reset_to_defaults()
+	SettingsModule.instance.settings_changed.disconnect(listener)
+	_expect(changed_keys.has("low_flash_mode"), "Resetting settings emits the changed low-flash value")
+	_expect(changed_keys.has("screen_shake"), "Resetting settings emits the changed screen-shake value")
+	_expect(not changed_keys.has("language"), "Resetting settings does not emit unchanged values")
+	SettingsModule.instance.apply_data(original_values)
+	SettingsModule.instance.apply_all()
+
+
 # 验证三种时态使用 authored 动画节点、统一碰撞和动作音效。
 func _test_temporal_prefab_visual_contract() -> void:
 	var fixture := TIMELINE_FIXTURE.instantiate()
@@ -144,12 +173,22 @@ func _test_temporal_prefab_visual_contract() -> void:
 		var rectangle := player_shape.shape as RectangleShape2D
 		_expect(rectangle != null and rectangle.size.is_equal_approx(Vector2(10.0, 15.0)), "EchoPlayer uses the 10x15 collision contract")
 		_expect(player.has_node("DashAudio") and player.has_node("LandAudio"), "EchoPlayer authors dash and landing audio nodes")
+		var dash_vfx := player.get_node_or_null("DashVfx")
+		_expect(dash_vfx != null, "EchoPlayer authors a dedicated dash VFX controller")
+		if dash_vfx != null:
+			_expect(dash_vfx.has_node("StartBurst") and dash_vfx.has_node("DirectionParticles"), "Dash VFX authors start and directional particles")
+			_expect(dash_vfx.has_node("Afterimages/AfterimageA") and dash_vfx.has_node("Afterimages/AfterimageC"), "Dash VFX authors a fixed short afterimage pool")
+			_expect(dash_vfx.has_node("EndBurst") and dash_vfx.has_node("EndRing"), "Dash VFX authors finish convergence feedback")
 		_expect(timeline.past_echo.has_node("AppearAudio"), "PastEcho authors its appearance audio node")
 		_expect(timeline.past_echo.has_node("OutlineVisual"), "PastEcho authors its materialization outline")
+		_expect(timeline.past_echo.has_node("HistoryTrail"), "PastEcho authors a backward history trail")
+		_expect(timeline.past_echo.has_node("HistoryTrailFar"), "PastEcho authors a second backward history trail")
 		_expect(timeline.past_echo.has_node("PixelBurst"), "PastEcho authors its phase particles")
 		_expect(timeline.past_echo.has_node("VfxAnimationPlayer"), "PastEcho authors its VFX animation player")
 		_expect(timeline.past_echo.has_node("DepartureVfx"), "PastEcho authors an independent departure snapshot")
 		_expect(timeline.future_echo_a.has_node("OutlineVisual"), "FutureEcho authors its materialization outline")
+		_expect(timeline.future_echo_a.has_node("OuterOutlineVisual"), "FutureEcho authors a second outer outline")
+		_expect(timeline.future_echo_a.has_node("PredictionVisual"), "FutureEcho authors a forward prediction ghost")
 		_expect(timeline.future_echo_a.has_node("PixelBurst"), "FutureEcho authors its phase particles")
 		_expect(timeline.future_echo_a.has_node("VfxAnimationPlayer"), "FutureEcho authors its VFX animation player")
 		_expect(timeline.future_echo_a.has_node("DepartureVfx"), "FutureEcho authors an independent departure snapshot")
@@ -168,6 +207,20 @@ func _test_temporal_prefab_visual_contract() -> void:
 		_expect(future_visual.material == null, "FutureEcho Core preserves original character pixels")
 		var past_outline := timeline.past_echo.get_node("OutlineVisual") as AnimatedSprite2D
 		var future_outline := timeline.future_echo_a.get_node("OutlineVisual") as AnimatedSprite2D
+		var past_outline_material := past_outline.material as ShaderMaterial
+		_expect(
+			past_outline_material != null and not past_outline_material.shader.code.contains("pattern_mode"),
+			"PastEcho uses a continuous magenta outline"
+		)
+		if past_outline_material != null:
+			var outline_code := past_outline_material.shader.code
+			_expect(
+				outline_code.contains("vec2(TEXTURE_PIXEL_SIZE.x, TEXTURE_PIXEL_SIZE.y)")
+				and outline_code.contains("vec2(-TEXTURE_PIXEL_SIZE.x, TEXTURE_PIXEL_SIZE.y)")
+				and outline_code.contains("vec2(TEXTURE_PIXEL_SIZE.x, -TEXTURE_PIXEL_SIZE.y)")
+				and outline_code.contains("vec2(-TEXTURE_PIXEL_SIZE.x, -TEXTURE_PIXEL_SIZE.y)"),
+				"Temporal outline samples all four diagonal neighbors"
+			)
 		_expect(
 			past_outline.sprite_frames.resource_path == "res://assets/echo_chase/character/echo_character_outline_frames.tres",
 			"PastEcho materialization uses padded outline frames"
@@ -185,16 +238,77 @@ func _test_temporal_prefab_visual_contract() -> void:
 		timeline.set_physics_process(false)
 		timeline.past_echo.play_at(track, 0.0)
 		timeline.future_echo_a.start_playback(track, 1.0, 0.0)
+		(timeline.past_echo.get_node("VfxAnimationPlayer") as AnimationPlayer).advance(0.06)
 		if past_visual != null:
 			_expect(past_visual.animation == &"run" and past_visual.flip_h, "PastEcho replays animation and facing")
+			_expect(
+				past_outline.visible
+				and past_outline.scale.is_equal_approx(Vector2.ONE)
+				and is_equal_approx(past_outline.modulate.a, 1.0),
+				"PastEcho solid state fully restores its continuous outline"
+			)
 		if future_visual != null:
 			_expect(future_visual.animation == &"run" and future_visual.flip_h, "FutureEcho replays animation and facing")
 	fixture.queue_free()
 	await process_frame
 
 
+# 验证过去与未来实体化途中切换低闪只替换表现，不重置时态进度。
+func _test_temporal_entities_follow_low_flash_mode() -> void:
+	var original_low_flash := bool(SettingsModule.instance.get_value("low_flash_mode", false))
+	SettingsModule.instance.set_value("low_flash_mode", false)
+	var fixture := TIMELINE_FIXTURE.instantiate()
+	root.add_child(fixture)
+	await physics_frame
+	var timeline := fixture.get_node("EchoTimelineController") as EchoTimelineController
+	var past := timeline.past_echo
+	var future := timeline.future_echo_a
+	var past_animation := past.get_node("VfxAnimationPlayer") as AnimationPlayer
+	var future_animation := future.get_node("VfxAnimationPlayer") as AnimationPlayer
+	var delayed_track: TemporalTrack = TEMPORAL_TRACK_SCRIPT.new()
+	delayed_track.append(TEMPORAL_FRAME_SCRIPT.new(1.0, Vector2(120.0, 80.0), Vector2.ZERO, 1.0, &"idle"))
+	delayed_track.append(TEMPORAL_FRAME_SCRIPT.new(2.0, Vector2(180.0, 80.0), Vector2(60.0, 0.0), 1.0, &"run"))
+	past.play_at(delayed_track, 0.7)
+	past_animation.advance(0.14)
+	var past_ratio := past_animation.current_animation_position / past_animation.current_animation_length
+	SettingsModule.instance.set_value("low_flash_mode", true)
+	_expect(past_animation.current_animation == &"materialize_reduced", "Past materialization immediately enters reduced feedback")
+	_expect(
+		is_equal_approx(past_animation.current_animation_position / past_animation.current_animation_length, past_ratio),
+		"Past materialization preserves normalized progress"
+	)
+	SettingsModule.instance.set_value("low_flash_mode", false)
+	past.begin_phase_shift()
+	past.preview_phase_target(delayed_track, 1.0, 0.24)
+	var phase_ratio := past_animation.current_animation_position / past_animation.current_animation_length
+	SettingsModule.instance.set_value("low_flash_mode", true)
+	_expect(past_animation.current_animation == &"phase_target_reduced", "Past phase target immediately enters reduced feedback")
+	_expect(
+		is_equal_approx(past_animation.current_animation_position / past_animation.current_animation_length, phase_ratio),
+		"Past phase target preserves normalized progress"
+	)
+	SettingsModule.instance.set_value("low_flash_mode", false)
+	var future_track: TemporalTrack = TEMPORAL_TRACK_SCRIPT.new()
+	future_track.append(TEMPORAL_FRAME_SCRIPT.new(0.0, Vector2(220.0, 80.0), Vector2.ZERO, 1.0, &"idle"))
+	future_track.append(TEMPORAL_FRAME_SCRIPT.new(1.0, Vector2(280.0, 80.0), Vector2(60.0, 0.0), 1.0, &"run"))
+	future.start_playback(future_track, 1.0, 0.0)
+	future_animation.advance(0.14)
+	var future_ratio := future_animation.current_animation_position / future_animation.current_animation_length
+	SettingsModule.instance.set_value("low_flash_mode", true)
+	_expect(future_animation.current_animation == &"materialize_reduced", "Future materialization immediately enters reduced feedback")
+	_expect(
+		is_equal_approx(future_animation.current_animation_position / future_animation.current_animation_length, future_ratio),
+		"Future materialization preserves normalized progress"
+	)
+	fixture.queue_free()
+	await process_frame
+	SettingsModule.instance.set_value("low_flash_mode", original_low_flash)
+
+
 # 验证旧位置裂解与新实体回放解耦，槽位复用不会拖走尾效。
 func _test_temporal_departure_snapshots() -> void:
+	var original_low_flash := bool(SettingsModule.instance.get_value("low_flash_mode", false))
+	SettingsModule.instance.set_value("low_flash_mode", false)
 	var fixture := TIMELINE_FIXTURE.instantiate()
 	root.add_child(fixture)
 	await physics_frame
@@ -204,6 +318,7 @@ func _test_temporal_departure_snapshots() -> void:
 	var past_departure := past.get_node_or_null("DepartureVfx") as TemporalDepartureVfx
 	var future_departure := future.get_node_or_null("DepartureVfx") as TemporalDepartureVfx
 	if past_departure != null and future_departure != null:
+		_expect(past_departure.has_node("CoreSnapshot") and past_departure.has_node("ImpactRing"), "Temporal departure preserves the full core and ring feedback")
 		var past_track: TemporalTrack = TEMPORAL_TRACK_SCRIPT.new()
 		past_track.append(TEMPORAL_FRAME_SCRIPT.new(0.0, Vector2(120.0, 80.0), Vector2(40.0, 0.0), 1.0, &"run"))
 		past_track.append(TEMPORAL_FRAME_SCRIPT.new(1.0, Vector2(360.0, 80.0), Vector2(40.0, 0.0), 1.0, &"run"))
@@ -222,9 +337,23 @@ func _test_temporal_departure_snapshots() -> void:
 		future.dissipated.connect(func(_future_echo: FutureEcho) -> void: dissipated_events.append(true))
 		future.start_playback(first_future_track, 0.1, 0.0)
 		future.advance(0.11)
+		var future_core_snapshot := future_departure.get_node("CoreSnapshot") as Sprite2D
 		var old_snapshot_position := future_departure.global_position
 		_expect(future.is_available(), "Future slot releases before its departure finishes")
 		_expect(future_departure.is_playing(), "Future keeps an authored departure after slot release")
+		_expect(future_core_snapshot.texture != null, "Future departure copies the visible core instead of only a thin outline")
+		future_departure.animation_player.advance(0.08)
+		var departure_ratio := future_departure.animation_player.current_animation_position / future_departure.animation_player.current_animation_length
+		SettingsModule.instance.set_value("low_flash_mode", true)
+		_expect(future_departure.animation_player.current_animation == &"depart_reduced", "Active departure immediately enters reduced feedback")
+		_expect(not future_departure.particles.emitting, "Enabling low-flash immediately stops active departure particles")
+		_expect(
+			is_equal_approx(future_departure.animation_player.current_animation_position / future_departure.animation_player.current_animation_length, departure_ratio),
+			"Departure preserves normalized progress when low-flash changes"
+		)
+		SettingsModule.instance.set_value("low_flash_mode", false)
+		_expect(future_departure.animation_player.current_animation == &"depart", "Active departure returns to standard fade without restarting")
+		_expect(not future_departure.particles.emitting, "Disabling low-flash does not replay an active departure burst")
 		var second_future_track: TemporalTrack = TEMPORAL_TRACK_SCRIPT.new()
 		second_future_track.append(TEMPORAL_FRAME_SCRIPT.new(0.0, Vector2(520.0, 100.0), Vector2.ZERO, 1.0, &"idle"))
 		second_future_track.append(TEMPORAL_FRAME_SCRIPT.new(1.0, Vector2(520.0, 100.0), Vector2.ZERO, 1.0, &"idle"))
@@ -239,6 +368,7 @@ func _test_temporal_departure_snapshots() -> void:
 		_expect(not future_departure.is_playing() and not past_departure.is_playing(), "Timeline reset clears every departure snapshot")
 	fixture.queue_free()
 	await process_frame
+	SettingsModule.instance.set_value("low_flash_mode", original_low_flash)
 
 
 # 验证 authored 存档点只在首次玩家触碰时请求激活。
@@ -269,6 +399,53 @@ func _test_checkpoint_activation_contract() -> void:
 	await process_frame
 
 
+# 验证持续机关在运行中切换低闪时保留动画进度，不重新播放反馈。
+func _test_active_devices_follow_low_flash_mode() -> void:
+	var original_low_flash := bool(SettingsModule.instance.get_value("low_flash_mode", false))
+	SettingsModule.instance.set_value("low_flash_mode", false)
+	var scene := (load(START_SCENE_PATH) as PackedScene).instantiate()
+	root.add_child(scene)
+	await process_frame
+	var checkpoint := scene.get_node("World/EchoCheckpoint") as EchoCheckpoint
+	var delay_station := scene.get_node("World/DelayPickup3s") as DelayPickup
+	var checkpoint_animation := checkpoint.get_node("AnimationPlayer") as AnimationPlayer
+	var delay_animation := delay_station.get_node("StateAnimationPlayer") as AnimationPlayer
+	checkpoint.set_active(true)
+	checkpoint_animation.advance(0.4)
+	delay_animation.advance(0.4)
+	var checkpoint_ratio := checkpoint_animation.current_animation_position / checkpoint_animation.current_animation_length
+	var delay_ratio := delay_animation.current_animation_position / delay_animation.current_animation_length
+	SettingsModule.instance.set_value("low_flash_mode", true)
+	_expect(checkpoint_animation.current_animation == &"active_reduced", "Active checkpoint immediately enters reduced feedback")
+	_expect(delay_animation.current_animation == &"active_reduced", "Active delay station immediately enters reduced feedback")
+	_expect(
+		is_equal_approx(checkpoint_animation.current_animation_position / checkpoint_animation.current_animation_length, checkpoint_ratio),
+		"Checkpoint preserves normalized animation progress when low-flash is enabled"
+	)
+	_expect(
+		is_equal_approx(delay_animation.current_animation_position / delay_animation.current_animation_length, delay_ratio),
+		"Delay station preserves normalized animation progress when low-flash is enabled"
+	)
+	checkpoint_animation.advance(0.2)
+	delay_animation.advance(0.2)
+	checkpoint_ratio = checkpoint_animation.current_animation_position / checkpoint_animation.current_animation_length
+	delay_ratio = delay_animation.current_animation_position / delay_animation.current_animation_length
+	SettingsModule.instance.set_value("low_flash_mode", false)
+	_expect(checkpoint_animation.current_animation == &"active", "Active checkpoint returns to standard feedback without reactivation")
+	_expect(delay_animation.current_animation == &"active", "Active delay station returns to standard feedback without reactivation")
+	_expect(
+		is_equal_approx(checkpoint_animation.current_animation_position / checkpoint_animation.current_animation_length, checkpoint_ratio),
+		"Checkpoint preserves normalized animation progress when low-flash is disabled"
+	)
+	_expect(
+		is_equal_approx(delay_animation.current_animation_position / delay_animation.current_animation_length, delay_ratio),
+		"Delay station preserves normalized animation progress when low-flash is disabled"
+	)
+	scene.queue_free()
+	await process_frame
+	SettingsModule.instance.set_value("low_flash_mode", original_low_flash)
+
+
 # 验证起始场景包含相机、完整时间机制展台、存档点和暂停界面。
 func _test_start_scene_contract() -> void:
 	_expect(ResourceLoader.exists(START_SCENE_PATH), "Echo Chase start scene exists")
@@ -280,7 +457,7 @@ func _test_start_scene_contract() -> void:
 	var tile_maps := scene.find_children("*", "TileMapLayer", true, false)
 	_expect(tile_maps.size() == 1, "Start scene authors exactly one TileMapLayer")
 	if tile_maps.size() == 1:
-		_expect((tile_maps[0] as TileMapLayer).get_used_cells().size() == 96, "Start platform contains exactly 96 tiles")
+		_expect(not (tile_maps[0] as TileMapLayer).get_used_cells().is_empty(), "Start scene keeps the user-authored playable TileMap")
 	var camera := scene.get_node_or_null("World/EchoPlayer/Camera2D") as Camera2D
 	_expect(camera != null, "Start scene authors one player Camera2D")
 	if camera != null:
@@ -310,7 +487,8 @@ func _test_start_scene_contract() -> void:
 	_expect(scene.find_children("*", "EchoCheckpoint", true, false).size() == 1, "Start scene authors one EchoCheckpoint")
 	_expect(scene.has_node("World/SpawnPoint"), "Start scene authors SpawnPoint")
 	_expect(scene.has_node("World/FallResetArea"), "Start scene authors FallResetArea")
-	_expect(scene.has_node("Backdrop/MapTexture"), "Start scene authors a full-screen map backdrop")
+	_expect(scene.has_node("Backdrop/BaseColor"), "Start scene keeps a plain authored backdrop color")
+	_expect(not scene.has_node("Backdrop/MapTexture"), "Start scene removes the temporary image backdrop")
 	_expect(scene.has_node("UI/PauseScreen"), "Start scene authors PauseScreen")
 	_expect(scene.has_node("UI/SettingScreen"), "Start scene authors SettingScreen")
 	_expect(not scene.has_node("UI/TemporalEntryOverlay"), "Start scene removes the retired three-figure entry overlay")
@@ -537,11 +715,26 @@ func _test_temporal_recording_hud() -> void:
 			hud.get_recall_binding_text() == KeybindingModule.instance.get_primary_display_string("echo_recall"),
 			"Recording HUD refreshes immediately after echo_recall is rebound"
 		)
-		SettingsModule.instance.set_value("low_flash_mode", true)
 		var hud_animation := hud.get_node("AnimationPlayer") as AnimationPlayer
 		var player_animation := player.get_node("RecordingAnimationPlayer") as AnimationPlayer
+		hud_animation.advance(0.36)
+		player_animation.advance(0.3)
+		var hud_ratio := hud_animation.current_animation_position / hud_animation.current_animation_length
+		var player_ratio := player_animation.current_animation_position / player_animation.current_animation_length
+		SettingsModule.instance.set_value("low_flash_mode", true)
 		_expect(hud_animation.current_animation == &"recording_reduced", "Low-flash recording HUD uses the stable gold edge")
 		_expect(player_animation.current_animation == &"recording_reduced", "Low-flash recording outline uses the stable authored animation")
+		_expect(
+			is_equal_approx(hud_animation.current_animation_position / hud_animation.current_animation_length, hud_ratio),
+			"Recording HUD preserves normalized progress when low-flash changes"
+		)
+		_expect(
+			is_equal_approx(player_animation.current_animation_position / player_animation.current_animation_length, player_ratio),
+			"Player recording outline preserves normalized progress when low-flash changes"
+		)
+		SettingsModule.instance.set_value("low_flash_mode", false)
+		_expect(hud_animation.current_animation == &"recording", "Recording HUD returns to its standard loop without restarting")
+		_expect(player_animation.current_animation == &"recording", "Player recording outline returns to its standard loop without restarting")
 		_expect(timeline.commit_future_recording(), "Recording HUD test commits the recording")
 		_expect(not hud.is_recording_visible(), "Recording HUD hides after recall")
 		_expect(not player.is_recording_outline_visible(), "Player recording outline hides after recall")
@@ -554,20 +747,40 @@ func _test_temporal_recording_hud() -> void:
 # 验证主菜单的新游戏与继续游戏都指向用户可继续搭建的起始场景。
 func _test_menu_entry_scene_contract() -> void:
 	var menu := (load("res://Scenes/UI/Menu/menu.tscn") as PackedScene).instantiate()
+	_expect(ProjectSettings.get_setting("application/config/name") == "延迟追迹 Delay Trace", "Project window uses the Delay Trace display name")
+	var title_reveal := menu.get_node("ButtonLayer/TitleReveal") as Control
+	var title := title_reveal.get_node("Title") as Label
+	_expect(title.text == "延迟追迹 / DELAY TRACE", "Main menu uses the bilingual Delay Trace title")
+	var title_width := title.get_theme_font(&"font").get_string_size(
+		title.text,
+		HORIZONTAL_ALIGNMENT_LEFT,
+		-1.0,
+		title.get_theme_font_size(&"font_size")
+	).x
+	_expect(
+		(title_reveal.anchor_right - title_reveal.anchor_left) * 1280.0 >= title_width,
+		"Delay Trace title fits the authored reveal at 1280x720"
+	)
 	_expect(menu.get("echo_chase_entry_scene_path") == START_SCENE_PATH, "Main menu authors the Echo Chase start scene path")
 	var menu_music := menu.get("menu_music") as AudioStream
 	_expect(
 		menu_music != null and menu_music.resource_path == "res://assets/echo_chase/audio/music/mysterious_futuristic_loop.ogg",
 		"Main menu uses the licensed Echo Chase temporal loop"
 	)
-	var background := menu.get_node_or_null("Background") as TextureRect
-	_expect(background != null and background.texture.resource_path == "res://assets/echo_chase/ui/menu_map_backdrop.png", "Main menu uses the Echo Chase tile-map backdrop")
+	var background := menu.get_node_or_null("Background") as Control
+	_expect(background != null, "Main menu authors a parallax background container")
 	if background != null:
-		var shader_material := background.material as ShaderMaterial
+		var grid := background.get_node_or_null("Grid") as ColorRect
+		var road := background.get_node_or_null("Road") as TileMapLayer
+		var shader_material := grid.material as ShaderMaterial if grid != null else null
 		_expect(
-			shader_material != null and shader_material.shader.resource_path == "res://resources/shader/ui_monochrome.gdshader",
-			"Main menu applies the authored monochrome map shader"
+			shader_material != null and shader_material.shader.resource_path == "res://assets/echo_chase/vfx/menu_cross_grid.gdshader",
+			"Main menu draws the monochrome cross grid with an authored shader"
 		)
+		_expect(road != null and road.tile_set != null, "Main menu authors its road as a TileMapLayer")
+		if road != null:
+			_expect(road.get_used_cells().size() == 31, "Menu road contains one authored 31-cell overscan row")
+			_expect(road.get_used_rect().size.y == 1, "Menu TileMap keeps only one horizontal road row")
 		_expect(
 			background.offset_left <= -32.0 and background.offset_top <= -32.0
 			and background.offset_right >= 32.0 and background.offset_bottom >= 32.0,
@@ -602,6 +815,7 @@ func _test_menu_entry_scene_contract() -> void:
 				continue
 			var core := figure.get_node_or_null("Float/Core") as AnimatedSprite2D
 			var outline := figure.get_node_or_null("Float/Outline") as AnimatedSprite2D
+			_expect(region.get_node_or_null("LightBand") == null, "Menu temporal region %s removes the middle identity band" % region_names[region_index])
 			_expect(core != null and core.material == null, "Menu temporal Core preserves original character pixels")
 			_expect(
 				outline != null
@@ -610,6 +824,12 @@ func _test_menu_entry_scene_contract() -> void:
 			)
 			_expect(core != null and core.animation == &"idle", "Menu temporal Core idles in place")
 			_expect(outline != null and outline.animation == &"idle", "Menu temporal Outline idles in place")
+			if region_index == 0:
+				_expect(figure.get_node_or_null("Float/HistoryGhost") is AnimatedSprite2D, "Past menu figure uses a backward history ghost")
+				_expect(figure.get_node_or_null("Float/HistoryGhostFar") is AnimatedSprite2D, "Past menu figure uses a second backward history ghost")
+			if region_index == 2:
+				_expect(figure.get_node_or_null("Float/PredictionGhost") is AnimatedSprite2D, "Future menu figure uses a forward prediction ghost")
+				_expect(figure.get_node_or_null("Float/OuterOutline") is AnimatedSprite2D, "Future menu figure uses a double outline")
 	var menu_player := menu.get_node("MenuAnimationPlayer") as AnimationPlayer
 	_expect(is_equal_approx(menu_player.get_animation(&"menu_enter").length, 1.8), "Menu entrance lasts 1.8 seconds")
 	var reduced_intro := menu_player.get_animation(&"menu_enter_reduced")
@@ -629,6 +849,31 @@ func _test_menu_entry_scene_contract() -> void:
 	_expect(phase_player.has_animation(&"menu_idle"), "Menu authors a fixed temporal idle loop")
 	if phase_player.has_animation(&"menu_idle"):
 		_expect(is_equal_approx(phase_player.get_animation(&"menu_idle").length, 2.4), "Menu temporal float loop lasts 2.4 seconds")
+	var temporal_frame := menu.get_node_or_null("TemporalFrame") as Control
+	_expect(temporal_frame != null, "Menu authors a dedicated three-part temporal edge frame")
+	if temporal_frame != null:
+		var line_layer := temporal_frame.get_node_or_null("Lines") as Control
+		var glow_layer := temporal_frame.get_node_or_null("Glow") as Control
+		_expect(line_layer != null and glow_layer != null, "Temporal edge frame separates thin lines from optional glow")
+		if line_layer != null:
+			for segment_name in ["TopPast", "TopPresent", "TopFuture", "BottomPast", "BottomPresent", "BottomFuture"]:
+				_expect(line_layer.get_node_or_null(segment_name) is ColorRect, "Temporal frame authors %s" % segment_name)
+			var first_divider := line_layer.get_node_or_null("DividerPastPresent") as Control
+			var second_divider := line_layer.get_node_or_null("DividerPresentFuture") as Control
+			_expect(first_divider != null and second_divider != null, "Temporal frame authors both one-third dividers")
+			if first_divider != null:
+				var past_side := first_divider.get_node("PastSide") as ColorRect
+				var present_side := first_divider.get_node("PresentSide") as ColorRect
+				_expect(not past_side.color.is_equal_approx(present_side.color), "Past/present divider keeps adjacent colors separate")
+			if second_divider != null:
+				var present_side := second_divider.get_node("PresentSide") as ColorRect
+				var future_side := second_divider.get_node("FutureSide") as ColorRect
+				_expect(not present_side.color.is_equal_approx(future_side.color), "Present/future divider keeps adjacent colors separate")
+	var frame_player := menu.get_node_or_null("FrameAnimationPlayer") as AnimationPlayer
+	_expect(
+		frame_player != null and frame_player.has_animation(&"frame_standard") and frame_player.has_animation(&"frame_reduced"),
+		"Menu authors standard and low-flash temporal frame animations"
+	)
 	_expect(menu.get_node_or_null("ButtonLayer/TitleReveal") != null, "Menu title uses an authored clipping reveal")
 	var start_transition := menu.get("start_transition") as SceneTransition
 	var start_transition_reduced := menu.get("start_transition_reduced") as SceneTransition
@@ -668,6 +913,44 @@ func _test_menu_entry_scene_contract() -> void:
 	_expect(route_nav.anchor_top >= 0.55, "Main menu route sits in the lower-right map area")
 	_expect(route_line.offset_top >= first_marker.offset_top and route_line.offset_bottom <= last_marker.offset_bottom, "Menu route line stops between its first and last nodes")
 	menu.free()
+
+
+# 验证菜单入场和边缘框在运行中切换低闪时保留各自进度。
+func _test_menu_follows_low_flash_mode() -> void:
+	var original_low_flash := bool(SettingsModule.instance.get_value("low_flash_mode", false))
+	SettingsModule.instance.set_value("low_flash_mode", false)
+	var menu := (load("res://Scenes/UI/Menu/menu.tscn") as PackedScene).instantiate()
+	root.add_child(menu)
+	await process_frame
+	var intro_player := menu.get_node("MenuAnimationPlayer") as AnimationPlayer
+	var frame_player := menu.get_node_or_null("FrameAnimationPlayer") as AnimationPlayer
+	_expect(frame_player != null, "Live menu provides its authored frame animation player")
+	if frame_player == null:
+		menu.queue_free()
+		await process_frame
+		SettingsModule.instance.set_value("low_flash_mode", original_low_flash)
+		return
+	intro_player.advance(0.45)
+	frame_player.advance(0.6)
+	var intro_ratio := intro_player.current_animation_position / intro_player.current_animation_length
+	var frame_ratio := frame_player.current_animation_position / frame_player.current_animation_length
+	SettingsModule.instance.set_value("low_flash_mode", true)
+	_expect(intro_player.current_animation == &"menu_enter_reduced", "Menu intro immediately enters its reduced authored animation")
+	_expect(frame_player.current_animation == &"frame_reduced", "Menu edge frame immediately becomes fixed low-flash lines")
+	_expect(
+		is_equal_approx(intro_player.current_animation_position / intro_player.current_animation_length, intro_ratio),
+		"Menu intro preserves normalized progress when low-flash changes"
+	)
+	_expect(
+		is_equal_approx(frame_player.current_animation_position / frame_player.current_animation_length, frame_ratio),
+		"Menu frame preserves normalized progress when low-flash changes"
+	)
+	SettingsModule.instance.set_value("low_flash_mode", false)
+	_expect(intro_player.current_animation == &"menu_enter", "Menu intro returns to standard feedback without restarting")
+	_expect(frame_player.current_animation == &"frame_standard", "Menu edge frame returns to breathing feedback without restarting")
+	menu.queue_free()
+	await process_frame
+	SettingsModule.instance.set_value("low_flash_mode", original_low_flash)
 
 
 # 验证黑白地图 UI 不再依赖旧玻璃卡片、装饰小字或每行面板。
@@ -836,6 +1119,101 @@ func _test_track_keeps_recall_until_its_exact_time() -> void:
 		_expect(is_equal_approx(at_recall.position.x, 12.0), "TemporalTrack applies the recall destination at recall time")
 
 
+# 验证玩家公开移动状态，并将全部手感参数暴露到 Inspector。
+func _test_player_state_and_tuning_contract() -> void:
+	var player := (load("res://Scenes/EchoChase/Prefabs/echo_player.tscn") as PackedScene).instantiate() as EchoPlayer
+	_expect(player.has_method("get_current_state"), "EchoPlayer exposes its current movement state")
+	var expected_defaults := {
+		"run_speed": 250.0,
+		"run_acceleration": 4096.0,
+		"jump_speed": 400.0,
+		"jump_release_multiplier": 0.5,
+		"coyote_seconds": 0.15,
+		"jump_buffer_seconds": 0.15,
+		"gravity": 980.0,
+		"wall_slide_speed": 250.0,
+		"wall_coyote_seconds": 0.12,
+		"wall_jump_speed_x": 250.0,
+		"wall_push_seconds": 0.10,
+		"dash_aim_seconds": 0.10,
+		"dash_speed": 600.0,
+		"dash_seconds": 0.10,
+		"dash_jump_momentum": 0.65,
+		"dash_speed_cap_multiplier": 1.6,
+		"dash_input_recovery_seconds": 0.06,
+	}
+	var exported_properties := {}
+	for property in player.get_property_list():
+		if property.usage & PROPERTY_USAGE_EDITOR:
+			exported_properties[property.name] = player.get(property.name)
+	for property_name in expected_defaults:
+		_expect(exported_properties.has(property_name), "EchoPlayer exports %s for Inspector tuning" % property_name)
+		if exported_properties.has(property_name):
+			_expect(is_equal_approx(float(exported_properties[property_name]), expected_defaults[property_name]), "EchoPlayer keeps the default value for %s" % property_name)
+	player.free()
+
+
+# 验证公开状态跟随真实地面、墙面、跳跃、冲刺和冻结流程。
+func _test_player_movement_state_transitions() -> void:
+	var fixture := TIMELINE_FIXTURE.instantiate()
+	_add_static_collision(fixture, Vector2(0.0, 16.0), Vector2(320.0, 16.0))
+	_add_static_collision(fixture, Vector2(48.0, -36.0), Vector2(16.0, 104.0))
+	root.add_child(fixture)
+	var player := fixture.get_node("EchoPlayer") as EchoPlayer
+	var states: Dictionary = player.get_script().get_script_constant_map().get("State", {})
+	_expect(states.size() == 8, "EchoPlayer exposes the eight planned movement states")
+	player.reset_player(Vector2.ZERO)
+	for _frame in 4:
+		await physics_frame
+	_expect(player.call("get_current_state") == states.get("IDLE"), "Player settles into IDLE on the floor")
+	Input.action_press("echo_move_right")
+	for _frame in 2:
+		await physics_frame
+	_expect(player.call("get_current_state") == states.get("RUN"), "Horizontal input changes IDLE to RUN")
+	Input.action_release("echo_move_right")
+	_send_key_event(KEY_K, true)
+	await physics_frame
+	_send_key_event(KEY_K, false)
+	_expect(player.call("get_current_state") == states.get("JUMP"), "Ground jump changes RUN to JUMP")
+	var saw_fall := false
+	for _frame in 90:
+		await physics_frame
+		if player.call("get_current_state") == states.get("FALL"):
+			saw_fall = true
+			break
+	_expect(saw_fall, "Jump apex changes JUMP to FALL")
+	player.reset_player(Vector2(35.0, -44.0))
+	player.velocity = Vector2(0.0, 80.0)
+	Input.action_press("echo_move_right")
+	var saw_wall_slide := false
+	for _frame in 45:
+		await physics_frame
+		if player.call("get_current_state") == states.get("WALL_SLIDE"):
+			saw_wall_slide = true
+			break
+	Input.action_release("echo_move_right")
+	_expect(saw_wall_slide, "Falling against a wall changes FALL to WALL_SLIDE")
+	player.reset_player(Vector2.ZERO)
+	for _frame in 4:
+		await physics_frame
+	_send_key_event(KEY_J, true)
+	await physics_frame
+	_send_key_event(KEY_J, false)
+	_expect(player.call("get_current_state") == states.get("DASH_AIM"), "Dash input enters DASH_AIM")
+	var saw_dash := false
+	for _frame in 20:
+		await physics_frame
+		if player.call("get_current_state") == states.get("DASH"):
+			saw_dash = true
+	_expect(saw_dash, "Dash aim completes into DASH")
+	player.prepare_for_reset(&"hit")
+	_expect(player.call("get_current_state") == states.get("DISABLED"), "Failure freeze enters DISABLED")
+	player.reset_player(Vector2.ZERO)
+	_expect(player.call("get_current_state") == states.get("IDLE"), "Checkpoint reset returns to IDLE")
+	fixture.queue_free()
+	await process_frame
+
+
 # Verifies that a real player consumes the authored horizontal input bindings.
 func _test_player_moves_from_authored_input() -> void:
 	var fixture := TIMELINE_FIXTURE.instantiate()
@@ -851,7 +1229,95 @@ func _test_player_moves_from_authored_input() -> void:
 		await physics_frame
 		Input.action_release("echo_move_right")
 		_expect(player.velocity.x > 0.0, "EchoPlayer gains horizontal velocity from the move input")
+		var dash_vfx := player.get_node("DashVfx") as EchoDashVfx
+		_send_key_event(KEY_J, true)
+		await physics_frame
+		_send_key_event(KEY_J, false)
+		_expect(dash_vfx.is_active(), "Dash input starts the authored dash VFX on the response frame")
+		for _frame in 20:
+			await physics_frame
+		_expect(not dash_vfx.is_active(), "Dash VFX ends after the aim and movement envelope")
 	fixture.queue_free()
+	await process_frame
+
+
+# 验证冲刺途中开启低闪会立即收掉高频反馈，关闭后不补播本次粒子。
+func _test_dash_vfx_follows_low_flash_mode() -> void:
+	var original_low_flash := bool(SettingsModule.instance.get_value("low_flash_mode", false))
+	SettingsModule.instance.set_value("low_flash_mode", false)
+	var fixture := TIMELINE_FIXTURE.instantiate()
+	root.add_child(fixture)
+	await physics_frame
+	var player := fixture.get_node("EchoPlayer") as EchoPlayer
+	var source := player.get_node("Visual") as AnimatedSprite2D
+	var dash_vfx := player.get_node("DashVfx") as EchoDashVfx
+	dash_vfx.begin(source, Vector2.RIGHT)
+	dash_vfx.start_animation_player.advance(0.08)
+	dash_vfx.update_dash(source, 0.04, Vector2.RIGHT)
+	var start_ratio := dash_vfx.start_animation_player.current_animation_position / dash_vfx.start_animation_player.current_animation_length
+	SettingsModule.instance.set_value("low_flash_mode", true)
+	_expect(dash_vfx.start_animation_player.current_animation == &"start_reduced", "Active dash immediately enters reduced start feedback")
+	_expect(not dash_vfx.start_burst.emitting and not dash_vfx.direction_particles.emitting, "Enabling low-flash immediately stops active dash particles")
+	_expect(not dash_vfx.afterimage_c.visible, "Low-flash immediately removes the third dash afterimage")
+	_expect(
+		is_equal_approx(dash_vfx.start_animation_player.current_animation_position / dash_vfx.start_animation_player.current_animation_length, start_ratio),
+		"Dash start feedback preserves normalized progress"
+	)
+	SettingsModule.instance.set_value("low_flash_mode", false)
+	dash_vfx.update_dash(source, 0.04, Vector2.RIGHT)
+	_expect(dash_vfx.start_animation_player.current_animation == &"start", "Active dash returns to the standard ring without restarting")
+	_expect(not dash_vfx.direction_particles.emitting, "Disabling low-flash does not resume particles during the same dash")
+	dash_vfx.reset_vfx()
+	fixture.queue_free()
+	await process_frame
+	SettingsModule.instance.set_value("low_flash_mode", original_low_flash)
+
+
+# 验证新命名物理层、玩家 Hurtbox 和 authored Trap 使用同一失败入口。
+func _test_physics_layer_and_trap_contract() -> void:
+	var player_scene := load("res://Scenes/EchoChase/Prefabs/echo_player.tscn") as PackedScene
+	var player := player_scene.instantiate() as EchoPlayer
+	_expect(player.collision_layer == 2 and player.collision_mask == 1, "Player body uses Player and World physics layers")
+	_expect(not player.is_in_group("temporal_player"), "Player identity no longer duplicates its physics layer in a Scene Group")
+	var hurtbox := player.get_node_or_null("Hurtbox") as Area2D
+	_expect(hurtbox != null, "EchoPlayer authors a dedicated Trap Hurtbox")
+	if hurtbox != null:
+		_expect(hurtbox.collision_layer == 0 and hurtbox.collision_mask == 32, "Player Hurtbox only monitors the Trap layer")
+	player.free()
+
+	var past := (load("res://Scenes/EchoChase/Prefabs/past_echo.tscn") as PackedScene).instantiate() as PastEcho
+	var future := (load("res://Scenes/EchoChase/Prefabs/future_echo.tscn") as PackedScene).instantiate() as FutureEcho
+	_expect(past.collision_layer == 4 and past.collision_mask == 10, "PastEcho monitors Player and Future Echo layers")
+	_expect(future.collision_layer == 8 and future.collision_mask == 2, "FutureEcho only monitors the Player layer")
+	_expect(not past.is_in_group("temporal_past"), "PastEcho identity uses its type and physics layer")
+	_expect(not future.is_in_group("temporal_future"), "FutureEcho identity uses its type and physics layer")
+	past.free()
+	future.free()
+	var checkpoint := (load("res://Scenes/EchoChase/Prefabs/echo_checkpoint.tscn") as PackedScene).instantiate() as EchoCheckpoint
+	_expect(not checkpoint.is_in_group("echo_checkpoint"), "Checkpoint identity uses explicit authored references")
+	checkpoint.free()
+
+	var trap_path := "res://Scenes/EchoChase/Prefabs/echo_trap.tscn"
+	_expect(ResourceLoader.exists(trap_path), "Echo Chase provides an authored Area2D Trap prefab")
+	if ResourceLoader.exists(trap_path):
+		var trap := (load(trap_path) as PackedScene).instantiate() as Area2D
+		_expect(trap.collision_layer == 32 and trap.collision_mask == 2, "Authored Trap uses the Trap and Player layers")
+		_expect(not trap.is_in_group("echo_trap"), "Trap identity uses the Trap physics layer")
+		trap.free()
+
+		var fixture := TIMELINE_FIXTURE.instantiate()
+		root.add_child(fixture)
+		var live_player := fixture.get_node("EchoPlayer") as EchoPlayer
+		var live_trap := (load(trap_path) as PackedScene).instantiate() as Area2D
+		fixture.add_child(live_trap)
+		var failure_animations: Array[StringName] = []
+		live_player.failure_requested.connect(func(animation_name: StringName) -> void: failure_animations.append(animation_name))
+		live_player.global_position = Vector2.ZERO
+		live_trap.global_position = Vector2.ZERO
+		await physics_frame
+		await physics_frame
+		_expect(failure_animations.has(&"death"), "Player Hurtbox detects a real authored Trap Area overlap")
+		fixture.queue_free()
 	await process_frame
 
 
@@ -914,6 +1380,58 @@ func _test_future_echo_releases_a_pressure_plate() -> void:
 	await process_frame
 
 
+# 验证两个未来体按各自录像长度结束，不共享倒计时。
+func _test_future_echoes_use_independent_durations() -> void:
+	var fixture := TIMELINE_FIXTURE.instantiate()
+	root.add_child(fixture)
+	await physics_frame
+	var timeline := fixture.get_node("EchoTimelineController") as EchoTimelineController
+	var short_track: TemporalTrack = TEMPORAL_TRACK_SCRIPT.new()
+	short_track.append(TEMPORAL_FRAME_SCRIPT.new(0.0, Vector2.ZERO))
+	short_track.append(TEMPORAL_FRAME_SCRIPT.new(1.0, Vector2(32.0, 0.0)))
+	var long_track: TemporalTrack = TEMPORAL_TRACK_SCRIPT.new()
+	long_track.append(TEMPORAL_FRAME_SCRIPT.new(0.0, Vector2(96.0, 0.0)))
+	long_track.append(TEMPORAL_FRAME_SCRIPT.new(3.0, Vector2(192.0, 0.0)))
+	timeline.future_echo_a.start_playback(short_track, 1.0, 0.0)
+	timeline.future_echo_b.start_playback(long_track, 3.0, 0.0)
+	timeline.future_echo_a.advance(1.1)
+	timeline.future_echo_b.advance(1.1)
+	_expect(timeline.future_echo_a.is_available(), "One-second FutureEcho releases at its own duration")
+	_expect(not timeline.future_echo_b.is_available(), "Longer FutureEcho remains active when the short one ends")
+	timeline.future_echo_b.advance(2.0)
+	_expect(timeline.future_echo_b.is_available(), "Longer FutureEcho releases only after its own duration")
+	fixture.queue_free()
+	await process_frame
+
+
+# 验证过去体同一时刻覆盖多个未来体时允许全部消散并各自保留尾效。
+func _test_past_dissipates_overlapping_futures_together() -> void:
+	var fixture := TIMELINE_FIXTURE.instantiate()
+	root.add_child(fixture)
+	await physics_frame
+	var timeline := fixture.get_node("EchoTimelineController") as EchoTimelineController
+	var player := fixture.get_node("EchoPlayer") as EchoPlayer
+	timeline.set_physics_process(false)
+	player.set_physics_process(false)
+	player.global_position = Vector2(500.0, 0.0)
+	var shared_track: TemporalTrack = TEMPORAL_TRACK_SCRIPT.new()
+	shared_track.append(TEMPORAL_FRAME_SCRIPT.new(0.0, Vector2.ZERO, Vector2(80.0, 0.0)))
+	shared_track.append(TEMPORAL_FRAME_SCRIPT.new(4.0, Vector2(320.0, 0.0), Vector2(80.0, 0.0)))
+	timeline.future_echo_a.start_playback(shared_track, 4.0, 0.0)
+	timeline.future_echo_b.start_playback(shared_track, 4.0, 0.0)
+	timeline.past_echo.play_at(shared_track, 0.0)
+	timeline.past_echo.area_entered.emit(timeline.future_echo_a)
+	timeline.past_echo.area_entered.emit(timeline.future_echo_b)
+	_expect(timeline.future_echo_a.is_available() and timeline.future_echo_b.is_available(), "PastEcho dissipates every overlapping FutureEcho")
+	_expect(
+		(timeline.future_echo_a.get_node("DepartureVfx") as TemporalDepartureVfx).is_playing()
+		and (timeline.future_echo_b.get_node("DepartureVfx") as TemporalDepartureVfx).is_playing(),
+		"Each dissipated FutureEcho keeps an independent amber departure"
+	)
+	fixture.queue_free()
+	await process_frame
+
+
 # Verifies the visible recording-to-recall loop through the authored recorder and input binding.
 func _test_recorder_commits_a_future_echo_from_recall_input() -> void:
 	var fixture := TIMELINE_FIXTURE.instantiate()
@@ -941,6 +1459,36 @@ func _test_recorder_commits_a_future_echo_from_recall_input() -> void:
 		_expect(not timeline.future_echo_a.is_available(), "Committed recording occupies an authored future echo")
 		_expect(player.is_temporally_phased(), "Recall grants the current player its authored separation phase")
 		_expect(slot_counts.has(1), "Starting a recording emits one used future slot")
+	fixture.queue_free()
+	await process_frame
+
+
+# 验证记录器明确显示录制、等待离开，并在离开后重新可用。
+func _test_recorder_state_feedback_and_reuse() -> void:
+	var fixture := TIMELINE_FIXTURE.instantiate()
+	root.add_child(fixture)
+	await physics_frame
+	var timeline := fixture.get_node("EchoTimelineController") as EchoTimelineController
+	var player := fixture.get_node("EchoPlayer") as EchoPlayer
+	var recorder := fixture.get_node("FutureRecorder") as FutureRecorder
+	if timeline != null and player != null and recorder != null:
+		timeline.set_physics_process(false)
+		player.set_physics_process(false)
+		_expect(recorder.call("get_state_name") == &"ready", "FutureRecorder starts in READY state")
+		recorder.body_entered.emit(player)
+		_expect(recorder.call("get_state_name") == &"recording", "FutureRecorder shows RECORDING while capturing a possibility")
+		_expect(timeline.commit_future_recording(), "FutureRecorder state test commits the first recording")
+		_expect(recorder.call("get_state_name") == &"waiting_exit", "FutureRecorder shows WAITING_EXIT after recall")
+		recorder.body_entered.emit(player)
+		_expect(not timeline.is_future_recording(), "FutureRecorder cannot retrigger before the player leaves")
+		recorder.body_exited.emit(player)
+		_expect(recorder.call("get_state_name") == &"ready", "FutureRecorder returns to READY after the player leaves")
+		recorder.body_entered.emit(player)
+		_expect(timeline.is_future_recording(), "The same FutureRecorder starts another recording after re-entry")
+		timeline.reset_timeline()
+		_expect(recorder.call("get_state_name") == &"waiting_exit", "Timeline reset leaves an occupied recorder waiting for a clean exit")
+		recorder.body_exited.emit(player)
+		_expect(recorder.call("get_state_name") == &"ready", "Recorder becomes READY after leaving following a timeline reset")
 	fixture.queue_free()
 	await process_frame
 
@@ -1074,8 +1622,11 @@ func _test_two_future_slots_reject_a_third_recording() -> void:
 		_advance_timeline(timeline, player, 1.1)
 		_expect(timeline.commit_future_recording(), "Second recording commits after its minimum duration")
 		_expect(slot_counts.has(2), "Second recording reserves the second future slot")
-		_expect(not timeline.start_future_recording(recorder), "Two future possibilities reject a third recording")
+		recorder.body_exited.emit(player)
+		recorder.body_entered.emit(player)
+		_expect(not timeline.is_future_recording(), "Two future possibilities reject a third recording")
 		_expect(not rejection_events.is_empty(), "Rejected third recording emits its public feedback signal")
+		_expect(recorder.call("get_state_name") == &"no_slot", "Rejected third recording shows the NO_SLOT state")
 	fixture.queue_free()
 	await process_frame
 
@@ -1187,6 +1738,20 @@ func _test_timeline_reset_clears_transient_time_state() -> void:
 		_expect(not slot_counts.is_empty() and slot_counts.back() == 0, "Timeline reset publishes zero occupied future slots")
 	fixture.queue_free()
 	await process_frame
+
+
+# 为移动状态测试添加真实 World 碰撞，不引入关卡场景依赖。
+func _add_static_collision(parent: Node, position: Vector2, size: Vector2) -> void:
+	var body := StaticBody2D.new()
+	body.position = position
+	body.collision_layer = 1
+	body.collision_mask = 0
+	var collision_shape := CollisionShape2D.new()
+	var rectangle := RectangleShape2D.new()
+	rectangle.size = size
+	collision_shape.shape = rectangle
+	body.add_child(collision_shape)
+	parent.add_child(body)
 
 
 # Records one failed assertion without preventing later focused checks.

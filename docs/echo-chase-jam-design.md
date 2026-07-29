@@ -1,6 +1,6 @@
-# 《回声追猎 / Echo Chase》Jam 设计文档
+# 《延迟追迹 / Delay Trace》Jam 设计文档
 
-> 工作标题。GodotHub Jam 主题：`Delay`。本文取代《迟相 / Phase Lag》的所有玩法与关卡约束。
+> GodotHub Jam 主题：`Delay`。内部资源路径和类名仍使用 `EchoChase`；本文取代《迟相 / Phase Lag》的所有玩法与关卡约束。
 
 ## 当前决定
 

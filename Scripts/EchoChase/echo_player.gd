@@ -6,33 +6,64 @@ signal dash_started(direction: Vector2)
 signal jump_started
 signal recalled
 signal caught
+signal failure_requested(animation_name: StringName)
 
-const RUN_SPEED := 250.0
-const RUN_ACCELERATION := 4096.0
-const GRAVITY := 980.0
-const JUMP_SPEED := 400.0
-const COYOTE_SECONDS := 0.15
-const JUMP_BUFFER_SECONDS := 0.15
-const WALL_COYOTE_SECONDS := 0.12
-const WALL_PUSH_SECONDS := 0.10
-const WALL_JUMP_SPEED_X := 250.0
-const DASH_AIM_SECONDS := 0.10
-const DASH_SECONDS := 0.10
-const DASH_INPUT_RECOVERY_SECONDS := 0.06
-const DASH_SPEED := 600.0
-const DASH_JUMP_MOMENTUM := 0.65
-const DASH_JUMP_SPEED_CAP := RUN_SPEED * 1.6
+enum State {
+	IDLE,
+	RUN,
+	JUMP,
+	FALL,
+	WALL_SLIDE,
+	DASH_AIM,
+	DASH,
+	DISABLED,
+}
 
+@export_group("References")
 @export var timeline: EchoTimelineController
+
+@export_group("Run")
+@export var run_speed := 250.0
+@export var run_acceleration := 4096.0
+
+@export_group("Jump")
+@export var jump_speed := 400.0
+@export_range(0.0, 1.0, 0.05) var jump_release_multiplier := 0.5
+@export var coyote_seconds := 0.15
+@export var jump_buffer_seconds := 0.15
+
+@export_group("Fall")
+@export var gravity := 980.0
+
+@export_group("Wall Slide")
+@export var wall_slide_speed := 250.0
+@export var wall_coyote_seconds := 0.12
+@export var wall_jump_speed_x := 250.0
+@export var wall_push_seconds := 0.10
+
+@export_group("Dash Aim")
+@export var dash_aim_seconds := 0.10
+
+@export_group("Dash")
+@export var dash_speed := 600.0
+@export var dash_seconds := 0.10
+@export_range(0.0, 1.0, 0.05) var dash_jump_momentum := 0.65
+@export var dash_speed_cap_multiplier := 1.6
+
+@export_group("Recovery")
+@export var dash_input_recovery_seconds := 0.06
 
 @onready var visual: AnimatedSprite2D = %Visual
 @onready var temporal_outline: AnimatedSprite2D = %TemporalOutline
 @onready var recording_outline: AnimatedSprite2D = %RecordingOutline
 @onready var recording_animation_player: AnimationPlayer = %RecordingAnimationPlayer
+@onready var hurtbox: Area2D = %Hurtbox
+@onready var dash_vfx: EchoDashVfx = %DashVfx
 @onready var dash_audio: AudioStreamPlayer2D = $DashAudio
 @onready var land_audio: AudioStreamPlayer2D = $LandAudio
 
 var facing := 1.0
+var _state := State.IDLE
 var _dash_available := true
 var _dash_aim_remaining := 0.0
 var _dash_remaining := 0.0
@@ -45,7 +76,8 @@ var _wall_coyote_remaining := 0.0
 var _wall_push_remaining := 0.0
 var _wall_normal := Vector2.ZERO
 var _temporal_phase_remaining := 0.0
-var _control_enabled := true
+var _dash_requested := false
+var _jump_requested := false
 var _recall_requested := false
 var _was_on_floor := false
 
@@ -53,16 +85,19 @@ var _was_on_floor := false
 # 玩家运行前必须绑定 authored 时间线。
 func _ready() -> void:
 	assert(timeline != null, "EchoPlayer requires an authored EchoTimelineController reference")
+	_change_state(State.IDLE)
 	visual.play(&"idle")
 	temporal_outline.play(&"idle")
 	recording_outline.play(&"idle")
 	recording_animation_player.play(&"inactive")
+	hurtbox.area_entered.connect(_on_hurtbox_area_entered)
+	hurtbox.body_entered.connect(_on_hurtbox_body_entered)
 	_was_on_floor = is_on_floor()
 
 
 # 更新移动，并在位移结算后记录一帧权威路径。
 func _physics_process(delta: float) -> void:
-	if not _control_enabled:
+	if _state == State.DISABLED:
 		return
 	_update_temporal_phase(delta)
 	_collect_jump_input()
@@ -70,10 +105,11 @@ func _physics_process(delta: float) -> void:
 	_update_wall_memory(delta)
 	if _can_start_dash():
 		_start_dash()
-	if _dash_aim_remaining > 0.0 or _dash_remaining > 0.0:
-		_update_dash(delta)
-	else:
-		_update_standard_movement(delta)
+	match _state:
+		State.DASH_AIM, State.DASH:
+			_update_dash(delta)
+		_:
+			_update_standard_movement(delta)
 	_update_animation()
 	_update_landing_audio()
 	timeline.record_player_frame(build_temporal_frame(timeline.get_timeline_seconds()))
@@ -82,8 +118,12 @@ func _physics_process(delta: float) -> void:
 		timeline.commit_future_recording()
 
 
-# 锁存回传输入，避免 authored 输入事件在下个物理帧前丢失。
+# 锁存冲刺、跳跃与回传输入，避免 authored 输入事件在下个物理帧前丢失。
 func _input(event: InputEvent) -> void:
+	if event.is_action_pressed(&"echo_dash"):
+		_dash_requested = true
+	if event.is_action_pressed(&"echo_jump"):
+		_jump_requested = true
 	if event.is_action_pressed(&"echo_recall"):
 		_recall_requested = true
 
@@ -91,11 +131,16 @@ func _input(event: InputEvent) -> void:
 # 从玩家当前可观察状态构造可回放快照。
 func build_temporal_frame(time_seconds: float) -> TemporalFrame:
 	var flags := TemporalFrame.Flag.NONE
-	if _dash_aim_remaining > 0.0 or _dash_remaining > 0.0:
+	if _state in [State.DASH_AIM, State.DASH]:
 		flags |= TemporalFrame.Flag.DASH
-	if velocity.y < 0.0:
+	if _state == State.JUMP:
 		flags |= TemporalFrame.Flag.JUMP
 	return TemporalFrame.new(time_seconds, global_position, velocity, facing, _get_animation_name(), flags)
+
+
+# 返回当前公开移动状态，供调试和关卡测试读取。
+func get_current_state() -> State:
+	return _state
 
 
 # 将玩家送回记录器起点，并在分离阶段提供接触免疫。
@@ -103,6 +148,7 @@ func apply_temporal_recall(target_position: Vector2, phase_seconds: float) -> vo
 	global_position = target_position
 	velocity = Vector2.ZERO
 	_temporal_phase_remaining = phase_seconds
+	_change_state(State.IDLE)
 	recalled.emit()
 
 
@@ -111,15 +157,20 @@ func is_temporally_phased() -> bool:
 	return _temporal_phase_remaining > 0.0
 
 
-# 切换未来录像期间的 authored 金色角色轮廓。
-func set_recording_feedback(value: bool, low_flash_mode: bool) -> void:
+# 切换未来录像期间的 authored 金色角色轮廓，并按需保留循环进度。
+func set_recording_feedback(value: bool, low_flash_mode: bool, preserve_progress := false) -> void:
 	temporal_outline.visible = not value
 	recording_outline.visible = value
+	var progress_ratio := 0.0
+	if preserve_progress and recording_animation_player.current_animation_length > 0.0:
+		progress_ratio = recording_animation_player.current_animation_position / recording_animation_player.current_animation_length
 	recording_animation_player.play(
 		&"recording_reduced" if value and low_flash_mode
 		else &"recording" if value
 		else &"inactive"
 	)
+	if preserve_progress:
+		recording_animation_player.seek(progress_ratio * recording_animation_player.current_animation_length, true)
 
 
 # 返回金色录像轮廓是否可见，供场景验证使用。
@@ -129,16 +180,18 @@ func is_recording_outline_visible() -> bool:
 
 # 过去体抓到玩家后停止输入。
 func receive_past_catch() -> void:
-	if not _control_enabled:
+	if _state == State.DISABLED:
 		return
 	prepare_for_reset(&"hit")
 	caught.emit()
+	failure_requested.emit(&"hit")
 
 
 # 冻结当前体并播放 authored 失败动画，等待场景控制器复位。
 func prepare_for_reset(animation_name: StringName) -> void:
-	_control_enabled = false
+	_change_state(State.DISABLED)
 	velocity = Vector2.ZERO
+	dash_vfx.reset_vfx()
 	visual.play(animation_name)
 	temporal_outline.play(animation_name)
 
@@ -156,7 +209,7 @@ func reset_player(reset_position: Vector2) -> void:
 	_wall_coyote_remaining = 0.0
 	_wall_push_remaining = 0.0
 	_temporal_phase_remaining = 0.0
-	_control_enabled = true
+	_jump_requested = false
 	_recall_requested = false
 	_was_on_floor = false
 	visual.flip_h = false
@@ -167,20 +220,23 @@ func reset_player(reset_position: Vector2) -> void:
 	recording_outline.flip_h = false
 	recording_outline.play(&"idle")
 	recording_animation_player.play(&"inactive")
+	dash_vfx.reset_vfx()
+	_change_state(State.IDLE)
 
 
 # 捕获一次跳跃缓冲并处理可变跳高。
 func _collect_jump_input() -> void:
-	if Input.is_action_just_pressed("echo_jump"):
-		_jump_buffer_remaining = JUMP_BUFFER_SECONDS
+	if _jump_requested or Input.is_action_just_pressed("echo_jump"):
+		_jump_requested = false
+		_jump_buffer_remaining = jump_buffer_seconds
 	if Input.is_action_just_released("echo_jump") and velocity.y < 0.0:
-		velocity.y *= 0.5
+		velocity.y *= jump_release_multiplier
 
 
 # 维护地面土狼时间和地空共用的一次冲刺次数。
 func _update_floor_memory(delta: float) -> void:
 	if is_on_floor():
-		_coyote_remaining = COYOTE_SECONDS
+		_coyote_remaining = coyote_seconds
 		_dash_available = true
 	else:
 		_coyote_remaining = maxf(_coyote_remaining - delta, 0.0)
@@ -189,7 +245,7 @@ func _update_floor_memory(delta: float) -> void:
 # 短暂记住墙面法线，让延迟墙跳仍可用。
 func _update_wall_memory(delta: float) -> void:
 	if is_on_wall_only():
-		_wall_coyote_remaining = WALL_COYOTE_SECONDS
+		_wall_coyote_remaining = wall_coyote_seconds
 		_wall_normal = get_wall_normal()
 	else:
 		_wall_coyote_remaining = maxf(_wall_coyote_remaining - delta, 0.0)
@@ -198,7 +254,9 @@ func _update_wall_memory(delta: float) -> void:
 
 # 只有共享冲刺次数可用时才开始八方向冲刺。
 func _can_start_dash() -> bool:
-	return Input.is_action_just_pressed("echo_dash") and _dash_available
+	var requested := _dash_requested or Input.is_action_just_pressed("echo_dash")
+	_dash_requested = false
+	return requested and _dash_available
 
 
 # 在定速冲刺移动前进入短暂调向窗口。
@@ -206,34 +264,46 @@ func _start_dash() -> void:
 	_dash_available = false
 	_dash_started_on_floor = is_on_floor()
 	_dash_direction = _read_dash_direction()
-	_dash_aim_remaining = DASH_AIM_SECONDS
+	_dash_aim_remaining = dash_aim_seconds
 	_dash_remaining = 0.0
 	_dash_recovery_remaining = 0.0
 	velocity = Vector2.ZERO
+	if dash_aim_seconds > 0.0:
+		_change_state(State.DASH_AIM)
+	else:
+		_dash_remaining = dash_seconds
+		_change_state(State.DASH)
 	dash_started.emit(_dash_direction)
+	dash_vfx.begin(visual, _dash_direction)
 	dash_audio.play()
 
 
 # 依次处理调向、冲刺移动和输入恢复时序。
 func _update_dash(delta: float) -> void:
-	if _dash_aim_remaining > 0.0:
-		var aim_input := _read_move_input()
-		if not aim_input.is_zero_approx():
-			_dash_direction = _snap_to_eight(aim_input)
-		_dash_aim_remaining = maxf(_dash_aim_remaining - delta, 0.0)
-		velocity = Vector2.ZERO
-		move_and_slide()
-		if is_zero_approx(_dash_aim_remaining):
-			_dash_remaining = DASH_SECONDS
-		return
-	if _jump_buffer_remaining > 0.0 and _dash_started_on_floor and _dash_direction.y >= 0.0:
-		_perform_dash_jump()
-		return
-	velocity = _dash_direction * DASH_SPEED
-	_dash_remaining = maxf(_dash_remaining - delta, 0.0)
-	move_and_slide()
-	if is_zero_approx(_dash_remaining):
-		_dash_recovery_remaining = DASH_INPUT_RECOVERY_SECONDS
+	match _state:
+		State.DASH_AIM:
+			var aim_input := _read_move_input()
+			if not aim_input.is_zero_approx():
+				_dash_direction = _snap_to_eight(aim_input)
+				dash_vfx.set_direction(_dash_direction)
+			_dash_aim_remaining = maxf(_dash_aim_remaining - delta, 0.0)
+			velocity = Vector2.ZERO
+			move_and_slide()
+			if is_zero_approx(_dash_aim_remaining):
+				_dash_remaining = dash_seconds
+				_change_state(State.DASH)
+		State.DASH:
+			if _jump_buffer_remaining > 0.0 and _dash_started_on_floor and _dash_direction.y >= 0.0:
+				_perform_dash_jump()
+				return
+			velocity = _dash_direction * dash_speed
+			_dash_remaining = maxf(_dash_remaining - delta, 0.0)
+			move_and_slide()
+			dash_vfx.update_dash(visual, delta, _dash_direction)
+			if is_zero_approx(_dash_remaining):
+				dash_vfx.finish(global_position, _dash_direction)
+				_dash_recovery_remaining = dash_input_recovery_seconds
+				_resolve_standard_state()
 
 
 # 处理重力、跳跃缓冲、墙面移动和普通加速。
@@ -244,11 +314,12 @@ func _update_standard_movement(delta: float) -> void:
 			_perform_wall_jump()
 		elif _coyote_remaining > 0.0:
 			_perform_standard_jump()
-	velocity.y += GRAVITY * delta
+	velocity.y += gravity * delta
 	if is_on_wall_only() and velocity.y > 0.0:
-		velocity.y = minf(velocity.y, RUN_SPEED)
+		velocity.y = minf(velocity.y, wall_slide_speed)
 	_apply_horizontal_motion(delta)
 	move_and_slide()
+	_resolve_standard_state()
 
 
 # 除冲刺恢复锁定外，根据水平输入加速。
@@ -259,17 +330,18 @@ func _apply_horizontal_motion(delta: float) -> void:
 	var input_x := _read_move_input().x
 	if not is_zero_approx(input_x):
 		facing = signf(input_x)
-	var target_speed := input_x * RUN_SPEED
+	var target_speed := input_x * run_speed
 	if _wall_push_remaining > 0.0:
-		target_speed = _wall_normal.x * WALL_JUMP_SPEED_X
-	velocity.x = move_toward(velocity.x, target_speed, RUN_ACCELERATION * delta)
+		target_speed = _wall_normal.x * wall_jump_speed_x
+	velocity.x = move_toward(velocity.x, target_speed, run_acceleration * delta)
 
 
 # 执行普通土狼时间跳跃。
 func _perform_standard_jump() -> void:
 	_jump_buffer_remaining = 0.0
 	_coyote_remaining = 0.0
-	velocity.y = -JUMP_SPEED
+	velocity.y = -jump_speed
+	_change_state(State.JUMP)
 	jump_started.emit()
 
 
@@ -277,10 +349,11 @@ func _perform_standard_jump() -> void:
 func _perform_wall_jump() -> void:
 	_jump_buffer_remaining = 0.0
 	_wall_coyote_remaining = 0.0
-	_wall_push_remaining = WALL_PUSH_SECONDS
-	velocity.x = _wall_normal.x * WALL_JUMP_SPEED_X
-	velocity.y = -JUMP_SPEED
+	_wall_push_remaining = wall_push_seconds
+	velocity.x = _wall_normal.x * wall_jump_speed_x
+	velocity.y = -jump_speed
 	facing = signf(_wall_normal.x)
+	_change_state(State.JUMP)
 	jump_started.emit()
 
 
@@ -289,9 +362,12 @@ func _perform_dash_jump() -> void:
 	_jump_buffer_remaining = 0.0
 	_dash_aim_remaining = 0.0
 	_dash_remaining = 0.0
-	_dash_recovery_remaining = DASH_INPUT_RECOVERY_SECONDS
-	velocity.x = clampf(_dash_direction.x * DASH_SPEED * DASH_JUMP_MOMENTUM, -DASH_JUMP_SPEED_CAP, DASH_JUMP_SPEED_CAP)
-	velocity.y = -JUMP_SPEED
+	_dash_recovery_remaining = dash_input_recovery_seconds
+	dash_vfx.finish(global_position, _dash_direction)
+	var speed_cap := run_speed * dash_speed_cap_multiplier
+	velocity.x = clampf(_dash_direction.x * dash_speed * dash_jump_momentum, -speed_cap, speed_cap)
+	velocity.y = -jump_speed
+	_change_state(State.JUMP)
 	jump_started.emit()
 
 
@@ -342,16 +418,56 @@ func _update_landing_audio() -> void:
 	_was_on_floor = on_floor
 
 
+# authored Trap Area 接触玩家 Hurtbox 时请求统一失败流程。
+func _on_hurtbox_area_entered(_area: Area2D) -> void:
+	_request_trap_failure()
+
+
+# TileSet Trap physics body 接触玩家 Hurtbox 时复用同一失败流程。
+func _on_hurtbox_body_entered(_body: Node2D) -> void:
+	_request_trap_failure()
+
+
+# 陷阱只提出失败请求，checkpoint 控制器负责冻结与复位顺序。
+func _request_trap_failure() -> void:
+	if _state == State.DISABLED:
+		return
+	failure_requested.emit(&"death")
+
+
+# 根据真实碰撞和速度收敛普通移动状态。
+func _resolve_standard_state() -> void:
+	if is_on_floor():
+		_change_state(State.RUN if absf(velocity.x) > 1.0 else State.IDLE)
+	elif is_on_wall_only() and velocity.y > 0.0:
+		_change_state(State.WALL_SLIDE)
+	elif velocity.y < 0.0:
+		_change_state(State.JUMP)
+	else:
+		_change_state(State.FALL)
+
+
+# 只记录状态变化，状态进入动作保留在对应玩法函数内。
+func _change_state(next_state: State) -> void:
+	if _state == next_state:
+		return
+	_state = next_state
+
+
 # 生成供路径回放和后续美术接线使用的动画名。
 func _get_animation_name() -> StringName:
-	if _dash_aim_remaining > 0.0 or _dash_remaining > 0.0:
-		return &"dash"
-	if is_on_wall_only() and velocity.y > 0.0:
-		return &"wallslide"
-	if velocity.y < 0.0:
-		return &"jump"
-	if velocity.y > 0.0:
-		return &"fall"
-	if absf(velocity.x) > 1.0:
-		return &"run"
-	return &"idle"
+	match _state:
+		State.RUN:
+			return &"run"
+		State.JUMP:
+			return &"jump"
+		State.FALL:
+			return &"fall"
+		State.WALL_SLIDE:
+			return &"wallslide"
+		State.DASH_AIM, State.DASH:
+			return &"dash"
+		State.DISABLED:
+			return visual.animation
+		_:
+			return &"idle"

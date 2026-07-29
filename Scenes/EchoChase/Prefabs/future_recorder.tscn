@@ -1,4 +1,4 @@
-[gd_scene load_steps=4 format=3]
+[gd_scene load_steps=9 format=3]
 
 [ext_resource type="Script" path="res://Scripts/EchoChase/future_recorder.gd" id="1_script"]
 [ext_resource type="Texture2D" path="res://assets/echo_chase/tilemap/monochrome_tilemap_transparent_packed.png" id="2_tilemap"]
@@ -10,15 +10,93 @@ size = Vector2(56, 72)
 atlas = ExtResource("2_tilemap")
 region = Rect2(144, 304, 16, 16)
 
+[sub_resource type="Animation" id="Animation_ready"]
+resource_name = "ready"
+length = 1.4
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/path = NodePath("Visual:modulate")
+tracks/0/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 1, "values": [Color(0.98, 0.68, 0.28, 1)]}
+tracks/1/type = "value"
+tracks/1/path = NodePath("Core:modulate")
+tracks/1/interp = 1
+tracks/1/keys = {"times": PackedFloat32Array(0, 0.7, 1.4), "transitions": PackedFloat32Array(1, 1, 1), "update": 0, "values": [Color(1, 0.9, 0.56, 0.28), Color(1, 0.94, 0.64, 0.58), Color(1, 0.9, 0.56, 0.28)]}
+tracks/2/type = "value"
+tracks/2/path = NodePath("StateRing:modulate")
+tracks/2/interp = 1
+tracks/2/keys = {"times": PackedFloat32Array(0, 0.7, 1.4), "transitions": PackedFloat32Array(1, 1, 1), "update": 0, "values": [Color(1, 0.7, 0.22, 0.18), Color(1, 0.78, 0.34, 0.42), Color(1, 0.7, 0.22, 0.18)]}
+
+[sub_resource type="Animation" id="Animation_recording"]
+resource_name = "recording"
+length = 0.8
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/path = NodePath("Visual:modulate")
+tracks/0/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 1, "values": [Color(1, 0.78, 0.24, 1)]}
+tracks/1/type = "value"
+tracks/1/path = NodePath("Core:modulate")
+tracks/1/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 1, "values": [Color(1, 0.94, 0.58, 0.82)]}
+tracks/2/type = "value"
+tracks/2/path = NodePath("StateRing:scale")
+tracks/2/interp = 1
+tracks/2/keys = {"times": PackedFloat32Array(0, 0.8), "transitions": PackedFloat32Array(0.7, 1), "update": 0, "values": [Vector2(4.4, 4.4), Vector2(5.4, 5.4)]}
+tracks/3/type = "value"
+tracks/3/path = NodePath("StateRing:modulate")
+tracks/3/interp = 1
+tracks/3/keys = {"times": PackedFloat32Array(0, 0.8), "transitions": PackedFloat32Array(1, 1), "update": 0, "values": [Color(1, 0.76, 0.28, 0.68), Color(1, 0.76, 0.28, 0.08)]}
+
+[sub_resource type="Animation" id="Animation_waiting_exit"]
+resource_name = "waiting_exit"
+length = 0.1
+tracks/0/type = "value"
+tracks/0/path = NodePath("Visual:modulate")
+tracks/0/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 1, "values": [Color(0.7, 0.64, 0.52, 1)]}
+tracks/1/type = "value"
+tracks/1/path = NodePath("Core:modulate")
+tracks/1/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 1, "values": [Color(0.84, 0.78, 0.64, 0.22)]}
+tracks/2/type = "value"
+tracks/2/path = NodePath("StateRing:scale")
+tracks/2/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 1, "values": [Vector2(4.2, 4.2)]}
+tracks/3/type = "value"
+tracks/3/path = NodePath("StateRing:modulate")
+tracks/3/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 1, "values": [Color(0.84, 0.72, 0.48, 0.18)]}
+
+[sub_resource type="Animation" id="Animation_no_slot"]
+resource_name = "no_slot"
+length = 0.24
+tracks/0/type = "value"
+tracks/0/path = NodePath("Visual:position")
+tracks/0/interp = 1
+tracks/0/keys = {"times": PackedFloat32Array(0, 0.06, 0.12, 0.18, 0.24), "transitions": PackedFloat32Array(1, 1, 1, 1, 1), "update": 0, "values": [Vector2(0, 0), Vector2(-3, 0), Vector2(3, 0), Vector2(-2, 0), Vector2(0, 0)]}
+tracks/1/type = "value"
+tracks/1/path = NodePath("Visual:modulate")
+tracks/1/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 1, "values": [Color(1, 0.24, 0.28, 1)]}
+tracks/2/type = "value"
+tracks/2/path = NodePath("Core:modulate")
+tracks/2/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 1, "values": [Color(1, 0.34, 0.24, 0.48)]}
+tracks/3/type = "value"
+tracks/3/path = NodePath("StateRing:modulate")
+tracks/3/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 1, "values": [Color(1, 0.2, 0.24, 0.5)]}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_state"]
+_data = {&"no_slot": SubResource("Animation_no_slot"), &"ready": SubResource("Animation_ready"), &"recording": SubResource("Animation_recording"), &"waiting_exit": SubResource("Animation_waiting_exit")}
+
 [node name="FutureRecorder" type="Area2D"]
 collision_layer = 16
-collision_mask = 1
+collision_mask = 2
 monitoring = true
 monitorable = true
 script = ExtResource("1_script")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource("Shape_recorder")
+
+[node name="StateRing" type="Sprite2D" parent="."]
+texture_filter = 1
+texture = SubResource("Atlas_recorder")
+scale = Vector2(4.6, 4.6)
+modulate = Color(1, 0.7, 0.22, 0.18)
+show_behind_parent = true
 
 [node name="Visual" type="Sprite2D" parent="."]
 unique_name_in_owner = true
@@ -32,3 +110,7 @@ texture_filter = 1
 texture = SubResource("Atlas_recorder")
 scale = Vector2(2.5, 2.5)
 modulate = Color(1, 0.9, 0.56, 0.34)
+
+[node name="StateAnimationPlayer" type="AnimationPlayer" parent="."]
+unique_name_in_owner = true
+libraries = {&"": SubResource("AnimationLibrary_state")}
