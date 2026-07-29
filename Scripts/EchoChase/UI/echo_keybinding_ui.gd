@@ -1,6 +1,6 @@
 class_name EchoKeybindingUI
 extends VBoxContainer
-## Fixed authored Echo Chase key rows backed by the global input save module.
+## 由全局输入存档模块驱动的固定 authored 键位行。
 
 const ACTION_LABELS := {
 	&"echo_move_left": "向左",
@@ -27,7 +27,7 @@ var _capture_button: Button
 var _capture_action: StringName
 
 
-# Connects each fixed authored action row to the shared capture dialog.
+# 将每个固定 authored 动作行连接到共享捕获对话框。
 func _ready() -> void:
 	_connect_binding_button(move_left_button, &"echo_move_left")
 	_connect_binding_button(move_right_button, &"echo_move_right")
@@ -44,7 +44,7 @@ func _ready() -> void:
 	refresh_all()
 
 
-# Refreshes every display string after loading or replacing a binding.
+# 载入或替换绑定后刷新全部显示文本。
 func refresh_all() -> void:
 	_refresh_button(move_left_button, &"echo_move_left")
 	_refresh_button(move_right_button, &"echo_move_right")
@@ -56,24 +56,24 @@ func refresh_all() -> void:
 	_refresh_button(pause_button, &"pause")
 
 
-# Focuses the first authored row when the controls page opens.
+# 控制页打开时聚焦第一条 authored 键位行。
 func focus_first_row() -> void:
 	move_left_button.grab_focus()
 
 
-# Connects one authored button to its stable InputMap action.
+# 将一个 authored 按钮连接到稳定 InputMap action。
 func _connect_binding_button(button: Button, action: StringName) -> void:
 	button.pressed.connect(_open_capture.bind(action, button))
 
 
-# Opens capture for one action and remembers where focus must return.
+# 为一个动作打开捕获，并记录关闭后焦点返回位置。
 func _open_capture(action: StringName, button: Button) -> void:
 	_capture_action = action
 	_capture_button = button
 	capture_dialog.open_for(String(action), String(ACTION_LABELS[action]), false)
 
 
-# Replaces the primary event and persists it after capture succeeds.
+# 捕获成功后替换主事件并持久化。
 func _on_key_captured(event: InputEvent, action: String) -> void:
 	if KeybindingModule.instance == null:
 		push_error("EchoKeybindingUI requires KeybindingModule")
@@ -84,22 +84,22 @@ func _on_key_captured(event: InputEvent, action: String) -> void:
 	_restore_capture_focus()
 
 
-# Restores the row that initiated a cancelled capture.
+# 捕获取消后恢复发起操作的键位行。
 func _on_capture_cancelled(_action: String) -> void:
 	_restore_capture_focus()
 
 
-# Formats one current primary binding for a fixed authored row.
+# 为固定 authored 行格式化当前主绑定。
 func _refresh_button(button: Button, action: StringName) -> void:
 	var binding_text := "未绑定"
 	if KeybindingModule.instance != null:
 		var events := KeybindingModule.instance.get_action_events(String(action))
 		if not events.is_empty():
 			binding_text = ResourceSerializer.event_to_display_string(events[0])
-	button.text = "%s    %s" % [ACTION_LABELS[action], binding_text]
+	button.text = binding_text
 
 
-# Returns GUI focus to the original action row after capture closes.
+# 捕获关闭后将 GUI 焦点还给原动作行。
 func _restore_capture_focus() -> void:
 	if _capture_button != null and is_instance_valid(_capture_button):
 		_capture_button.grab_focus()

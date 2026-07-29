@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="SceneTransition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://addons/scene_manager/autoload/transition.gd" id="1_transition"]
+[ext_resource type="Texture2D" path="res://assets/echo_chase/vfx/transition_present_radial.svg" id="2_gradient"]
+
+[resource]
+script = ExtResource("1_transition")
+duration = 0.9
+color = Color(0.7, 1, 1, 1)
+gradient_texture = ExtResource("2_gradient")
+gradient_smoothness = 0.12

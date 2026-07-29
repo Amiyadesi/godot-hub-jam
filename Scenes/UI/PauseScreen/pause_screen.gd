@@ -38,3 +38,4 @@ func _ready() -> void:
 # Enables the authored hint action only when the active room defines one.
 func set_hint_available(value: bool) -> void:
 	hint_button.disabled = not value
+	hint_button.visible = value

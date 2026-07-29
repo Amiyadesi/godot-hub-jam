@@ -1,40 +1,33 @@
-[gd_scene load_steps=6 format=3]
+[gd_scene load_steps=7 format=3]
 
 [ext_resource type="Script" path="res://Scenes/UI/Common/feedback_overlay.gd" id="1_script"]
 [ext_resource type="PackedScene" uid="uid://dssid7iw4aqb6" path="res://Scenes/UIorgan/ShaderButton/shader_button.tscn" id="2_button"]
 [ext_resource type="Script" path="res://addons/scene_manager/scene/backdrop.gd" id="3_backdrop"]
+[ext_resource type="Theme" uid="uid://136hg33mma1d" path="res://resources/main_theme.tres" id="4_theme"]
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxToast"]
-bg_color = Color(0.035, 0.03, 0.03, 0.94)
-border_width_left = 1
+[sub_resource type="StyleBoxFlat" id="Style_toast"]
+bg_color = Color(0.02, 0.02, 0.018, 0.96)
+border_width_left = 4
 border_width_top = 1
 border_width_right = 1
 border_width_bottom = 1
-border_color = Color(0.98, 0.72, 0.36, 0.68)
-corner_radius_top_left = 6
-corner_radius_top_right = 6
-corner_radius_bottom_right = 6
-corner_radius_bottom_left = 6
-content_margin_left = 20.0
-content_margin_top = 16.0
-content_margin_right = 20.0
-content_margin_bottom = 16.0
+border_color = Color(0.94, 0.94, 0.9, 1)
+content_margin_left = 16.0
+content_margin_top = 12.0
+content_margin_right = 16.0
+content_margin_bottom = 12.0
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxDialog"]
-bg_color = Color(0.025, 0.022, 0.022, 0.98)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(1, 0.72, 0.32, 0.82)
-corner_radius_top_left = 8
-corner_radius_top_right = 8
-corner_radius_bottom_right = 8
-corner_radius_bottom_left = 8
-content_margin_left = 34.0
-content_margin_top = 28.0
-content_margin_right = 34.0
-content_margin_bottom = 28.0
+[sub_resource type="StyleBoxFlat" id="Style_dialog"]
+bg_color = Color(0.02, 0.02, 0.018, 0.99)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.94, 0.94, 0.9, 1)
+content_margin_left = 28.0
+content_margin_top = 24.0
+content_margin_right = 28.0
+content_margin_bottom = 24.0
 
 [node name="FeedbackOverlay" type="CanvasLayer"]
 layer = 90
@@ -44,36 +37,40 @@ script = ExtResource("1_script")
 anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
-offset_left = -460.0
-offset_top = 34.0
-offset_right = -20.0
-offset_bottom = 250.0
+offset_left = -410.0
+offset_top = 28.0
+offset_right = -24.0
+offset_bottom = 160.0
 grow_horizontal = 0
-theme_override_constants/margin_left = 0
+mouse_filter = 2
+theme = ExtResource("4_theme")
 
 [node name="ToastPanel" type="PanelContainer" parent="ToastMargin"]
 unique_name_in_owner = true
 visible = false
-custom_minimum_size = Vector2(360, 104)
+custom_minimum_size = Vector2(340, 82)
 layout_mode = 2
-theme_override_styles/panel = SubResource("StyleBoxToast")
+mouse_filter = 2
+theme_override_styles/panel = SubResource("Style_toast")
 
 [node name="VBox" type="VBoxContainer" parent="ToastMargin/ToastPanel"]
 layout_mode = 2
-theme_override_constants/separation = 6
+mouse_filter = 2
+theme_override_constants/separation = 2
 
 [node name="ToastTitle" type="Label" parent="ToastMargin/ToastPanel/VBox"]
 unique_name_in_owner = true
 layout_mode = 2
-theme_override_colors/font_color = Color(1, 0.82, 0.42, 1)
-theme_override_font_sizes/font_size = 24
+mouse_filter = 2
+theme_override_font_sizes/font_size = 23
 text = "提示"
 
 [node name="ToastText" type="Label" parent="ToastMargin/ToastPanel/VBox"]
 unique_name_in_owner = true
 layout_mode = 2
-theme_override_colors/font_color = Color(0.94, 0.92, 0.88, 1)
-theme_override_font_sizes/font_size = 18
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.72, 0.72, 0.69, 1)
+theme_override_font_sizes/font_size = 19
 autowrap_mode = 2
 
 [node name="DialogBackdrop" type="Container" parent="."]
@@ -85,13 +82,14 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+theme = ExtResource("4_theme")
 script = ExtResource("3_backdrop")
-color = Color(0, 0, 0, 0.68)
+color = Color(0, 0, 0, 0.72)
 close_modal_on_clicked = false
 modal_offset_unit = 2
-modal_offset = Vector2(0, 0.04)
-opening_duration = 0.16
-closing_duration = 0.14
+modal_offset = Vector2(0, 0)
+opening_duration = 0.14
+closing_duration = 0.12
 
 [node name="PanelRoot" type="Control" parent="DialogBackdrop"]
 layout_mode = 2
@@ -104,52 +102,51 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -340.0
-offset_top = -180.0
-offset_right = 340.0
-offset_bottom = 180.0
+offset_left = -300.0
+offset_top = -142.0
+offset_right = 300.0
+offset_bottom = 142.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_styles/panel = SubResource("StyleBoxDialog")
+theme_override_styles/panel = SubResource("Style_dialog")
 
 [node name="VBox" type="VBoxContainer" parent="DialogBackdrop/PanelRoot/DialogPanel"]
 layout_mode = 2
-theme_override_constants/separation = 20
+theme_override_constants/separation = 16
 
 [node name="DialogTitle" type="Label" parent="DialogBackdrop/PanelRoot/DialogPanel/VBox"]
 unique_name_in_owner = true
 layout_mode = 2
-theme_override_colors/font_color = Color(1, 0.82, 0.42, 1)
-theme_override_font_sizes/font_size = 34
-horizontal_alignment = 1
+theme_override_font_sizes/font_size = 31
 text = "确认"
+
+[node name="Rule" type="HSeparator" parent="DialogBackdrop/PanelRoot/DialogPanel/VBox"]
+layout_mode = 2
 
 [node name="DialogText" type="Label" parent="DialogBackdrop/PanelRoot/DialogPanel/VBox"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 130)
+custom_minimum_size = Vector2(0, 86)
 layout_mode = 2
 size_flags_vertical = 3
-theme_override_colors/font_color = Color(0.94, 0.92, 0.88, 1)
 theme_override_font_sizes/font_size = 22
 autowrap_mode = 2
-horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="Buttons" type="HBoxContainer" parent="DialogBackdrop/PanelRoot/DialogPanel/VBox"]
 layout_mode = 2
-alignment = 1
-theme_override_constants/separation = 22
+alignment = 2
+theme_override_constants/separation = 12
 
 [node name="CancelButton" parent="DialogBackdrop/PanelRoot/DialogPanel/VBox/Buttons" instance=ExtResource("2_button")]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(172, 58)
+custom_minimum_size = Vector2(142, 48)
 layout_mode = 2
-theme_override_font_sizes/font_size = 24
+theme_override_font_sizes/font_size = 23
 text = "取消"
 
 [node name="ConfirmButton" parent="DialogBackdrop/PanelRoot/DialogPanel/VBox/Buttons" instance=ExtResource("2_button")]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(172, 58)
+custom_minimum_size = Vector2(142, 48)
 layout_mode = 2
-theme_override_font_sizes/font_size = 24
+theme_override_font_sizes/font_size = 23
 text = "确认"

@@ -1,14 +1,18 @@
 class_name EchoTimelineController
 extends Node
-## Owns one live path, one past echo, and two authored future-echo slots.
+## 持有一条实时路径、一个过去体和两个 authored 未来槽。
 
 signal future_slots_changed(used_slots: int, max_slots: int)
-signal past_delay_changed(seconds: float)
+signal past_delay_switch_started(seconds: float, switch_id: StringName)
+signal past_delay_changed(seconds: float, switch_id: StringName)
 signal player_caught
 signal future_recording_started
+signal future_recording_progress(elapsed_seconds: float, maximum_seconds: float)
+signal future_recording_finished
 signal future_recording_rejected
 
 const DEFAULT_PAST_DELAY := 3.0
+const DEFAULT_DELAY_SWITCH_ID := &"delay_3s"
 const DELAY_OPTIONS := [1.0, 3.0, 5.0]
 const PAST_PHASE_WARNING_SECONDS := 0.6
 const FUTURE_MINIMUM_SECONDS := 1.0
@@ -25,6 +29,8 @@ const TEMPORAL_PHASE_SECONDS := 0.35
 var _timeline_seconds := 0.0
 var _past_delay_seconds := DEFAULT_PAST_DELAY
 var _pending_past_delay_seconds := DEFAULT_PAST_DELAY
+var _past_delay_switch_id := DEFAULT_DELAY_SWITCH_ID
+var _pending_past_delay_switch_id := DEFAULT_DELAY_SWITCH_ID
 var _phase_warning_remaining := 0.0
 var _run_track := TemporalTrack.new()
 var _recording_track: TemporalTrack
@@ -34,7 +40,7 @@ var _recording_start_position := Vector2.ZERO
 var _future_slots_used := 0
 
 
-# Validates authored links and wires the permanent temporal body contracts.
+# 校验 authored 引用并连接固定时态实体合同。
 func _ready() -> void:
 	assert(player != null, "EchoTimelineController requires an authored EchoPlayer reference")
 	past_echo.caught_player.connect(_on_past_echo_caught_player)
@@ -43,7 +49,7 @@ func _ready() -> void:
 	reset_timeline()
 
 
-# Advances deterministic replay timing only while gameplay remains unpaused.
+# 只在玩法未暂停时推进确定性回放时间。
 func _physics_process(delta: float) -> void:
 	if get_tree().paused:
 		return
@@ -55,7 +61,7 @@ func _physics_process(delta: float) -> void:
 	future_echo_b.advance(delta)
 
 
-# Appends one player-owned physics sample to live history and active recording.
+# 将玩家物理样本追加到实时历史和当前录像。
 func record_player_frame(frame: TemporalFrame) -> void:
 	_run_track.append(frame)
 	if _recording_track == null:
@@ -65,12 +71,12 @@ func record_player_frame(frame: TemporalFrame) -> void:
 	_recording_track.append(recording_frame)
 
 
-# Returns the monotonic time that authored player samples must use.
+# 返回 authored 玩家样本必须使用的单调时间。
 func get_timeline_seconds() -> float:
 	return _timeline_seconds
 
 
-# Starts one future recording and reserves a possibility slot immediately.
+# 开始一次未来录像并立即占用可能性槽。
 func start_future_recording(recorder: FutureRecorder) -> bool:
 	if _recording_track != null or _future_slots_used >= FUTURE_SLOT_COUNT:
 		future_recording_rejected.emit()
@@ -86,50 +92,80 @@ func start_future_recording(recorder: FutureRecorder) -> bool:
 	recorder.recording_started()
 	future_slots_changed.emit(_future_slots_used, FUTURE_SLOT_COUNT)
 	future_recording_started.emit()
+	future_recording_progress.emit(0.0, FUTURE_MAXIMUM_SECONDS)
 	return true
 
 
-# Commits a valid recording, returns the player, and starts an authored future body.
+# 提交录像、补足最短时长、回传玩家并启动 authored 未来体。
 func commit_future_recording() -> bool:
 	if _recording_track == null:
 		return false
 	var duration := _timeline_seconds - _recording_started_at
-	if duration < FUTURE_MINIMUM_SECONDS:
-		return false
 	var future_echo := _get_available_future_echo()
 	if future_echo == null:
 		push_error("EchoTimelineController has no authored FutureEcho available for a reserved slot")
 		return false
 	var finished_track := _recording_track
 	var finished_recorder := _recording_recorder
+	var playback_duration := clampf(duration, FUTURE_MINIMUM_SECONDS, FUTURE_MAXIMUM_SECONDS)
+	finished_track.hold_last_frame_until(playback_duration)
 	_recording_track = null
 	_recording_recorder = null
-	future_echo.start_playback(finished_track, minf(duration, FUTURE_MAXIMUM_SECONDS), TEMPORAL_PHASE_SECONDS)
+	future_echo.start_playback(finished_track, playback_duration, TEMPORAL_PHASE_SECONDS)
 	finished_recorder.recording_finished()
 	player.apply_temporal_recall(_recording_start_position, TEMPORAL_PHASE_SECONDS)
 	var recall_frame := player.build_temporal_frame(_timeline_seconds)
 	recall_frame.flags |= TemporalFrame.Flag.RECALL
 	record_player_frame(recall_frame)
+	future_recording_finished.emit()
 	return true
 
 
-# Starts a phased past-delay transition that cannot damage or press during warning.
-func set_past_delay(seconds: float) -> void:
+# 请求切换过去延迟；连续请求只覆盖目标，不重置既有预警。
+func request_past_delay(seconds: float, switch_id: StringName) -> bool:
 	if not DELAY_OPTIONS.has(seconds):
-		push_error("EchoTimelineController.set_past_delay only accepts 1, 3, or 5 seconds")
-		return
-	if is_equal_approx(seconds, _past_delay_seconds) and is_zero_approx(_phase_warning_remaining):
-		return
+		push_error("EchoTimelineController.request_past_delay only accepts 1, 3, or 5 seconds")
+		return false
+	if switch_id.is_empty():
+		push_error("EchoTimelineController.request_past_delay requires a delay switch id")
+		return false
+	if (
+		is_equal_approx(seconds, _pending_past_delay_seconds)
+		and switch_id == _pending_past_delay_switch_id
+	):
+		return false
 	_pending_past_delay_seconds = seconds
-	_phase_warning_remaining = PAST_PHASE_WARNING_SECONDS
-	past_echo.begin_phase_shift()
+	_pending_past_delay_switch_id = switch_id
+	if is_zero_approx(_phase_warning_remaining):
+		_phase_warning_remaining = PAST_PHASE_WARNING_SECONDS
+		past_echo.begin_phase_shift()
+	var elapsed_warning := PAST_PHASE_WARNING_SECONDS - _phase_warning_remaining
+	past_echo.preview_phase_target(_run_track, _timeline_seconds - seconds, elapsed_warning)
+	past_delay_switch_started.emit(seconds, switch_id)
+	return true
 
 
-# Clears all transient timeline state without preserving a partial recording or echo.
-func reset_timeline() -> void:
+# 保留简单数值入口供现有 authored 调用迁移到具名延迟台。
+func set_past_delay(seconds: float) -> void:
+	request_past_delay(seconds, StringName("delay_%ds" % int(seconds)))
+
+
+# 清空临时时间状态，并用指定延迟台建立新的干净时间线。
+func reset_timeline(
+	initial_delay_seconds := DEFAULT_PAST_DELAY,
+	initial_switch_id := DEFAULT_DELAY_SWITCH_ID
+) -> void:
+	if not DELAY_OPTIONS.has(initial_delay_seconds):
+		push_error("EchoTimelineController.reset_timeline only accepts 1, 3, or 5 second past delays")
+		return
+	if initial_switch_id.is_empty():
+		push_error("EchoTimelineController.reset_timeline requires a delay switch id")
+		return
 	_timeline_seconds = 0.0
-	_past_delay_seconds = DEFAULT_PAST_DELAY
-	_pending_past_delay_seconds = DEFAULT_PAST_DELAY
+	_past_delay_seconds = initial_delay_seconds
+	_pending_past_delay_seconds = initial_delay_seconds
+	_past_delay_switch_id = initial_switch_id
+	_pending_past_delay_switch_id = initial_switch_id
 	_phase_warning_remaining = 0.0
 	_run_track.clear()
 	_recording_track = null
@@ -139,20 +175,31 @@ func reset_timeline() -> void:
 	future_echo_a.reset_echo()
 	future_echo_b.reset_echo()
 	future_slots_changed.emit(_future_slots_used, FUTURE_SLOT_COUNT)
-	past_delay_changed.emit(_past_delay_seconds)
+	past_delay_changed.emit(_past_delay_seconds, _past_delay_switch_id)
+	future_recording_finished.emit()
 
 
-# Reports whether the player may display an active recorder state.
+# 判断玩家当前是否处于录像状态。
 func is_future_recording() -> bool:
 	return _recording_track != null
 
 
-# Returns the active recording duration for authored recorder feedback.
+# 返回当前录像时长，供 authored 记录器表现使用。
 func get_future_recording_seconds() -> float:
 	return maxf(_timeline_seconds - _recording_started_at, 0.0) if _recording_track != null else 0.0
 
 
-# Decrements the phase warning before applying the selected historical offset.
+# 返回玩家最近选择的延迟，切档预警中也返回新目标。
+func get_selected_past_delay_seconds() -> float:
+	return _pending_past_delay_seconds
+
+
+# 返回玩家最近选择的 authored 延迟台 ID。
+func get_selected_delay_switch_id() -> StringName:
+	return _pending_past_delay_switch_id
+
+
+# 先推进相位预警，再应用选定的历史偏移。
 func _advance_past_delay_shift(delta: float) -> void:
 	if is_zero_approx(_phase_warning_remaining):
 		return
@@ -160,19 +207,21 @@ func _advance_past_delay_shift(delta: float) -> void:
 	if not is_zero_approx(_phase_warning_remaining):
 		return
 	_past_delay_seconds = _pending_past_delay_seconds
+	_past_delay_switch_id = _pending_past_delay_switch_id
 	past_echo.end_phase_shift()
-	past_delay_changed.emit(_past_delay_seconds)
+	past_delay_changed.emit(_past_delay_seconds, _past_delay_switch_id)
 
 
-# Auto-commits a recording at the documented maximum duration.
+# 录像达到约定上限时自动提交。
 func _advance_future_recording() -> void:
 	if _recording_track == null:
 		return
+	future_recording_progress.emit(get_future_recording_seconds(), FUTURE_MAXIMUM_SECONDS)
 	if get_future_recording_seconds() >= FUTURE_MAXIMUM_SECONDS:
 		commit_future_recording()
 
 
-# Selects one inactive authored future body without instantiating any node.
+# 从 authored 槽中选择一个未激活未来体，不实例化节点。
 func _get_available_future_echo() -> FutureEcho:
 	if future_echo_a.is_available():
 		return future_echo_a
@@ -181,12 +230,16 @@ func _get_available_future_echo() -> FutureEcho:
 	return null
 
 
-# Releases exactly one possibility slot when a future body ceases to affect gameplay.
+# 未来体停止影响玩法时只释放一个可能性槽。
 func _on_future_slot_released(_future_echo: FutureEcho) -> void:
 	_future_slots_used = maxi(_future_slots_used - 1, 0)
 	future_slots_changed.emit(_future_slots_used, FUTURE_SLOT_COUNT)
 
 
-# Reports a past-echo catch through the public game-over contract.
+# 录制中把抓捕转为回传；普通状态才进入 checkpoint 失败流程。
 func _on_past_echo_caught_player() -> void:
+	if is_future_recording():
+		commit_future_recording()
+		return
+	player.receive_past_catch()
 	player_caught.emit()

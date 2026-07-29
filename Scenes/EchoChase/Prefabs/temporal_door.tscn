@@ -1,9 +1,14 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://Scripts/EchoChase/temporal_door.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/echo_chase/tilemap/monochrome_tilemap_transparent_packed.png" id="2_tilemap"]
 
 [sub_resource type="RectangleShape2D" id="Shape_door"]
 size = Vector2(32, 128)
+
+[sub_resource type="AtlasTexture" id="Atlas_door"]
+atlas = ExtResource("2_tilemap")
+region = Rect2(272, 32, 16, 16)
 
 [node name="TemporalDoor" type="StaticBody2D"]
 collision_layer = 8
@@ -14,7 +19,30 @@ script = ExtResource("1_script")
 unique_name_in_owner = true
 shape = SubResource("Shape_door")
 
-[node name="Visual" type="Polygon2D" parent="."]
+[node name="Visual" type="Node2D" parent="."]
 unique_name_in_owner = true
-polygon = PackedVector2Array(-16, 64, -16, -64, 16, -64, 16, 64)
-color = Color(0.92, 0.34, 0.32, 0.88)
+modulate = Color(0.96, 0.34, 0.36, 1)
+
+[node name="PanelTop" type="Sprite2D" parent="Visual"]
+texture_filter = 1
+position = Vector2(0, -48)
+texture = SubResource("Atlas_door")
+scale = Vector2(2, 2)
+
+[node name="PanelUpper" type="Sprite2D" parent="Visual"]
+texture_filter = 1
+position = Vector2(0, -16)
+texture = SubResource("Atlas_door")
+scale = Vector2(2, 2)
+
+[node name="PanelLower" type="Sprite2D" parent="Visual"]
+texture_filter = 1
+position = Vector2(0, 16)
+texture = SubResource("Atlas_door")
+scale = Vector2(2, 2)
+
+[node name="PanelBottom" type="Sprite2D" parent="Visual"]
+texture_filter = 1
+position = Vector2(0, 48)
+texture = SubResource("Atlas_door")
+scale = Vector2(2, 2)

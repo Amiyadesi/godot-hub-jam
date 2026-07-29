@@ -1,6 +1,6 @@
 class_name TemporalFrame
 extends RefCounted
-## One deterministic player sample used by past and future path playback.
+## 过去体与未来体路径回放使用的一帧确定性玩家状态。
 
 enum Flag {
 	NONE = 0,
@@ -17,7 +17,7 @@ var animation_name: StringName = &"idle"
 var flags := Flag.NONE
 
 
-# Builds one immutable-style physics sample from observable player state.
+# 从可观察玩家状态构造一帧独立样本。
 func _init(
 	new_time_seconds := 0.0,
 	new_position := Vector2.ZERO,
@@ -34,17 +34,17 @@ func _init(
 	flags = new_flags
 
 
-# Creates a full independent frame copy for tracks with different lifetimes.
+# 为不同生命周期的轨迹创建完整独立副本。
 func copy() -> TemporalFrame:
 	return TemporalFrame.new(time_seconds, position, velocity, facing, animation_name, flags)
 
 
-# Reports whether this frame represents a discontinuous recorder return.
+# 判断这一帧是否表示不连续的回传跳变。
 func is_recall() -> bool:
 	return (flags & Flag.RECALL) != 0
 
 
-# Interpolates ordinary movement while preserving a discrete state label.
+# 插值普通移动，同时保留离散动作标签。
 func interpolate_to(next_frame: TemporalFrame, weight: float) -> TemporalFrame:
 	var clamped_weight := clampf(weight, 0.0, 1.0)
 	if next_frame.is_recall():

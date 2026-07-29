@@ -1,0 +1,8 @@
+Asset: Mysterious, Futuristic 8-bit Music Loop (Mysterious2.wav)
+Author: Frenchyboy
+Source: https://opengameart.org/content/mysterious-futuristic-8-bit-music-loop
+License: Creative Commons Zero v1.0 Universal (CC0 1.0)
+License URL: https://creativecommons.org/publicdomain/zero/1.0/
+
+The OpenGameArt submission lists CC0 as its license and includes
+Mysterious2.wav among its downloadable files.

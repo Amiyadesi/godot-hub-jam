@@ -1,9 +1,22 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene load_steps=6 format=3]
 
 [ext_resource type="Script" path="res://Scripts/EchoChase/temporal_pressure_plate.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/echo_chase/tilemap/monochrome_tilemap_transparent_packed.png" id="2_tilemap"]
 
 [sub_resource type="RectangleShape2D" id="Shape_plate"]
 size = Vector2(64, 16)
+
+[sub_resource type="AtlasTexture" id="Atlas_plate_left"]
+atlas = ExtResource("2_tilemap")
+region = Rect2(0, 128, 16, 16)
+
+[sub_resource type="AtlasTexture" id="Atlas_plate_middle"]
+atlas = ExtResource("2_tilemap")
+region = Rect2(16, 128, 16, 16)
+
+[sub_resource type="AtlasTexture" id="Atlas_plate_right"]
+atlas = ExtResource("2_tilemap")
+region = Rect2(32, 128, 16, 16)
 
 [node name="TemporalPressurePlate" type="Area2D"]
 collision_layer = 16
@@ -15,6 +28,26 @@ script = ExtResource("1_script")
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource("Shape_plate")
 
-[node name="Visual" type="Polygon2D" parent="."]
-polygon = PackedVector2Array(-32, 8, -32, -8, 32, -8, 32, 8)
-color = Color(0.86, 0.4, 0.26, 0.86)
+[node name="Visual" type="Node2D" parent="."]
+unique_name_in_owner = true
+modulate = Color(0.96, 0.62, 0.28, 1)
+
+[node name="Left" type="Sprite2D" parent="Visual"]
+texture_filter = 1
+position = Vector2(-24, 0)
+texture = SubResource("Atlas_plate_left")
+
+[node name="MiddleA" type="Sprite2D" parent="Visual"]
+texture_filter = 1
+position = Vector2(-8, 0)
+texture = SubResource("Atlas_plate_middle")
+
+[node name="MiddleB" type="Sprite2D" parent="Visual"]
+texture_filter = 1
+position = Vector2(8, 0)
+texture = SubResource("Atlas_plate_middle")
+
+[node name="Right" type="Sprite2D" parent="Visual"]
+texture_filter = 1
+position = Vector2(24, 0)
+texture = SubResource("Atlas_plate_right")

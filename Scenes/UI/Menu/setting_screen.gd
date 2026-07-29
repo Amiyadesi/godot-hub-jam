@@ -3,6 +3,7 @@ class_name SettingScreen
 extends SceneManagerBackdrop
 
 signal thanks_requested
+signal return_completed
 
 const WINDOW_RESOLUTIONS := [Vector2i(1280, 720), Vector2i(1600, 900), Vector2i(1920, 1080)]
 const GENERAL_KEYS := [
@@ -24,17 +25,6 @@ const GENERAL_DEFAULTS := {
 	"screen_shake": 0.5,
 	"low_flash_mode": false,
 }
-const GENERAL_HINTS := {
-	"display_mode": "选择全屏或固定窗口分辨率。窗口模式会立即关闭无边框显示。",
-	"vsync_enabled": "开启垂直同步可减少画面撕裂。",
-	"master_volume": "统一控制整体音量。先调这里，再微调其它声部。",
-	"music_volume": "调整背景音乐音量。",
-	"sfx_volume": "调整动作、界面反馈和机关音效音量。",
-	"ui_volume": "调整按钮确认、取消和菜单反馈音效音量。",
-	"ambient_volume": "调整环境声和氛围声响。",
-	"screen_shake": "调整爆炸等强反馈时的屏幕震动强度。设为 0 则禁用震动。",
-	"low_flash_mode": "降低快速闪断和大面积爆闪，保留稳定轮廓、重影与慢脉冲。",
-}
 var is_in_menu_flag: bool
 
 @onready var return_button: Button = %ReturnButton
@@ -42,13 +32,12 @@ var is_in_menu_flag: bool
 @onready var controls_tab: Button = %ControlsTab
 @onready var general_page: ScrollContainer = %AudioPage
 @onready var controls_page: ScrollContainer = %ControlsPage
-@onready var hint_label: Label = %HintLabel
 @onready var reset_general_button: Button = %ResetAudioButton
 @onready var thanks_button: Button = %ThanksButton
 @onready var display_mode_row: VBoxContainer = %DisplayModeRow
 @onready var display_mode_option: OptionButton = %DisplayModeOption
 @onready var vsync_row: VBoxContainer = %VSyncRow
-@onready var vsync_toggle: CheckButton = %VSyncToggle
+@onready var vsync_toggle: Button = %VSyncToggle
 @onready var master_row: VBoxContainer = %MasterRow
 @onready var master_slider: HSlider = %MasterSlider
 @onready var master_value: Label = %MasterValue
@@ -68,12 +57,13 @@ var is_in_menu_flag: bool
 @onready var screen_shake_slider: HSlider = %ScreenShakeSlider
 @onready var screen_shake_value: Label = %ScreenShakeValue
 @onready var low_flash_row: VBoxContainer = %LowFlashRow
-@onready var low_flash_toggle: CheckButton = %LowFlashToggle
+@onready var low_flash_toggle: Button = %LowFlashToggle
 @onready var keybinding_ui: EchoKeybindingUI = %KeybindingUI
 
 var _setting_rows: Array[Dictionary] = []
 var _current_tab := 0
 var _ignore_ui_changes: bool
+var _return_in_progress := false
 
 
 # Wires the authored controls to the global settings module.
@@ -101,6 +91,7 @@ func refresh_from_settings() -> void:
 		_update_value_label(value_label, slider.value)
 	_sync_display_controls()
 	low_flash_toggle.button_pressed = bool(SettingsModule.instance.get_value("low_flash_mode", false))
+	_sync_toggle_labels()
 	_ignore_ui_changes = false
 	keybinding_ui.refresh_all()
 
@@ -127,18 +118,11 @@ func _connect_signals() -> void:
 	display_mode_option.item_selected.connect(_on_display_mode_selected)
 	vsync_toggle.toggled.connect(_on_vsync_toggled)
 	low_flash_toggle.toggled.connect(_on_low_flash_toggled)
-	display_mode_row.mouse_entered.connect(_set_hint.bind(GENERAL_HINTS["display_mode"]))
-	vsync_row.mouse_entered.connect(_set_hint.bind(GENERAL_HINTS["vsync_enabled"]))
-	low_flash_row.mouse_entered.connect(_set_hint.bind(GENERAL_HINTS["low_flash_mode"]))
-	low_flash_toggle.focus_entered.connect(_set_hint.bind(GENERAL_HINTS["low_flash_mode"]))
 	visibility_changed.connect(_on_visibility_changed)
 	close_modal_requested.connect(_on_return_pressed)
 	for item in _setting_rows:
 		var key := String(item["key"])
-		var row := item["row"] as Control
 		var slider := item["slider"] as HSlider
-		row.mouse_entered.connect(_set_hint.bind(GENERAL_HINTS[key]))
-		slider.focus_entered.connect(_set_hint.bind(GENERAL_HINTS[key]))
 		slider.value_changed.connect(_on_general_slider_changed.bind(key, item["value"]))
 
 
@@ -178,6 +162,13 @@ func _sync_display_controls() -> void:
 				display_mode_option.select(index + 1)
 				break
 	vsync_toggle.button_pressed = bool(SettingsModule.instance.get_value("vsync_enabled", true))
+	_sync_toggle_labels()
+
+
+# 将二元设置显示为简洁的文本状态。
+func _sync_toggle_labels() -> void:
+	vsync_toggle.text = "[ ON ]" if vsync_toggle.button_pressed else "[ OFF ]"
+	low_flash_toggle.text = "[ ON ]" if low_flash_toggle.button_pressed else "[ OFF ]"
 
 
 # Switches between general settings and keybinding pages.
@@ -188,11 +179,9 @@ func _set_tab(index: int) -> void:
 	general_tab.button_pressed = _current_tab == 0
 	controls_tab.button_pressed = _current_tab == 1
 	if _current_tab == 0:
-		_set_hint("调整显示、声音与辅助设置。改动会立即应用并自动保存。")
 		if visible:
 			display_mode_option.grab_focus()
 	else:
-		_set_hint("每个动作可保留多个键盘或手柄绑定。点击绑定可替换，+ 可添加。")
 		if visible:
 			keybinding_ui.focus_first_row()
 
@@ -228,6 +217,7 @@ func _apply_window_resolution(resolution: Vector2i) -> void:
 
 # Persists the VSync switch as soon as it changes.
 func _on_vsync_toggled(enabled: bool) -> void:
+	_sync_toggle_labels()
 	if _ignore_ui_changes:
 		return
 	SettingsModule.instance.set_value("vsync_enabled", enabled)
@@ -235,6 +225,7 @@ func _on_vsync_toggled(enabled: bool) -> void:
 
 # Persists the accessibility flash reduction switch immediately.
 func _on_low_flash_toggled(enabled: bool) -> void:
+	_sync_toggle_labels()
 	if _ignore_ui_changes:
 		return
 	SettingsModule.instance.set_value("low_flash_mode", enabled)
@@ -246,14 +237,32 @@ func _on_reset_general_pressed() -> void:
 		SettingsModule.instance.set_value(key, GENERAL_DEFAULTS[key])
 	GameAudio.refresh_runtime_volumes()
 	refresh_from_settings()
-	_set_hint("通用设置已恢复默认。")
 
 
-# Closes the modal after flushing the global settings save.
+# 让按钮和 Esc 共用同一条保存与返回路径。
 func _on_return_pressed() -> void:
+	request_return()
+
+
+# 保存设置并关闭页面；是否解除暂停由调用场景决定。
+func request_return() -> void:
+	if _return_in_progress or not visible:
+		return
+	_return_in_progress = true
 	_save_global_settings()
-	get_tree().paused = false
-	close_modal()
+	var tween := close_modal()
+	if tween != null:
+		await tween.finished
+	_return_in_progress = false
+	return_completed.emit()
+
+
+# 将 Esc 路由到与返回按钮相同的公开接口。
+func _input(event: InputEvent) -> void:
+	if not visible or not event.is_action_pressed(&"ui_cancel"):
+		return
+	get_viewport().set_input_as_handled()
+	request_return()
 
 
 # Hands off from settings to the authored credits modal.
@@ -290,11 +299,6 @@ func _get_setting_value(key: String) -> float:
 # Formats slider values consistently as whole-number percentages.
 func _update_value_label(label: Label, value: float) -> void:
 	label.text = "%d%%" % int(round(value * 100.0))
-
-
-# Updates the two-line explanation panel under the page content.
-func _set_hint(text: String) -> void:
-	hint_label.text = text
 
 
 # Persists global settings through the registered project save system.

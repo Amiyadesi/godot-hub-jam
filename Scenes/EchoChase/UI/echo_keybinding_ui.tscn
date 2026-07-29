@@ -3,95 +3,232 @@
 [ext_resource type="Script" path="res://Scripts/EchoChase/UI/echo_keybinding_ui.gd" id="1_script"]
 [ext_resource type="PackedScene" path="res://addons/enhance_save_system/Components/InputRemapping/key_capture_dialog.tscn" id="2_capture"]
 
-[sub_resource type="StyleBoxFlat" id="Style_row"]
-bg_color = Color(0.012, 0.03, 0.038, 0.84)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(0.28, 0.62, 0.62, 0.72)
-corner_radius_top_left = 4
-corner_radius_top_right = 4
-corner_radius_bottom_right = 4
-corner_radius_bottom_left = 4
-
 [node name="EchoKeybindingUI" type="VBoxContainer"]
-custom_minimum_size = Vector2(600, 0)
-size_flags_horizontal = 4
-theme_override_constants/separation = 10
+custom_minimum_size = Vector2(680, 0)
+size_flags_horizontal = 3
+theme_override_constants/separation = 14
 script = ExtResource("1_script")
-
-[node name="Header" type="Label" parent="."]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.62, 0.95, 0.9, 1)
-theme_override_font_sizes/font_size = 24
-text = "动作 / 当前键位"
-
-[node name="Hint" type="Label" parent="."]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.72, 0.82, 0.8, 0.82)
-theme_override_font_sizes/font_size = 15
-text = "点击一项后按下新键。"
 
 [node name="Rows" type="VBoxContainer" parent="."]
 layout_mode = 2
-theme_override_constants/separation = 8
+size_flags_horizontal = 3
+theme_override_constants/separation = 5
 
-[node name="MoveLeftButton" type="Button" parent="Rows"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 48)
+[node name="MoveLeftRow" type="VBoxContainer" parent="Rows"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 20
-theme_override_styles/normal = SubResource("Style_row")
+theme_override_constants/separation = 4
 
-[node name="MoveRightButton" type="Button" parent="Rows"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 48)
+[node name="RowContent" type="HBoxContainer" parent="Rows/MoveLeftRow"]
+custom_minimum_size = Vector2(0, 50)
 layout_mode = 2
-theme_override_font_sizes/font_size = 20
-theme_override_styles/normal = SubResource("Style_row")
 
-[node name="MoveUpButton" type="Button" parent="Rows"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 48)
+[node name="Label" type="Label" parent="Rows/MoveLeftRow/RowContent"]
+custom_minimum_size = Vector2(230, 50)
 layout_mode = 2
-theme_override_font_sizes/font_size = 20
-theme_override_styles/normal = SubResource("Style_row")
+text = "向左"
+vertical_alignment = 1
 
-[node name="MoveDownButton" type="Button" parent="Rows"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 48)
+[node name="Spacer" type="Control" parent="Rows/MoveLeftRow/RowContent"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 20
-theme_override_styles/normal = SubResource("Style_row")
+size_flags_horizontal = 3
 
-[node name="DashButton" type="Button" parent="Rows"]
+[node name="MoveLeftButton" type="Button" parent="Rows/MoveLeftRow/RowContent"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 48)
+custom_minimum_size = Vector2(210, 50)
 layout_mode = 2
-theme_override_font_sizes/font_size = 20
-theme_override_styles/normal = SubResource("Style_row")
+theme_override_font_sizes/font_size = 22
 
-[node name="JumpButton" type="Button" parent="Rows"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 48)
+[node name="Separator" type="HSeparator" parent="Rows/MoveLeftRow"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 20
-theme_override_styles/normal = SubResource("Style_row")
 
-[node name="RecallButton" type="Button" parent="Rows"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 48)
+[node name="MoveRightRow" type="VBoxContainer" parent="Rows"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 20
-theme_override_styles/normal = SubResource("Style_row")
+theme_override_constants/separation = 4
 
-[node name="PauseButton" type="Button" parent="Rows"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 48)
+[node name="RowContent" type="HBoxContainer" parent="Rows/MoveRightRow"]
+custom_minimum_size = Vector2(0, 50)
 layout_mode = 2
-theme_override_font_sizes/font_size = 20
-theme_override_styles/normal = SubResource("Style_row")
+
+[node name="Label" type="Label" parent="Rows/MoveRightRow/RowContent"]
+custom_minimum_size = Vector2(230, 50)
+layout_mode = 2
+text = "向右"
+vertical_alignment = 1
+
+[node name="Spacer" type="Control" parent="Rows/MoveRightRow/RowContent"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="MoveRightButton" type="Button" parent="Rows/MoveRightRow/RowContent"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(210, 50)
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+
+[node name="Separator" type="HSeparator" parent="Rows/MoveRightRow"]
+layout_mode = 2
+
+[node name="MoveUpRow" type="VBoxContainer" parent="Rows"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="RowContent" type="HBoxContainer" parent="Rows/MoveUpRow"]
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Rows/MoveUpRow/RowContent"]
+custom_minimum_size = Vector2(230, 50)
+layout_mode = 2
+text = "向上"
+vertical_alignment = 1
+
+[node name="Spacer" type="Control" parent="Rows/MoveUpRow/RowContent"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="MoveUpButton" type="Button" parent="Rows/MoveUpRow/RowContent"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(210, 50)
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+
+[node name="Separator" type="HSeparator" parent="Rows/MoveUpRow"]
+layout_mode = 2
+
+[node name="MoveDownRow" type="VBoxContainer" parent="Rows"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="RowContent" type="HBoxContainer" parent="Rows/MoveDownRow"]
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Rows/MoveDownRow/RowContent"]
+custom_minimum_size = Vector2(230, 50)
+layout_mode = 2
+text = "向下"
+vertical_alignment = 1
+
+[node name="Spacer" type="Control" parent="Rows/MoveDownRow/RowContent"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="MoveDownButton" type="Button" parent="Rows/MoveDownRow/RowContent"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(210, 50)
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+
+[node name="Separator" type="HSeparator" parent="Rows/MoveDownRow"]
+layout_mode = 2
+
+[node name="DashRow" type="VBoxContainer" parent="Rows"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="RowContent" type="HBoxContainer" parent="Rows/DashRow"]
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Rows/DashRow/RowContent"]
+custom_minimum_size = Vector2(230, 50)
+layout_mode = 2
+text = "冲刺"
+vertical_alignment = 1
+
+[node name="Spacer" type="Control" parent="Rows/DashRow/RowContent"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="DashButton" type="Button" parent="Rows/DashRow/RowContent"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(210, 50)
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+
+[node name="Separator" type="HSeparator" parent="Rows/DashRow"]
+layout_mode = 2
+
+[node name="JumpRow" type="VBoxContainer" parent="Rows"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="RowContent" type="HBoxContainer" parent="Rows/JumpRow"]
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Rows/JumpRow/RowContent"]
+custom_minimum_size = Vector2(230, 50)
+layout_mode = 2
+text = "跳跃"
+vertical_alignment = 1
+
+[node name="Spacer" type="Control" parent="Rows/JumpRow/RowContent"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="JumpButton" type="Button" parent="Rows/JumpRow/RowContent"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(210, 50)
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+
+[node name="Separator" type="HSeparator" parent="Rows/JumpRow"]
+layout_mode = 2
+
+[node name="RecallRow" type="VBoxContainer" parent="Rows"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="RowContent" type="HBoxContainer" parent="Rows/RecallRow"]
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Rows/RecallRow/RowContent"]
+custom_minimum_size = Vector2(230, 50)
+layout_mode = 2
+text = "结束录制 / 回传"
+vertical_alignment = 1
+
+[node name="Spacer" type="Control" parent="Rows/RecallRow/RowContent"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="RecallButton" type="Button" parent="Rows/RecallRow/RowContent"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(210, 50)
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+
+[node name="Separator" type="HSeparator" parent="Rows/RecallRow"]
+layout_mode = 2
+
+[node name="PauseRow" type="VBoxContainer" parent="Rows"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="RowContent" type="HBoxContainer" parent="Rows/PauseRow"]
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Rows/PauseRow/RowContent"]
+custom_minimum_size = Vector2(230, 50)
+layout_mode = 2
+text = "暂停"
+vertical_alignment = 1
+
+[node name="Spacer" type="Control" parent="Rows/PauseRow/RowContent"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="PauseButton" type="Button" parent="Rows/PauseRow/RowContent"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(210, 50)
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+
+[node name="Separator" type="HSeparator" parent="Rows/PauseRow"]
+layout_mode = 2
 
 [node name="KeyCaptureDialog" parent="." instance=ExtResource("2_capture")]
 unique_name_in_owner = true

@@ -1,43 +1,30 @@
-[gd_scene load_steps=8 format=3 uid="uid://dl7b3wmwdq67u"]
+[gd_scene load_steps=4 format=3 uid="uid://dl7b3wmwdq67u"]
 
-[ext_resource type="Script" uid="uid://ba1jtevurhfn7" path="res://Scenes/UI/PauseScreen/pause_screen.gd" id="1_pause"]
-[ext_resource type="Shader" uid="uid://dtcjm8c7boghc" path="res://resources/shader/blur.gdshader" id="2_blur"]
-[ext_resource type="PackedScene" uid="uid://c8eisrp4kcf52" path="res://Scenes/UI/Menu/setting_ambient_vfx.tscn" id="3_ambient"]
-[ext_resource type="PackedScene" uid="uid://uacp5p6j6svs" path="res://Scenes/UI/Menu/setting_local_light_vfx.tscn" id="4_light"]
-[ext_resource type="PackedScene" uid="uid://dssid7iw4aqb6" path="res://Scenes/UIorgan/ShaderButton/shader_button.tscn" id="5_button"]
+[ext_resource type="Script" uid="uid://ba1jtevurhfn7" path="res://Scenes/UI/PauseScreen/pause_screen.gd" id="1_script"]
+[ext_resource type="PackedScene" uid="uid://dssid7iw4aqb6" path="res://Scenes/UIorgan/ShaderButton/shader_button.tscn" id="2_button"]
+[ext_resource type="Theme" uid="uid://136hg33mma1d" path="res://resources/main_theme.tres" id="3_theme"]
 
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_pause_blur"]
-shader = ExtResource("2_blur")
-shader_parameter/strength = 3.3
-shader_parameter/mix_percentage = 0.3
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_pause_frame"]
-bg_color = Color(0, 0, 0, 0)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(0.98, 0.72, 0.36, 0.26)
-
-[node name="PauseScreen" type="Container" unique_id=948210252]
+[node name="PauseScreen" type="Container"]
 process_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-script = ExtResource("1_pause")
-color = Color(0, 0, 0, 0.68)
+theme = ExtResource("3_theme")
+script = ExtResource("1_script")
+color = Color(0, 0, 0, 0.58)
 close_modal_on_clicked = false
 modal_offset_unit = 2
-modal_offset = Vector2(0, 0.08)
+modal_offset = Vector2(0, 0)
+opening_duration = 0.14
+closing_duration = 0.12
 metadata/_custom_type_script = "uid://c5r3km1v05kuj"
 
 [node name="PanelRoot" type="Control" parent="."]
 layout_mode = 2
 
-[node name="GlassBlur" type="ColorRect" parent="PanelRoot"]
-material = SubResource("ShaderMaterial_pause_blur")
+[node name="Shade" type="ColorRect" parent="PanelRoot"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -45,114 +32,82 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-color = Color(0.01, 0.008, 0.008, 0.54)
+color = Color(0, 0, 0, 0.3)
 
-[node name="GlassFrame" type="Panel" parent="PanelRoot"]
+[node name="RailShade" type="ColorRect" parent="PanelRoot"]
 layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
+anchor_right = 0.36
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_pause_frame")
+color = Color(0.012, 0.012, 0.011, 0.96)
 
-[node name="SettingAmbientVFX" parent="PanelRoot" instance=ExtResource("3_ambient")]
+[node name="Title" type="Label" parent="PanelRoot"]
 layout_mode = 1
-
-[node name="SettingLocalLightVFX" parent="PanelRoot" instance=ExtResource("4_light")]
-layout_mode = 1
-
-[node name="OuterMargin" type="MarginContainer" parent="PanelRoot"]
-layout_mode = 1
-offset_right = 1915.0
-offset_bottom = 1084.0
-theme_override_constants/margin_left = 188
-theme_override_constants/margin_top = 28
-theme_override_constants/margin_right = 188
-
-[node name="ShellPanel" type="Control" parent="PanelRoot/OuterMargin"]
-custom_minimum_size = Vector2(760, 520)
-clip_contents = true
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-
-[node name="ShellMargin" type="MarginContainer" parent="PanelRoot/OuterMargin/ShellPanel"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
+anchor_left = 0.055
+anchor_top = 0.095
+anchor_right = 0.31
+anchor_bottom = 0.2
 grow_horizontal = 2
 grow_vertical = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-theme_override_constants/margin_left = 34
-theme_override_constants/margin_top = 30
-theme_override_constants/margin_right = 28
-theme_override_constants/margin_bottom = 28
-
-[node name="MainVBox" type="VBoxContainer" parent="PanelRoot/OuterMargin/ShellPanel/ShellMargin"]
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-theme_override_constants/separation = 18
-
-[node name="Title" type="Label" parent="PanelRoot/OuterMargin/ShellPanel/ShellMargin/MainVBox"]
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 0.82, 0.42, 1)
-theme_override_font_sizes/font_size = 46
+theme_override_font_sizes/font_size = 50
 text = "暂停"
-horizontal_alignment = 1
+vertical_alignment = 1
 
-[node name="HSeparator" type="HSeparator" parent="PanelRoot/OuterMargin/ShellPanel/ShellMargin/MainVBox"]
-layout_mode = 2
+[node name="RouteLine" type="ColorRect" parent="PanelRoot"]
+layout_mode = 1
+anchor_left = 0.067
+anchor_top = 0.305
+anchor_right = 0.068
+anchor_bottom = 0.68
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.7, 0.7, 0.67, 0.82)
 
-[node name="ButtonBox" type="VBoxContainer" parent="PanelRoot/OuterMargin/ShellPanel/ShellMargin/MainVBox"]
-custom_minimum_size = Vector2(0, 430)
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-alignment = 1
-theme_override_constants/separation = 14
+[node name="ButtonBox" type="VBoxContainer" parent="PanelRoot"]
+layout_mode = 1
+anchor_left = 0.08
+anchor_top = 0.28
+anchor_right = 0.315
+anchor_bottom = 0.75
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 9
 
-[node name="ContinueButton" parent="PanelRoot/OuterMargin/ShellPanel/ShellMargin/MainVBox/ButtonBox" instance=ExtResource("5_button")]
+[node name="ContinueButton" parent="PanelRoot/ButtonBox" instance=ExtResource("2_button")]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(240, 64)
+custom_minimum_size = Vector2(0, 56)
 layout_mode = 2
-size_flags_horizontal = 4
-theme_override_font_sizes/font_size = 30
+theme_override_font_sizes/font_size = 28
 text = "继续游戏"
 
-[node name="RestartButton" parent="PanelRoot/OuterMargin/ShellPanel/ShellMargin/MainVBox/ButtonBox" instance=ExtResource("5_button")]
+[node name="RestartButton" parent="PanelRoot/ButtonBox" instance=ExtResource("2_button")]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(240, 64)
+custom_minimum_size = Vector2(0, 56)
 layout_mode = 2
-size_flags_horizontal = 4
-theme_override_font_sizes/font_size = 30
+theme_override_font_sizes/font_size = 28
 text = "重开本关"
 
-[node name="HintButton" parent="PanelRoot/OuterMargin/ShellPanel/ShellMargin/MainVBox/ButtonBox" instance=ExtResource("5_button")]
+[node name="HintButton" parent="PanelRoot/ButtonBox" instance=ExtResource("2_button")]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(240, 64)
+visible = false
+custom_minimum_size = Vector2(0, 56)
 layout_mode = 2
-size_flags_horizontal = 4
-theme_override_font_sizes/font_size = 30
+theme_override_font_sizes/font_size = 28
 text = "查看提示"
 
-[node name="SettingButton" parent="PanelRoot/OuterMargin/ShellPanel/ShellMargin/MainVBox/ButtonBox" instance=ExtResource("5_button")]
+[node name="SettingButton" parent="PanelRoot/ButtonBox" instance=ExtResource("2_button")]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(240, 64)
+custom_minimum_size = Vector2(0, 56)
 layout_mode = 2
-size_flags_horizontal = 4
-theme_override_font_sizes/font_size = 30
+theme_override_font_sizes/font_size = 28
 text = "设置"
 
-[node name="QuitButton" parent="PanelRoot/OuterMargin/ShellPanel/ShellMargin/MainVBox/ButtonBox" instance=ExtResource("5_button")]
+[node name="QuitButton" parent="PanelRoot/ButtonBox" instance=ExtResource("2_button")]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(260, 64)
+custom_minimum_size = Vector2(0, 56)
 layout_mode = 2
-size_flags_horizontal = 4
-theme_override_font_sizes/font_size = 30
+theme_override_font_sizes/font_size = 28
 text = "返回主菜单"
-

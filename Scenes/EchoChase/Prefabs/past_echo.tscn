@@ -1,9 +1,165 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene load_steps=19 format=3]
 
 [ext_resource type="Script" path="res://Scripts/EchoChase/past_echo.gd" id="1_script"]
+[ext_resource type="SpriteFrames" path="res://assets/echo_chase/character/echo_character_frames.tres" id="2_frames"]
+[ext_resource type="SpriteFrames" path="res://assets/echo_chase/character/echo_character_outline_frames.tres" id="3_outline_frames"]
+[ext_resource type="AudioStream" path="res://assets/echo_chase/audio/phaserUp4.ogg" id="4_appear_audio"]
+[ext_resource type="Shader" path="res://assets/echo_chase/vfx/temporal_outline.gdshader" id="5_outline_shader"]
+[ext_resource type="Texture2D" path="res://assets/echo_chase/vfx/temporal_particle.svg" id="6_particle"]
+[ext_resource type="PackedScene" path="res://Scenes/EchoChase/Prefabs/temporal_departure_vfx.tscn" id="7_departure"]
 
-[sub_resource type="CircleShape2D" id="Shape_past"]
-radius = 18.0
+[sub_resource type="RectangleShape2D" id="Shape_past"]
+size = Vector2(10, 15)
+
+[sub_resource type="ShaderMaterial" id="Material_outline"]
+shader = ExtResource("5_outline_shader")
+shader_parameter/temporal_color = Color(1, 0.24, 0.82, 1)
+shader_parameter/outline_alpha = 1.0
+shader_parameter/fill_alpha = 0.0
+
+[sub_resource type="ParticleProcessMaterial" id="Particle_past"]
+particle_flag_disable_z = true
+direction = Vector3(1, 0, 0)
+spread = 180.0
+initial_velocity_min = 24.0
+initial_velocity_max = 52.0
+gravity = Vector3(0, 18, 0)
+scale_min = 0.75
+scale_max = 1.5
+color = Color(1, 0.24, 0.82, 0.9)
+emission_shape = 1
+emission_sphere_radius = 7.0
+
+[sub_resource type="Animation" id="Animation_reset"]
+resource_name = "RESET"
+length = 0.05
+tracks/0/type = "value"
+tracks/0/path = NodePath("Visual:visible")
+tracks/0/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 1, "values": [true]}
+tracks/1/type = "value"
+tracks/1/path = NodePath("Visual:self_modulate")
+tracks/1/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 1, "values": [Color(1, 1, 1, 1)]}
+tracks/2/type = "value"
+tracks/2/path = NodePath("OutlineVisual:visible")
+tracks/2/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 1, "values": [false]}
+tracks/3/type = "value"
+tracks/3/path = NodePath("OutlineVisual:scale")
+tracks/3/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 1, "values": [Vector2(1, 1)]}
+tracks/4/type = "value"
+tracks/4/path = NodePath("OutlineVisual:modulate")
+tracks/4/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 1, "values": [Color(1, 1, 1, 0)]}
+
+[sub_resource type="Animation" id="Animation_solid"]
+resource_name = "solid"
+length = 0.05
+tracks/0/type = "value"
+tracks/0/path = NodePath("Visual:visible")
+tracks/0/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 1, "values": [true]}
+tracks/1/type = "value"
+tracks/1/path = NodePath("Visual:self_modulate")
+tracks/1/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 1, "values": [Color(1, 1, 1, 1)]}
+tracks/2/type = "value"
+tracks/2/path = NodePath("OutlineVisual:visible")
+tracks/2/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 1, "values": [false]}
+
+[sub_resource type="Animation" id="Animation_materialize"]
+resource_name = "materialize"
+length = 0.35
+tracks/0/type = "value"
+tracks/0/path = NodePath("Visual:self_modulate")
+tracks/0/interp = 1
+tracks/0/keys = {"times": PackedFloat32Array(0, 0.35), "transitions": PackedFloat32Array(1, 1), "update": 0, "values": [Color(1, 1, 1, 0), Color(1, 1, 1, 0.72)]}
+tracks/1/type = "value"
+tracks/1/path = NodePath("OutlineVisual:visible")
+tracks/1/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 1, "values": [true]}
+tracks/2/type = "value"
+tracks/2/path = NodePath("OutlineVisual:scale")
+tracks/2/interp = 1
+tracks/2/keys = {"times": PackedFloat32Array(0, 0.35), "transitions": PackedFloat32Array(0.55, 1), "update": 0, "values": [Vector2(1.8, 1.8), Vector2(1, 1)]}
+tracks/3/type = "value"
+tracks/3/path = NodePath("OutlineVisual:modulate")
+tracks/3/interp = 1
+tracks/3/keys = {"times": PackedFloat32Array(0, 0.28, 0.35), "transitions": PackedFloat32Array(1, 1, 1), "update": 0, "values": [Color(1, 1, 1, 0.12), Color(1, 1, 1, 1), Color(1, 1, 1, 0.28)]}
+
+[sub_resource type="Animation" id="Animation_materialize_reduced"]
+resource_name = "materialize_reduced"
+length = 0.35
+tracks/0/type = "value"
+tracks/0/path = NodePath("Visual:self_modulate")
+tracks/0/interp = 1
+tracks/0/keys = {"times": PackedFloat32Array(0, 0.35), "transitions": PackedFloat32Array(1, 1), "update": 0, "values": [Color(1, 1, 1, 0.18), Color(1, 1, 1, 0.72)]}
+tracks/1/type = "value"
+tracks/1/path = NodePath("OutlineVisual:visible")
+tracks/1/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 1, "values": [true]}
+tracks/2/type = "value"
+tracks/2/path = NodePath("OutlineVisual:scale")
+tracks/2/interp = 1
+tracks/2/keys = {"times": PackedFloat32Array(0, 0.35), "transitions": PackedFloat32Array(1, 1), "update": 0, "values": [Vector2(1.25, 1.25), Vector2(1, 1)]}
+tracks/3/type = "value"
+tracks/3/path = NodePath("OutlineVisual:modulate")
+tracks/3/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 1, "values": [Color(1, 1, 1, 0.62)]}
+
+[sub_resource type="Animation" id="Animation_shatter"]
+resource_name = "shatter"
+length = 0.22
+tracks/0/type = "value"
+tracks/0/path = NodePath("Visual:self_modulate")
+tracks/0/interp = 1
+tracks/0/keys = {"times": PackedFloat32Array(0, 0.22), "transitions": PackedFloat32Array(1, 1), "update": 0, "values": [Color(1, 1, 1, 1), Color(1, 1, 1, 0)]}
+tracks/1/type = "value"
+tracks/1/path = NodePath("OutlineVisual:visible")
+tracks/1/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 1, "values": [false]}
+
+[sub_resource type="Animation" id="Animation_shatter_reduced"]
+resource_name = "shatter_reduced"
+length = 0.16
+tracks/0/type = "value"
+tracks/0/path = NodePath("Visual:self_modulate")
+tracks/0/interp = 1
+tracks/0/keys = {"times": PackedFloat32Array(0, 0.16), "transitions": PackedFloat32Array(1, 1), "update": 0, "values": [Color(1, 1, 1, 0.72), Color(1, 1, 1, 0.2)]}
+tracks/1/type = "value"
+tracks/1/path = NodePath("OutlineVisual:visible")
+tracks/1/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 1, "values": [false]}
+
+[sub_resource type="Animation" id="Animation_phase_target"]
+resource_name = "phase_target"
+length = 0.6
+tracks/0/type = "value"
+tracks/0/path = NodePath("Visual:self_modulate")
+tracks/0/interp = 1
+tracks/0/keys = {"times": PackedFloat32Array(0, 0.6), "transitions": PackedFloat32Array(1, 1), "update": 0, "values": [Color(1, 1, 1, 0), Color(1, 1, 1, 0.72)]}
+tracks/1/type = "value"
+tracks/1/path = NodePath("OutlineVisual:visible")
+tracks/1/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 1, "values": [true]}
+tracks/2/type = "value"
+tracks/2/path = NodePath("OutlineVisual:scale")
+tracks/2/interp = 1
+tracks/2/keys = {"times": PackedFloat32Array(0, 0.6), "transitions": PackedFloat32Array(0.6, 1), "update": 0, "values": [Vector2(2, 2), Vector2(1, 1)]}
+tracks/3/type = "value"
+tracks/3/path = NodePath("OutlineVisual:modulate")
+tracks/3/interp = 1
+tracks/3/keys = {"times": PackedFloat32Array(0, 0.45, 0.6), "transitions": PackedFloat32Array(1, 1, 1), "update": 0, "values": [Color(1, 1, 1, 0.18), Color(1, 1, 1, 1), Color(1, 1, 1, 0.35)]}
+
+[sub_resource type="Animation" id="Animation_phase_target_reduced"]
+resource_name = "phase_target_reduced"
+length = 0.6
+tracks/0/type = "value"
+tracks/0/path = NodePath("Visual:self_modulate")
+tracks/0/interp = 1
+tracks/0/keys = {"times": PackedFloat32Array(0, 0.6), "transitions": PackedFloat32Array(1, 1), "update": 0, "values": [Color(1, 1, 1, 0.18), Color(1, 1, 1, 0.72)]}
+tracks/1/type = "value"
+tracks/1/path = NodePath("OutlineVisual:visible")
+tracks/1/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 1, "values": [true]}
+tracks/2/type = "value"
+tracks/2/path = NodePath("OutlineVisual:scale")
+tracks/2/interp = 1
+tracks/2/keys = {"times": PackedFloat32Array(0, 0.6), "transitions": PackedFloat32Array(1, 1), "update": 0, "values": [Vector2(1.25, 1.25), Vector2(1, 1)]}
+tracks/3/type = "value"
+tracks/3/path = NodePath("OutlineVisual:modulate")
+tracks/3/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 1, "values": [Color(1, 1, 1, 0.62)]}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_vfx"]
+_data = {&"RESET": SubResource("Animation_reset"), &"materialize": SubResource("Animation_materialize"), &"materialize_reduced": SubResource("Animation_materialize_reduced"), &"phase_target": SubResource("Animation_phase_target"), &"phase_target_reduced": SubResource("Animation_phase_target_reduced"), &"shatter": SubResource("Animation_shatter"), &"shatter_reduced": SubResource("Animation_shatter_reduced"), &"solid": SubResource("Animation_solid")}
 
 [node name="PastEcho" type="Area2D" groups=["temporal_past"]]
 collision_layer = 2
@@ -16,7 +172,40 @@ script = ExtResource("1_script")
 unique_name_in_owner = true
 shape = SubResource("Shape_past")
 
-[node name="Visual" type="Polygon2D" parent="."]
+[node name="Visual" type="AnimatedSprite2D" parent="."]
 unique_name_in_owner = true
-polygon = PackedVector2Array(-18, 18, -18, -18, 0, -28, 18, -18, 18, 18)
-color = Color(0.35, 0.88, 1, 0.68)
+self_modulate = Color(1, 1, 1, 0.72)
+sprite_frames = ExtResource("2_frames")
+animation = &"idle"
+
+[node name="OutlineVisual" type="AnimatedSprite2D" parent="."]
+unique_name_in_owner = true
+visible = false
+material = SubResource("Material_outline")
+sprite_frames = ExtResource("3_outline_frames")
+animation = &"idle"
+
+[node name="DepartureVfx" parent="." instance=ExtResource("7_departure")]
+unique_name_in_owner = true
+temporal_color = Color(1, 0.24, 0.82, 1)
+
+[node name="PixelBurst" type="GPUParticles2D" parent="."]
+unique_name_in_owner = true
+emitting = false
+amount = 18
+process_material = SubResource("Particle_past")
+texture = ExtResource("6_particle")
+lifetime = 0.32
+one_shot = true
+explosiveness = 1.0
+local_coords = false
+visibility_rect = Rect2(-64, -64, 128, 128)
+
+[node name="VfxAnimationPlayer" type="AnimationPlayer" parent="."]
+unique_name_in_owner = true
+libraries = {&"": SubResource("AnimationLibrary_vfx")}
+
+[node name="AppearAudio" type="AudioStreamPlayer2D" parent="."]
+stream = ExtResource("4_appear_audio")
+volume_db = -6.0
+bus = &"SFX"

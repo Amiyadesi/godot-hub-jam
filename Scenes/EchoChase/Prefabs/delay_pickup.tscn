@@ -1,9 +1,111 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene load_steps=10 format=3]
 
 [ext_resource type="Script" path="res://Scripts/EchoChase/delay_pickup.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/echo_chase/tilemap/monochrome_tilemap_transparent_packed.png" id="2_tilemap"]
 
 [sub_resource type="CircleShape2D" id="Shape_pickup"]
 radius = 18.0
+
+[sub_resource type="AtlasTexture" id="Atlas_pickup"]
+atlas = ExtResource("2_tilemap")
+region = Rect2(16, 0, 16, 16)
+
+[sub_resource type="Animation" id="Animation_inactive"]
+resource_name = "inactive"
+length = 0.1
+tracks/0/type = "value"
+tracks/0/path = NodePath("Visual:modulate")
+tracks/0/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 1, "values": [Color(0.62, 0.64, 0.64, 1)]}
+tracks/1/type = "value"
+tracks/1/path = NodePath("ActiveRing:visible")
+tracks/1/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 1, "values": [false]}
+tracks/2/type = "value"
+tracks/2/path = NodePath("DelayLabel:self_modulate")
+tracks/2/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 1, "values": [Color(0.72, 0.74, 0.74, 1)]}
+
+[sub_resource type="Animation" id="Animation_pending"]
+resource_name = "pending"
+length = 1.0
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/path = NodePath("Visual:modulate")
+tracks/0/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 1, "values": [Color(0.95, 0.28, 0.78, 1)]}
+tracks/1/type = "value"
+tracks/1/path = NodePath("ActiveRing:visible")
+tracks/1/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 1, "values": [true]}
+tracks/2/type = "value"
+tracks/2/path = NodePath("ActiveRing:scale")
+tracks/2/interp = 1
+tracks/2/keys = {"times": PackedFloat32Array(0, 0.5, 1), "transitions": PackedFloat32Array(1, 1, 1), "update": 0, "values": [Vector2(3.2, 3.2), Vector2(2.45, 2.45), Vector2(3.2, 3.2)]}
+tracks/3/type = "value"
+tracks/3/path = NodePath("ActiveRing:modulate")
+tracks/3/interp = 1
+tracks/3/keys = {"times": PackedFloat32Array(0, 0.5, 1), "transitions": PackedFloat32Array(1, 1, 1), "update": 0, "values": [Color(1, 0.22, 0.78, 0.18), Color(1, 0.42, 0.86, 0.72), Color(1, 0.22, 0.78, 0.18)]}
+tracks/4/type = "value"
+tracks/4/path = NodePath("DelayLabel:self_modulate")
+tracks/4/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 1, "values": [Color(1, 0.54, 0.88, 1)]}
+
+[sub_resource type="Animation" id="Animation_pending_reduced"]
+resource_name = "pending_reduced"
+length = 0.1
+tracks/0/type = "value"
+tracks/0/path = NodePath("Visual:modulate")
+tracks/0/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 1, "values": [Color(0.9, 0.34, 0.75, 1)]}
+tracks/1/type = "value"
+tracks/1/path = NodePath("ActiveRing:visible")
+tracks/1/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 1, "values": [true]}
+tracks/2/type = "value"
+tracks/2/path = NodePath("ActiveRing:scale")
+tracks/2/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 1, "values": [Vector2(2.7, 2.7)]}
+tracks/3/type = "value"
+tracks/3/path = NodePath("ActiveRing:modulate")
+tracks/3/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 1, "values": [Color(1, 0.42, 0.86, 0.48)]}
+tracks/4/type = "value"
+tracks/4/path = NodePath("DelayLabel:self_modulate")
+tracks/4/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 1, "values": [Color(1, 0.54, 0.88, 1)]}
+
+[sub_resource type="Animation" id="Animation_active"]
+resource_name = "active"
+length = 1.6
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/path = NodePath("Visual:modulate")
+tracks/0/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 1, "values": [Color(1, 0.36, 0.82, 1)]}
+tracks/1/type = "value"
+tracks/1/path = NodePath("ActiveRing:visible")
+tracks/1/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 1, "values": [true]}
+tracks/2/type = "value"
+tracks/2/path = NodePath("ActiveRing:scale")
+tracks/2/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 1, "values": [Vector2(2.7, 2.7)]}
+tracks/3/type = "value"
+tracks/3/path = NodePath("ActiveRing:modulate")
+tracks/3/interp = 1
+tracks/3/keys = {"times": PackedFloat32Array(0, 0.8, 1.6), "transitions": PackedFloat32Array(1, 1, 1), "update": 0, "values": [Color(1, 0.3, 0.82, 0.42), Color(1, 0.56, 0.9, 0.72), Color(1, 0.3, 0.82, 0.42)]}
+tracks/4/type = "value"
+tracks/4/path = NodePath("DelayLabel:self_modulate")
+tracks/4/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 1, "values": [Color(1, 0.64, 0.92, 1)]}
+
+[sub_resource type="Animation" id="Animation_active_reduced"]
+resource_name = "active_reduced"
+length = 0.1
+tracks/0/type = "value"
+tracks/0/path = NodePath("Visual:modulate")
+tracks/0/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 1, "values": [Color(0.92, 0.4, 0.78, 1)]}
+tracks/1/type = "value"
+tracks/1/path = NodePath("ActiveRing:visible")
+tracks/1/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 1, "values": [true]}
+tracks/2/type = "value"
+tracks/2/path = NodePath("ActiveRing:scale")
+tracks/2/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 1, "values": [Vector2(2.7, 2.7)]}
+tracks/3/type = "value"
+tracks/3/path = NodePath("ActiveRing:modulate")
+tracks/3/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 1, "values": [Color(1, 0.42, 0.86, 0.5)]}
+tracks/4/type = "value"
+tracks/4/path = NodePath("DelayLabel:self_modulate")
+tracks/4/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 1, "values": [Color(1, 0.64, 0.92, 1)]}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_state"]
+_data = {&"active": SubResource("Animation_active"), &"active_reduced": SubResource("Animation_active_reduced"), &"inactive": SubResource("Animation_inactive"), &"pending": SubResource("Animation_pending"), &"pending_reduced": SubResource("Animation_pending_reduced")}
 
 [node name="DelayPickup" type="Area2D"]
 collision_layer = 16
@@ -15,6 +117,35 @@ script = ExtResource("1_script")
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource("Shape_pickup")
 
-[node name="Visual" type="Polygon2D" parent="."]
-polygon = PackedVector2Array(-18, 0, 0, -18, 18, 0, 0, 18)
-color = Color(0.5, 0.92, 1, 0.78)
+[node name="Visual" type="Sprite2D" parent="."]
+unique_name_in_owner = true
+texture_filter = 1
+texture = SubResource("Atlas_pickup")
+scale = Vector2(2, 2)
+modulate = Color(0.62, 0.64, 0.64, 1)
+
+[node name="ActiveRing" type="Sprite2D" parent="."]
+visible = false
+texture_filter = 1
+texture = SubResource("Atlas_pickup")
+scale = Vector2(2.7, 2.7)
+modulate = Color(1, 0.42, 0.86, 0.5)
+show_behind_parent = true
+
+[node name="DelayLabel" type="Label" parent="."]
+unique_name_in_owner = true
+offset_left = -32.0
+offset_top = -48.0
+offset_right = 32.0
+offset_bottom = -16.0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0.015, 0.05, 0.055, 1)
+theme_override_constants/outline_size = 2
+theme_override_font_sizes/font_size = 24
+text = "3"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="StateAnimationPlayer" type="AnimationPlayer" parent="."]
+unique_name_in_owner = true
+libraries = {&"": SubResource("AnimationLibrary_state")}

@@ -44,7 +44,7 @@ func open_for(action: String, display_name: String = "", allow_mouse_buttons: bo
 	_allow_mouse_buttons = allow_mouse_buttons
 	_waiting = true
 	var accepted_inputs := "键盘、鼠标或手柄" if _allow_mouse_buttons else "键盘或手柄"
-	_label.text = "正在设置：%s\n\n请按下%s输入…\n（按「取消」保持不变）" % [_current_display_name, accepted_inputs]
+	_label.text = "%s\n按下新的%s输入" % [_current_display_name, accepted_inputs]
 	popup_centered()
 
 # ──────────────────────────────────────────────

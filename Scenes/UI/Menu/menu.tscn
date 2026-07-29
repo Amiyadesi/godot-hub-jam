@@ -1,361 +1,458 @@
-[gd_scene format=3 uid="uid://dvt5m7mo6n1d6"]
+[gd_scene load_steps=28 format=3 uid="uid://dvt5m7mo6n1d6"]
 
 [ext_resource type="Script" uid="uid://bp3qbmklg2a2k" path="res://Scenes/UI/Menu/menu.gd" id="1_menu"]
-[ext_resource type="Shader" uid="uid://difxg3c23x3f5" path="res://resources/shader/god_ray.gdshader" id="2_godray"]
-[ext_resource type="PackedScene" uid="uid://dssid7iw4aqb6" path="res://Scenes/UIorgan/ShaderButton/shader_button.tscn" id="3_button"]
-[ext_resource type="PackedScene" uid="uid://b7hivg2dnaer8" path="res://Scenes/UI/Menu/setting_screen.tscn" id="4_settings"]
-[ext_resource type="PackedScene" uid="uid://bbq46x1emgrc3" path="res://Scenes/UI/Menu/thank_screen.tscn" id="5_thanks"]
-[ext_resource type="AudioStream" uid="uid://c38rf52rmifd4" path="res://assets/phase_lag/audio/music/tragic_ambient_main_menu.ogg" id="6_music"]
-[ext_resource type="Texture2D" uid="uid://diw48gsfa4lts" path="res://assets/phase_lag/environment/facility_corridor_strip.png" id="7_background"]
-[ext_resource type="Theme" uid="uid://136hg33mma1d" path="res://resources/main_theme.tres" id="8_theme"]
+[ext_resource type="PackedScene" uid="uid://dssid7iw4aqb6" path="res://Scenes/UIorgan/ShaderButton/shader_button.tscn" id="2_button"]
+[ext_resource type="PackedScene" uid="uid://b7hivg2dnaer8" path="res://Scenes/UI/Menu/setting_screen.tscn" id="3_settings"]
+[ext_resource type="PackedScene" uid="uid://bbq46x1emgrc3" path="res://Scenes/UI/Menu/thank_screen.tscn" id="4_thanks"]
+[ext_resource type="AudioStream" uid="uid://bimcr3aamkxsc" path="res://assets/echo_chase/audio/music/mysterious_futuristic_loop.ogg" id="5_music"]
+[ext_resource type="Texture2D" path="res://assets/echo_chase/ui/menu_map_backdrop.png" id="6_background"]
+[ext_resource type="Theme" uid="uid://136hg33mma1d" path="res://resources/main_theme.tres" id="7_theme"]
+[ext_resource type="Shader" path="res://resources/shader/ui_monochrome.gdshader" id="8_mono"]
+[ext_resource type="SpriteFrames" path="res://assets/echo_chase/character/echo_character_frames.tres" id="9_character_frames"]
+[ext_resource type="SpriteFrames" path="res://assets/echo_chase/character/echo_character_outline_frames.tres" id="10_outline_frames"]
+[ext_resource type="Shader" path="res://assets/echo_chase/vfx/temporal_outline.gdshader" id="11_outline_shader"]
+[ext_resource type="Texture2D" path="res://assets/echo_chase/vfx/temporal_transition_ring.svg" id="12_transition_ring"]
+[ext_resource type="Resource" path="res://resources/scene_transitions/echo_start_present_radial.tres" id="13_start_transition"]
+[ext_resource type="Resource" path="res://resources/scene_transitions/echo_start_present_radial_reduced.tres" id="14_start_transition_reduced"]
+[ext_resource type="Resource" path="res://resources/scene_transitions/echo_continue_past_radial.tres" id="15_continue_transition"]
+[ext_resource type="Resource" path="res://resources/scene_transitions/echo_continue_past_radial_reduced.tres" id="16_continue_transition_reduced"]
 
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_rays"]
-shader = ExtResource("2_godray")
-shader_parameter/blend_mode = 1
-shader_parameter/angle = 112.642
-shader_parameter/position = -0.2
-shader_parameter/spread = 0.5
-shader_parameter/cutoff = 0.1
-shader_parameter/falloff = 0.2
-shader_parameter/edge_fade = 0.15
-shader_parameter/speed = 0.18
-shader_parameter/ray1_density = 7.0
-shader_parameter/ray2_density = 22.0
-shader_parameter/ray2_intensity = 0.16
-shader_parameter/color = Color(0.65, 0.95, 0.9, 0.16)
-shader_parameter/hdr = false
-shader_parameter/seed = 0.0
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_monochrome"]
+shader = ExtResource("8_mono")
+shader_parameter/contrast = 1.24
+shader_parameter/brightness = -0.08
+shader_parameter/levels = 5.0
 
-[sub_resource type="StyleBoxFlat" id="Style_menu_warm"]
-bg_color = Color(0.035, 0.025, 0.022, 0.86)
-border_width_left = 3
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(0.95, 0.52, 0.28, 0.68)
-corner_radius_top_left = 2
-corner_radius_top_right = 2
-corner_radius_bottom_right = 2
-corner_radius_bottom_left = 2
-shadow_color = Color(0, 0, 0, 0.34)
-shadow_size = 2
+[sub_resource type="ShaderMaterial" id="Material_past_outline"]
+shader = ExtResource("11_outline_shader")
+shader_parameter/temporal_color = Color(1, 0.24, 0.82, 1)
+shader_parameter/outline_alpha = 1.0
+shader_parameter/fill_alpha = 0.12
 
-[sub_resource type="StyleBoxFlat" id="Style_menu_cold"]
-bg_color = Color(0.008, 0.035, 0.042, 0.86)
-border_width_left = 3
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(0.32, 0.9, 0.82, 0.72)
-corner_radius_top_left = 2
-corner_radius_top_right = 2
-corner_radius_bottom_right = 2
-corner_radius_bottom_left = 2
-shadow_color = Color(0, 0, 0, 0.34)
-shadow_size = 2
+[sub_resource type="ShaderMaterial" id="Material_present_outline"]
+shader = ExtResource("11_outline_shader")
+shader_parameter/temporal_color = Color(0.7, 1, 1, 1)
+shader_parameter/outline_alpha = 1.0
+shader_parameter/fill_alpha = 0.12
 
-[sub_resource type="StyleBoxFlat" id="Style_menu_neutral"]
-bg_color = Color(0.012, 0.022, 0.028, 0.84)
-border_width_left = 2
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(0.46, 0.58, 0.57, 0.52)
-corner_radius_top_left = 2
-corner_radius_top_right = 2
-corner_radius_bottom_right = 2
-corner_radius_bottom_left = 2
-shadow_color = Color(0, 0, 0, 0.3)
-shadow_size = 2
-
-[sub_resource type="StyleBoxFlat" id="Style_menu_danger"]
-bg_color = Color(0.032, 0.016, 0.019, 0.82)
-border_width_left = 2
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(0.78, 0.29, 0.28, 0.52)
-corner_radius_top_left = 2
-corner_radius_top_right = 2
-corner_radius_bottom_right = 2
-corner_radius_bottom_left = 2
-shadow_color = Color(0, 0, 0, 0.3)
-shadow_size = 2
+[sub_resource type="ShaderMaterial" id="Material_future_outline"]
+shader = ExtResource("11_outline_shader")
+shader_parameter/temporal_color = Color(1, 0.7, 0.2, 1)
+shader_parameter/outline_alpha = 1.0
+shader_parameter/fill_alpha = 0.12
 
 [sub_resource type="Animation" id="Animation_menu_enter"]
 resource_name = "menu_enter"
-length = 1.45
+length = 1.8
 tracks/0/type = "value"
-tracks/0/imported = false
-tracks/0/enabled = true
-tracks/0/path = NodePath("CalibrationVeil:modulate")
+tracks/0/path = NodePath("Background:self_modulate")
 tracks/0/interp = 1
-tracks/0/loop_wrap = true
-tracks/0/keys = {"times": PackedFloat32Array(0, 1.02), "transitions": PackedFloat32Array(0.45, 1), "update": 0, "values": [Color(1, 1, 1, 0.18), Color(1, 1, 1, 0)]}
+tracks/0/keys = {"times": PackedFloat32Array(0, 0.7), "transitions": PackedFloat32Array(0.6, 1), "update": 0, "values": [Color(0.46, 0.46, 0.46, 1), Color(1, 1, 1, 1)]}
 tracks/1/type = "value"
-tracks/1/imported = false
-tracks/1/enabled = true
-tracks/1/path = NodePath("Background:self_modulate")
+tracks/1/path = NodePath("ButtonLayer/TitleReveal/Title:position")
 tracks/1/interp = 1
-tracks/1/loop_wrap = true
-tracks/1/keys = {"times": PackedFloat32Array(0, 1.28), "transitions": PackedFloat32Array(0.55, 1), "update": 0, "values": [Color(0.48, 0.62, 0.64, 0.94), Color(0.56, 0.72, 0.74, 1)]}
+tracks/1/keys = {"times": PackedFloat32Array(0, 0.72), "transitions": PackedFloat32Array(0.55, 1), "update": 0, "values": [Vector2(-220, 0), Vector2(0, 0)]}
 tracks/2/type = "value"
-tracks/2/imported = false
-tracks/2/enabled = true
-tracks/2/path = NodePath("PhaseEcho:self_modulate")
+tracks/2/path = NodePath("ButtonLayer/TitleReveal/Title:modulate")
 tracks/2/interp = 1
-tracks/2/loop_wrap = true
-tracks/2/keys = {"times": PackedFloat32Array(0, 0.92), "transitions": PackedFloat32Array(0.55, 1), "update": 0, "values": [Color(0.48, 0.98, 0.9, 0.045), Color(0.48, 0.98, 0.9, 0)]}
+tracks/2/keys = {"times": PackedFloat32Array(0, 0.18, 0.72), "transitions": PackedFloat32Array(1, 1, 1), "update": 0, "values": [Color(1, 1, 1, 0), Color(1, 1, 1, 0.22), Color(1, 1, 1, 1)]}
 tracks/3/type = "value"
-tracks/3/imported = false
-tracks/3/enabled = true
-tracks/3/path = NodePath("ButtonLayer/Header:self_modulate")
+tracks/3/path = NodePath("TemporalCharacterLayer/PastRegion/Figure:modulate")
 tracks/3/interp = 1
-tracks/3/loop_wrap = true
-tracks/3/keys = {"times": PackedFloat32Array(0, 0.14, 0.68), "transitions": PackedFloat32Array(1, 0.45, 1), "update": 0, "values": [Color(1, 1, 1, 0), Color(1, 1, 1, 0), Color(1, 1, 1, 1)]}
+tracks/3/keys = {"times": PackedFloat32Array(0, 0.18, 0.5), "transitions": PackedFloat32Array(1, 1, 1), "update": 0, "values": [Color(1, 1, 1, 0), Color(1, 1, 1, 0), Color(1, 1, 1, 1)]}
 tracks/4/type = "value"
-tracks/4/imported = false
-tracks/4/enabled = true
-tracks/4/path = NodePath("ButtonLayer/Header/TechnicalMark:self_modulate")
+tracks/4/path = NodePath("TemporalCharacterLayer/PresentRegion/Figure:modulate")
 tracks/4/interp = 1
-tracks/4/loop_wrap = true
-tracks/4/keys = {"times": PackedFloat32Array(0, 0.2, 0.74), "transitions": PackedFloat32Array(1, 0.45, 1), "update": 0, "values": [Color(1, 1, 1, 0), Color(1, 1, 1, 0), Color(1, 1, 1, 1)]}
+tracks/4/keys = {"times": PackedFloat32Array(0, 0.5, 0.82), "transitions": PackedFloat32Array(1, 1, 1), "update": 0, "values": [Color(1, 1, 1, 0), Color(1, 1, 1, 0), Color(1, 1, 1, 1)]}
 tracks/5/type = "value"
-tracks/5/imported = false
-tracks/5/enabled = true
-tracks/5/path = NodePath("ButtonLayer/MenuButtons:offset_left")
+tracks/5/path = NodePath("TemporalCharacterLayer/FutureRegion/Figure:modulate")
 tracks/5/interp = 1
-tracks/5/loop_wrap = true
-tracks/5/keys = {"times": PackedFloat32Array(0, 0.42, 1.18), "transitions": PackedFloat32Array(1, 0.55, 1), "update": 0, "values": [-422.0, -422.0, -450.0]}
+tracks/5/keys = {"times": PackedFloat32Array(0, 0.82, 1.14), "transitions": PackedFloat32Array(1, 1, 1), "update": 0, "values": [Color(1, 1, 1, 0), Color(1, 1, 1, 0), Color(1, 1, 1, 1)]}
 tracks/6/type = "value"
-tracks/6/imported = false
-tracks/6/enabled = true
-tracks/6/path = NodePath("ButtonLayer/MenuButtons:offset_right")
+tracks/6/path = NodePath("TemporalCharacterLayer/PastRegion/Figure/Float/Outline:scale")
 tracks/6/interp = 1
-tracks/6/loop_wrap = true
-tracks/6/keys = {"times": PackedFloat32Array(0, 0.42, 1.18), "transitions": PackedFloat32Array(1, 0.55, 1), "update": 0, "values": [-52.0, -52.0, -80.0]}
+tracks/6/keys = {"times": PackedFloat32Array(0.18, 0.5), "transitions": PackedFloat32Array(0.55, 1), "update": 0, "values": [Vector2(6, 6), Vector2(4, 4)]}
 tracks/7/type = "value"
-tracks/7/imported = false
-tracks/7/enabled = true
-tracks/7/path = NodePath("ButtonLayer/MenuButtons/StartButton:self_modulate")
+tracks/7/path = NodePath("TemporalCharacterLayer/PresentRegion/Figure/Float/Outline:scale")
 tracks/7/interp = 1
-tracks/7/loop_wrap = true
-tracks/7/keys = {"times": PackedFloat32Array(0, 0.58, 0.82), "transitions": PackedFloat32Array(1, 0.5, 1), "update": 0, "values": [Color(1, 1, 1, 0), Color(1, 1, 1, 0), Color(1, 1, 1, 1)]}
+tracks/7/keys = {"times": PackedFloat32Array(0.5, 0.82), "transitions": PackedFloat32Array(0.55, 1), "update": 0, "values": [Vector2(6, 6), Vector2(4, 4)]}
 tracks/8/type = "value"
-tracks/8/imported = false
-tracks/8/enabled = true
-tracks/8/path = NodePath("ButtonLayer/MenuButtons/ContinueButton:self_modulate")
+tracks/8/path = NodePath("TemporalCharacterLayer/FutureRegion/Figure/Float/Outline:scale")
 tracks/8/interp = 1
-tracks/8/loop_wrap = true
-tracks/8/keys = {"times": PackedFloat32Array(0, 0.68, 0.92), "transitions": PackedFloat32Array(1, 0.5, 1), "update": 0, "values": [Color(1, 1, 1, 0), Color(1, 1, 1, 0), Color(1, 1, 1, 1)]}
+tracks/8/keys = {"times": PackedFloat32Array(0.82, 1.14), "transitions": PackedFloat32Array(0.55, 1), "update": 0, "values": [Vector2(6, 6), Vector2(4, 4)]}
 tracks/9/type = "value"
-tracks/9/imported = false
-tracks/9/enabled = true
-tracks/9/path = NodePath("ButtonLayer/MenuButtons/SettingButton:self_modulate")
+tracks/9/path = NodePath("ButtonLayer/RouteNav/MenuButtons/StartButton:position")
 tracks/9/interp = 1
-tracks/9/loop_wrap = true
-tracks/9/keys = {"times": PackedFloat32Array(0, 0.78, 1.02), "transitions": PackedFloat32Array(1, 0.5, 1), "update": 0, "values": [Color(1, 1, 1, 0), Color(1, 1, 1, 0), Color(1, 1, 1, 1)]}
+tracks/9/keys = {"times": PackedFloat32Array(0, 0.45, 0.75), "transitions": PackedFloat32Array(1, 0.55, 1), "update": 0, "values": [Vector2(0, 32), Vector2(0, 32), Vector2(0, 0)]}
 tracks/10/type = "value"
-tracks/10/imported = false
-tracks/10/enabled = true
-tracks/10/path = NodePath("ButtonLayer/MenuButtons/ThanksButton:self_modulate")
+tracks/10/path = NodePath("ButtonLayer/RouteNav/MenuButtons/StartButton:modulate")
 tracks/10/interp = 1
-tracks/10/loop_wrap = true
-tracks/10/keys = {"times": PackedFloat32Array(0, 0.88, 1.12), "transitions": PackedFloat32Array(1, 0.5, 1), "update": 0, "values": [Color(1, 1, 1, 0), Color(1, 1, 1, 0), Color(1, 1, 1, 1)]}
+tracks/10/keys = {"times": PackedFloat32Array(0, 0.45, 0.75), "transitions": PackedFloat32Array(1, 1, 1), "update": 0, "values": [Color(1, 1, 1, 0), Color(1, 1, 1, 0), Color(1, 1, 1, 1)]}
 tracks/11/type = "value"
-tracks/11/imported = false
-tracks/11/enabled = true
-tracks/11/path = NodePath("ButtonLayer/MenuButtons/ExitButton:self_modulate")
+tracks/11/path = NodePath("ButtonLayer/RouteNav/MenuButtons/ContinueButton:position")
 tracks/11/interp = 1
-tracks/11/loop_wrap = true
-tracks/11/keys = {"times": PackedFloat32Array(0, 0.98, 1.22), "transitions": PackedFloat32Array(1, 0.5, 1), "update": 0, "values": [Color(1, 1, 1, 0), Color(1, 1, 1, 0), Color(1, 1, 1, 1)]}
+tracks/11/keys = {"times": PackedFloat32Array(0, 0.58, 0.88), "transitions": PackedFloat32Array(1, 0.55, 1), "update": 0, "values": [Vector2(0, 96), Vector2(0, 96), Vector2(0, 64)]}
 tracks/12/type = "value"
-tracks/12/imported = false
-tracks/12/enabled = true
-tracks/12/path = NodePath("ButtonLayer/MenuButtons/SystemStatus:self_modulate")
+tracks/12/path = NodePath("ButtonLayer/RouteNav/MenuButtons/ContinueButton:modulate")
 tracks/12/interp = 1
-tracks/12/loop_wrap = true
-tracks/12/keys = {"times": PackedFloat32Array(0, 1.08, 1.36), "transitions": PackedFloat32Array(1, 0.5, 1), "update": 0, "values": [Color(1, 1, 1, 0), Color(1, 1, 1, 0), Color(1, 1, 1, 1)]}
+tracks/12/keys = {"times": PackedFloat32Array(0, 0.58, 0.88), "transitions": PackedFloat32Array(1, 1, 1), "update": 0, "values": [Color(1, 1, 1, 0), Color(1, 1, 1, 0), Color(1, 1, 1, 1)]}
 tracks/13/type = "value"
-tracks/13/imported = false
-tracks/13/enabled = true
-tracks/13/path = NodePath("PhaseEcho:offset_left")
+tracks/13/path = NodePath("ButtonLayer/RouteNav/MenuButtons/SettingButton:position")
 tracks/13/interp = 1
-tracks/13/loop_wrap = true
-tracks/13/keys = {"times": PackedFloat32Array(0, 1.06), "transitions": PackedFloat32Array(0.55, 1), "update": 0, "values": [18.0, 0.0]}
+tracks/13/keys = {"times": PackedFloat32Array(0, 0.71, 1.01), "transitions": PackedFloat32Array(1, 0.55, 1), "update": 0, "values": [Vector2(0, 160), Vector2(0, 160), Vector2(0, 128)]}
 tracks/14/type = "value"
-tracks/14/imported = false
-tracks/14/enabled = true
-tracks/14/path = NodePath("PhaseEcho:offset_right")
+tracks/14/path = NodePath("ButtonLayer/RouteNav/MenuButtons/SettingButton:modulate")
 tracks/14/interp = 1
-tracks/14/loop_wrap = true
-tracks/14/keys = {"times": PackedFloat32Array(0, 1.06), "transitions": PackedFloat32Array(0.55, 1), "update": 0, "values": [18.0, 0.0]}
+tracks/14/keys = {"times": PackedFloat32Array(0, 0.71, 1.01), "transitions": PackedFloat32Array(1, 1, 1), "update": 0, "values": [Color(1, 1, 1, 0), Color(1, 1, 1, 0), Color(1, 1, 1, 1)]}
 tracks/15/type = "value"
-tracks/15/imported = false
-tracks/15/enabled = true
-tracks/15/path = NodePath("RayOverlay:self_modulate")
+tracks/15/path = NodePath("ButtonLayer/RouteNav/MenuButtons/ThanksButton:position")
 tracks/15/interp = 1
-tracks/15/loop_wrap = true
-tracks/15/keys = {"times": PackedFloat32Array(0, 1.32), "transitions": PackedFloat32Array(0.55, 1), "update": 0, "values": [Color(0.75, 0.95, 0.9, 0.02), Color(0.75, 0.95, 0.9, 0.045)]}
+tracks/15/keys = {"times": PackedFloat32Array(0, 0.84, 1.14), "transitions": PackedFloat32Array(1, 0.55, 1), "update": 0, "values": [Vector2(0, 224), Vector2(0, 224), Vector2(0, 192)]}
 tracks/16/type = "value"
-tracks/16/imported = false
-tracks/16/enabled = true
-tracks/16/path = NodePath("ButtonLayer/MenuButtons/SectionLabel:self_modulate")
+tracks/16/path = NodePath("ButtonLayer/RouteNav/MenuButtons/ThanksButton:modulate")
 tracks/16/interp = 1
-tracks/16/loop_wrap = true
-tracks/16/keys = {"times": PackedFloat32Array(0, 0.46, 0.72), "transitions": PackedFloat32Array(1, 0.5, 1), "update": 0, "values": [Color(1, 1, 1, 0), Color(1, 1, 1, 0), Color(1, 1, 1, 1)]}
+tracks/16/keys = {"times": PackedFloat32Array(0, 0.84, 1.14), "transitions": PackedFloat32Array(1, 1, 1), "update": 0, "values": [Color(1, 1, 1, 0), Color(1, 1, 1, 0), Color(1, 1, 1, 1)]}
 tracks/17/type = "value"
-tracks/17/imported = false
-tracks/17/enabled = true
-tracks/17/path = NodePath("ButtonLayer/MenuButtons/Divider:self_modulate")
+tracks/17/path = NodePath("ButtonLayer/RouteNav/MenuButtons/ExitButton:position")
 tracks/17/interp = 1
-tracks/17/loop_wrap = true
-tracks/17/keys = {"times": PackedFloat32Array(0, 0.52, 0.78), "transitions": PackedFloat32Array(1, 0.5, 1), "update": 0, "values": [Color(1, 1, 1, 0), Color(1, 1, 1, 0), Color(1, 1, 1, 1)]}
+tracks/17/keys = {"times": PackedFloat32Array(0, 0.97, 1.27), "transitions": PackedFloat32Array(1, 0.55, 1), "update": 0, "values": [Vector2(0, 288), Vector2(0, 288), Vector2(0, 256)]}
 tracks/18/type = "value"
-tracks/18/imported = false
-tracks/18/enabled = true
-tracks/18/path = NodePath("ButtonLayer/MenuButtons:self_modulate")
+tracks/18/path = NodePath("ButtonLayer/RouteNav/MenuButtons/ExitButton:modulate")
 tracks/18/interp = 1
-tracks/18/loop_wrap = true
-tracks/18/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 0, "values": [Color(1, 1, 1, 1)]}
+tracks/18/keys = {"times": PackedFloat32Array(0, 0.97, 1.27), "transitions": PackedFloat32Array(1, 1, 1), "update": 0, "values": [Color(1, 1, 1, 0), Color(1, 1, 1, 0), Color(1, 1, 1, 1)]}
 
 [sub_resource type="Animation" id="Animation_menu_enter_reduced"]
 resource_name = "menu_enter_reduced"
-length = 0.32
+length = 1.8
 tracks/0/type = "value"
-tracks/0/imported = false
-tracks/0/enabled = true
-tracks/0/path = NodePath("CalibrationVeil:modulate")
+tracks/0/path = NodePath("ButtonLayer/TitleReveal/Title:position")
 tracks/0/interp = 1
-tracks/0/loop_wrap = true
-tracks/0/keys = {"times": PackedFloat32Array(0, 0.24), "transitions": PackedFloat32Array(1, 1), "update": 0, "values": [Color(1, 1, 1, 0.06), Color(1, 1, 1, 0)]}
+tracks/0/keys = {"times": PackedFloat32Array(0, 0.8), "transitions": PackedFloat32Array(1, 1), "update": 0, "values": [Vector2(-220, 0), Vector2(0, 0)]}
 tracks/1/type = "value"
-tracks/1/imported = false
-tracks/1/enabled = true
-tracks/1/path = NodePath("Background:self_modulate")
+tracks/1/path = NodePath("ButtonLayer/TitleReveal/Title:modulate")
 tracks/1/interp = 1
-tracks/1/loop_wrap = true
-tracks/1/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 0, "values": [Color(0.56, 0.72, 0.74, 1)]}
+tracks/1/keys = {"times": PackedFloat32Array(0, 0.8), "transitions": PackedFloat32Array(1, 1), "update": 0, "values": [Color(1, 1, 1, 0), Color(1, 1, 1, 1)]}
 tracks/2/type = "value"
-tracks/2/imported = false
-tracks/2/enabled = true
-tracks/2/path = NodePath("PhaseEcho:self_modulate")
+tracks/2/path = NodePath("TemporalCharacterLayer/PastRegion/Figure:modulate")
 tracks/2/interp = 1
-tracks/2/loop_wrap = true
-tracks/2/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 0, "values": [Color(0.48, 0.98, 0.9, 0)]}
+tracks/2/keys = {"times": PackedFloat32Array(0, 0.18, 0.58), "transitions": PackedFloat32Array(1, 1, 1), "update": 0, "values": [Color(1, 1, 1, 0), Color(1, 1, 1, 0), Color(1, 1, 1, 1)]}
 tracks/3/type = "value"
-tracks/3/imported = false
-tracks/3/enabled = true
-tracks/3/path = NodePath("RayOverlay:self_modulate")
+tracks/3/path = NodePath("TemporalCharacterLayer/PresentRegion/Figure:modulate")
 tracks/3/interp = 1
-tracks/3/loop_wrap = true
-tracks/3/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 0, "values": [Color(0.75, 0.95, 0.9, 0.045)]}
+tracks/3/keys = {"times": PackedFloat32Array(0, 0.58, 0.98), "transitions": PackedFloat32Array(1, 1, 1), "update": 0, "values": [Color(1, 1, 1, 0), Color(1, 1, 1, 0), Color(1, 1, 1, 1)]}
 tracks/4/type = "value"
-tracks/4/imported = false
-tracks/4/enabled = true
-tracks/4/path = NodePath("ButtonLayer/Header:self_modulate")
+tracks/4/path = NodePath("TemporalCharacterLayer/FutureRegion/Figure:modulate")
 tracks/4/interp = 1
-tracks/4/loop_wrap = true
-tracks/4/keys = {"times": PackedFloat32Array(0, 0.16), "transitions": PackedFloat32Array(1, 1), "update": 0, "values": [Color(1, 1, 1, 0), Color(1, 1, 1, 1)]}
+tracks/4/keys = {"times": PackedFloat32Array(0, 0.98, 1.38), "transitions": PackedFloat32Array(1, 1, 1), "update": 0, "values": [Color(1, 1, 1, 0), Color(1, 1, 1, 0), Color(1, 1, 1, 1)]}
 tracks/5/type = "value"
-tracks/5/imported = false
-tracks/5/enabled = true
-tracks/5/path = NodePath("ButtonLayer/MenuButtons:self_modulate")
+tracks/5/path = NodePath("ButtonLayer/RouteNav/MenuButtons/StartButton:position")
 tracks/5/interp = 1
-tracks/5/loop_wrap = true
-tracks/5/keys = {"times": PackedFloat32Array(0.08, 0.28), "transitions": PackedFloat32Array(1, 1), "update": 0, "values": [Color(1, 1, 1, 0), Color(1, 1, 1, 1)]}
+tracks/5/keys = {"times": PackedFloat32Array(0, 0.45, 0.75), "transitions": PackedFloat32Array(1, 0.55, 1), "update": 0, "values": [Vector2(0, 32), Vector2(0, 32), Vector2(0, 0)]}
+tracks/6/type = "value"
+tracks/6/path = NodePath("ButtonLayer/RouteNav/MenuButtons/StartButton:modulate")
+tracks/6/interp = 1
+tracks/6/keys = {"times": PackedFloat32Array(0, 0.45, 0.75), "transitions": PackedFloat32Array(1, 1, 1), "update": 0, "values": [Color(1, 1, 1, 0), Color(1, 1, 1, 0), Color(1, 1, 1, 1)]}
+tracks/7/type = "value"
+tracks/7/path = NodePath("ButtonLayer/RouteNav/MenuButtons/ContinueButton:position")
+tracks/7/interp = 1
+tracks/7/keys = {"times": PackedFloat32Array(0, 0.58, 0.88), "transitions": PackedFloat32Array(1, 0.55, 1), "update": 0, "values": [Vector2(0, 96), Vector2(0, 96), Vector2(0, 64)]}
+tracks/8/type = "value"
+tracks/8/path = NodePath("ButtonLayer/RouteNav/MenuButtons/ContinueButton:modulate")
+tracks/8/interp = 1
+tracks/8/keys = {"times": PackedFloat32Array(0, 0.58, 0.88), "transitions": PackedFloat32Array(1, 1, 1), "update": 0, "values": [Color(1, 1, 1, 0), Color(1, 1, 1, 0), Color(1, 1, 1, 1)]}
+tracks/9/type = "value"
+tracks/9/path = NodePath("ButtonLayer/RouteNav/MenuButtons/SettingButton:position")
+tracks/9/interp = 1
+tracks/9/keys = {"times": PackedFloat32Array(0, 0.71, 1.01), "transitions": PackedFloat32Array(1, 0.55, 1), "update": 0, "values": [Vector2(0, 160), Vector2(0, 160), Vector2(0, 128)]}
+tracks/10/type = "value"
+tracks/10/path = NodePath("ButtonLayer/RouteNav/MenuButtons/SettingButton:modulate")
+tracks/10/interp = 1
+tracks/10/keys = {"times": PackedFloat32Array(0, 0.71, 1.01), "transitions": PackedFloat32Array(1, 1, 1), "update": 0, "values": [Color(1, 1, 1, 0), Color(1, 1, 1, 0), Color(1, 1, 1, 1)]}
+tracks/11/type = "value"
+tracks/11/path = NodePath("ButtonLayer/RouteNav/MenuButtons/ThanksButton:position")
+tracks/11/interp = 1
+tracks/11/keys = {"times": PackedFloat32Array(0, 0.84, 1.14), "transitions": PackedFloat32Array(1, 0.55, 1), "update": 0, "values": [Vector2(0, 224), Vector2(0, 224), Vector2(0, 192)]}
+tracks/12/type = "value"
+tracks/12/path = NodePath("ButtonLayer/RouteNav/MenuButtons/ThanksButton:modulate")
+tracks/12/interp = 1
+tracks/12/keys = {"times": PackedFloat32Array(0, 0.84, 1.14), "transitions": PackedFloat32Array(1, 1, 1), "update": 0, "values": [Color(1, 1, 1, 0), Color(1, 1, 1, 0), Color(1, 1, 1, 1)]}
+tracks/13/type = "value"
+tracks/13/path = NodePath("ButtonLayer/RouteNav/MenuButtons/ExitButton:position")
+tracks/13/interp = 1
+tracks/13/keys = {"times": PackedFloat32Array(0, 0.97, 1.27), "transitions": PackedFloat32Array(1, 0.55, 1), "update": 0, "values": [Vector2(0, 288), Vector2(0, 288), Vector2(0, 256)]}
+tracks/14/type = "value"
+tracks/14/path = NodePath("ButtonLayer/RouteNav/MenuButtons/ExitButton:modulate")
+tracks/14/interp = 1
+tracks/14/keys = {"times": PackedFloat32Array(0, 0.97, 1.27), "transitions": PackedFloat32Array(1, 1, 1), "update": 0, "values": [Color(1, 1, 1, 0), Color(1, 1, 1, 0), Color(1, 1, 1, 1)]}
 
-[sub_resource type="Animation" id="Animation_menu_phase_cycle"]
-resource_name = "menu_phase_cycle"
-length = 24.0
+[sub_resource type="Animation" id="Animation_menu_idle"]
+resource_name = "menu_idle"
+length = 2.4
 loop_mode = 1
 tracks/0/type = "value"
-tracks/0/path = NodePath("Background:self_modulate")
+tracks/0/path = NodePath("TemporalCharacterLayer/PastRegion/Figure/Float:position")
 tracks/0/interp = 1
-tracks/0/keys = {"times": PackedFloat32Array(0, 8, 12, 20, 24), "transitions": PackedFloat32Array(1, 1, 1, 1, 1), "update": 0, "values": [Color(0.56, 0.72, 0.74, 1), Color(0.56, 0.72, 0.74, 1), Color(0.71, 0.57, 0.48, 1), Color(0.71, 0.57, 0.48, 1), Color(0.56, 0.72, 0.74, 1)]}
+tracks/0/keys = {"times": PackedFloat32Array(0, 0.6, 1.2, 1.8, 2.4), "transitions": PackedFloat32Array(1, 1, 1, 1, 1), "update": 0, "values": [Vector2(0, 0), Vector2(0, 6), Vector2(0, 0), Vector2(0, -6), Vector2(0, 0)]}
 tracks/1/type = "value"
-tracks/1/path = NodePath("PhaseEcho:self_modulate")
+tracks/1/path = NodePath("TemporalCharacterLayer/PresentRegion/Figure/Float:position")
 tracks/1/interp = 1
-tracks/1/keys = {"times": PackedFloat32Array(0, 8, 12, 20, 24), "transitions": PackedFloat32Array(1, 1, 1, 1, 1), "update": 0, "values": [Color(0.48, 0.98, 0.9, 0.025), Color(0.48, 0.98, 0.9, 0.025), Color(1, 0.52, 0.28, 0.075), Color(1, 0.52, 0.28, 0.075), Color(0.48, 0.98, 0.9, 0.025)]}
+tracks/1/keys = {"times": PackedFloat32Array(0, 0.2, 0.8, 1.4, 2, 2.4), "transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1), "update": 0, "values": [Vector2(0, -5.196), Vector2(0, -6), Vector2(0, 0), Vector2(0, 6), Vector2(0, 0), Vector2(0, -5.196)]}
 tracks/2/type = "value"
-tracks/2/path = NodePath("PhaseEcho:offset_left")
+tracks/2/path = NodePath("TemporalCharacterLayer/FutureRegion/Figure/Float:position")
 tracks/2/interp = 1
-tracks/2/keys = {"times": PackedFloat32Array(0, 8, 12, 20, 24), "transitions": PackedFloat32Array(1, 1, 1, 1, 1), "update": 0, "values": [0.0, 0.0, 8.0, 8.0, 0.0]}
-tracks/3/type = "value"
-tracks/3/path = NodePath("PhaseEcho:offset_right")
-tracks/3/interp = 1
-tracks/3/keys = {"times": PackedFloat32Array(0, 8, 12, 20, 24), "transitions": PackedFloat32Array(1, 1, 1, 1, 1), "update": 0, "values": [0.0, 0.0, 8.0, 8.0, 0.0]}
-tracks/4/type = "value"
-tracks/4/path = NodePath("RayOverlay:self_modulate")
-tracks/4/interp = 1
-tracks/4/keys = {"times": PackedFloat32Array(0, 8, 12, 20, 24), "transitions": PackedFloat32Array(1, 1, 1, 1, 1), "update": 0, "values": [Color(0.75, 0.95, 0.9, 0.045), Color(0.75, 0.95, 0.9, 0.045), Color(1, 0.72, 0.52, 0.038), Color(1, 0.72, 0.52, 0.038), Color(0.75, 0.95, 0.9, 0.045)]}
-tracks/5/type = "value"
-tracks/5/path = NodePath("Vignette:color")
-tracks/5/interp = 1
-tracks/5/keys = {"times": PackedFloat32Array(0, 8, 12, 20, 24), "transitions": PackedFloat32Array(1, 1, 1, 1, 1), "update": 0, "values": [Color(0.006, 0.012, 0.016, 0.42), Color(0.006, 0.012, 0.016, 0.42), Color(0.028, 0.012, 0.008, 0.46), Color(0.028, 0.012, 0.008, 0.46), Color(0.006, 0.012, 0.016, 0.42)]}
+tracks/2/keys = {"times": PackedFloat32Array(0, 0.4, 1, 1.6, 2.2, 2.4), "transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1), "update": 0, "values": [Vector2(0, 5.196), Vector2(0, 0), Vector2(0, -6), Vector2(0, 0), Vector2(0, 6), Vector2(0, 5.196)]}
 
-[sub_resource type="Animation" id="Animation_menu_phase_cycle_reduced"]
-resource_name = "menu_phase_cycle_reduced"
-length = 28.0
-loop_mode = 1
+[sub_resource type="Animation" id="Animation_transition_reset"]
+resource_name = "RESET"
+length = 0.05
 tracks/0/type = "value"
-tracks/0/path = NodePath("Background:self_modulate")
-tracks/0/interp = 1
-tracks/0/keys = {"times": PackedFloat32Array(0, 8, 14, 22, 28), "transitions": PackedFloat32Array(1, 1, 1, 1, 1), "update": 0, "values": [Color(0.56, 0.72, 0.74, 1), Color(0.56, 0.72, 0.74, 1), Color(0.69, 0.58, 0.5, 1), Color(0.69, 0.58, 0.5, 1), Color(0.56, 0.72, 0.74, 1)]}
+tracks/0/path = NodePath("TemporalCharacterLayer/PastRegion/Figure/Float/TransitionHalo:visible")
+tracks/0/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 1, "values": [false]}
 tracks/1/type = "value"
-tracks/1/path = NodePath("PhaseEcho:self_modulate")
+tracks/1/path = NodePath("TemporalCharacterLayer/PresentRegion/Figure/Float/TransitionHalo:visible")
+tracks/1/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 1, "values": [false]}
+
+[sub_resource type="Animation" id="Animation_pulse_present"]
+resource_name = "pulse_present"
+length = 0.18
+tracks/0/type = "value"
+tracks/0/path = NodePath("TemporalCharacterLayer/PresentRegion/Figure/Float/TransitionHalo:visible")
+tracks/0/keys = {"times": PackedFloat32Array(0, 0.18), "transitions": PackedFloat32Array(1, 1), "update": 1, "values": [true, false]}
+tracks/1/type = "value"
+tracks/1/path = NodePath("TemporalCharacterLayer/PresentRegion/Figure/Float/TransitionHalo:scale")
 tracks/1/interp = 1
-tracks/1/keys = {"times": PackedFloat32Array(0, 8, 14, 22, 28), "transitions": PackedFloat32Array(1, 1, 1, 1, 1), "update": 0, "values": [Color(0.48, 0.98, 0.9, 0.018), Color(0.48, 0.98, 0.9, 0.018), Color(1, 0.52, 0.28, 0.045), Color(1, 0.52, 0.28, 0.045), Color(0.48, 0.98, 0.9, 0.018)]}
+tracks/1/keys = {"times": PackedFloat32Array(0, 0.18), "transitions": PackedFloat32Array(0.5, 1), "update": 0, "values": [Vector2(0.45, 0.45), Vector2(1.65, 1.65)]}
 tracks/2/type = "value"
-tracks/2/path = NodePath("PhaseEcho:offset_left")
-tracks/2/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 0, "values": [0.0]}
-tracks/3/type = "value"
-tracks/3/path = NodePath("PhaseEcho:offset_right")
-tracks/3/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 0, "values": [0.0]}
-tracks/4/type = "value"
-tracks/4/path = NodePath("RayOverlay:self_modulate")
-tracks/4/interp = 1
-tracks/4/keys = {"times": PackedFloat32Array(0, 8, 14, 22, 28), "transitions": PackedFloat32Array(1, 1, 1, 1, 1), "update": 0, "values": [Color(0.75, 0.95, 0.9, 0.038), Color(0.75, 0.95, 0.9, 0.038), Color(1, 0.72, 0.52, 0.032), Color(1, 0.72, 0.52, 0.032), Color(0.75, 0.95, 0.9, 0.038)]}
-tracks/5/type = "value"
-tracks/5/path = NodePath("Vignette:color")
-tracks/5/interp = 1
-tracks/5/keys = {"times": PackedFloat32Array(0, 8, 14, 22, 28), "transitions": PackedFloat32Array(1, 1, 1, 1, 1), "update": 0, "values": [Color(0.006, 0.012, 0.016, 0.42), Color(0.006, 0.012, 0.016, 0.42), Color(0.024, 0.014, 0.01, 0.44), Color(0.024, 0.014, 0.01, 0.44), Color(0.006, 0.012, 0.016, 0.42)]}
+tracks/2/path = NodePath("TemporalCharacterLayer/PresentRegion/Figure/Float/TransitionHalo:modulate")
+tracks/2/interp = 1
+tracks/2/keys = {"times": PackedFloat32Array(0, 0.08, 0.18), "transitions": PackedFloat32Array(1, 1, 1), "update": 0, "values": [Color(0.7, 1, 1, 0), Color(0.7, 1, 1, 1), Color(0.7, 1, 1, 0)]}
+
+[sub_resource type="Animation" id="Animation_pulse_past"]
+resource_name = "pulse_past"
+length = 0.18
+tracks/0/type = "value"
+tracks/0/path = NodePath("TemporalCharacterLayer/PastRegion/Figure/Float/TransitionHalo:visible")
+tracks/0/keys = {"times": PackedFloat32Array(0, 0.18), "transitions": PackedFloat32Array(1, 1), "update": 1, "values": [true, false]}
+tracks/1/type = "value"
+tracks/1/path = NodePath("TemporalCharacterLayer/PastRegion/Figure/Float/TransitionHalo:scale")
+tracks/1/interp = 1
+tracks/1/keys = {"times": PackedFloat32Array(0, 0.18), "transitions": PackedFloat32Array(0.5, 1), "update": 0, "values": [Vector2(0.45, 0.45), Vector2(1.65, 1.65)]}
+tracks/2/type = "value"
+tracks/2/path = NodePath("TemporalCharacterLayer/PastRegion/Figure/Float/TransitionHalo:modulate")
+tracks/2/interp = 1
+tracks/2/keys = {"times": PackedFloat32Array(0, 0.08, 0.18), "transitions": PackedFloat32Array(1, 1, 1), "update": 0, "values": [Color(1, 0.24, 0.82, 0), Color(1, 0.24, 0.82, 1), Color(1, 0.24, 0.82, 0)]}
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_menu"]
 _data = {&"menu_enter": SubResource("Animation_menu_enter"), &"menu_enter_reduced": SubResource("Animation_menu_enter_reduced")}
 
-[sub_resource type="AnimationLibrary" id="AnimationLibrary_phase_cycle"]
-_data = {&"menu_phase_cycle": SubResource("Animation_menu_phase_cycle"), &"menu_phase_cycle_reduced": SubResource("Animation_menu_phase_cycle_reduced")}
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_idle"]
+_data = {&"menu_idle": SubResource("Animation_menu_idle")}
 
-[node name="Menu" type="Control" unique_id=1123206452]
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_transition"]
+_data = {&"RESET": SubResource("Animation_transition_reset"), &"pulse_past": SubResource("Animation_pulse_past"), &"pulse_present": SubResource("Animation_pulse_present")}
+
+[node name="Menu" type="Control"]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme = ExtResource("8_theme")
+theme = ExtResource("7_theme")
 script = ExtResource("1_menu")
-echo_chase_entry_scene_path = ""
-menu_music = ExtResource("6_music")
+echo_chase_entry_scene_path = "res://Scenes/EchoChase/echo_chase_start.tscn"
+menu_music = ExtResource("5_music")
+start_transition = ExtResource("13_start_transition")
+start_transition_reduced = ExtResource("14_start_transition_reduced")
+continue_transition = ExtResource("15_continue_transition")
+continue_transition_reduced = ExtResource("16_continue_transition_reduced")
 
-[node name="Background" type="TextureRect" parent="." unique_id=177126973]
-self_modulate = Color(0.48, 0.62, 0.64, 0.94)
+[node name="Background" type="TextureRect" parent="."]
+unique_name_in_owner = true
+material = SubResource("ShaderMaterial_monochrome")
 texture_filter = 1
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_left = -32.0
+offset_top = -32.0
+offset_right = 32.0
+offset_bottom = 32.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-texture = ExtResource("7_background")
+texture = ExtResource("6_background")
 expand_mode = 1
 stretch_mode = 6
 
-[node name="PhaseEcho" type="TextureRect" parent="."]
-self_modulate = Color(0.48, 0.98, 0.9, 0.045)
+[node name="MapTint" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0, 0, 0, 0.22)
+
+[node name="TemporalCharacterLayer" type="Control" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="PastRegion" type="Control" parent="TemporalCharacterLayer"]
+layout_mode = 1
+anchor_right = 0.333333
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Figure" type="Control" parent="TemporalCharacterLayer/PastRegion"]
+layout_mode = 1
+anchor_left = 0.5
+anchor_top = 0.54
+anchor_right = 0.5
+anchor_bottom = 0.54
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Float" type="Node2D" parent="TemporalCharacterLayer/PastRegion/Figure"]
+
+[node name="TransitionHalo" type="Sprite2D" parent="TemporalCharacterLayer/PastRegion/Figure/Float"]
+visible = false
 texture_filter = 1
+modulate = Color(1, 0.24, 0.82, 0)
+texture = ExtResource("12_transition_ring")
+
+[node name="Core" type="AnimatedSprite2D" parent="TemporalCharacterLayer/PastRegion/Figure/Float"]
+texture_filter = 1
+scale = Vector2(4, 4)
+self_modulate = Color(1, 1, 1, 0.82)
+sprite_frames = ExtResource("9_character_frames")
+animation = &"idle"
+autoplay = "idle"
+
+[node name="Outline" type="AnimatedSprite2D" parent="TemporalCharacterLayer/PastRegion/Figure/Float"]
+texture_filter = 1
+material = SubResource("Material_past_outline")
+scale = Vector2(4, 4)
+sprite_frames = ExtResource("10_outline_frames")
+animation = &"idle"
+autoplay = "idle"
+
+[node name="PresentRegion" type="Control" parent="TemporalCharacterLayer"]
+layout_mode = 1
+anchor_left = 0.333333
+anchor_right = 0.666667
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Figure" type="Control" parent="TemporalCharacterLayer/PresentRegion"]
+layout_mode = 1
+anchor_left = 0.5
+anchor_top = 0.54
+anchor_right = 0.5
+anchor_bottom = 0.54
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Float" type="Node2D" parent="TemporalCharacterLayer/PresentRegion/Figure"]
+
+[node name="TransitionHalo" type="Sprite2D" parent="TemporalCharacterLayer/PresentRegion/Figure/Float"]
+visible = false
+texture_filter = 1
+modulate = Color(0.7, 1, 1, 0)
+texture = ExtResource("12_transition_ring")
+
+[node name="Core" type="AnimatedSprite2D" parent="TemporalCharacterLayer/PresentRegion/Figure/Float"]
+texture_filter = 1
+scale = Vector2(4, 4)
+sprite_frames = ExtResource("9_character_frames")
+animation = &"idle"
+autoplay = "idle"
+
+[node name="Outline" type="AnimatedSprite2D" parent="TemporalCharacterLayer/PresentRegion/Figure/Float"]
+texture_filter = 1
+material = SubResource("Material_present_outline")
+scale = Vector2(4, 4)
+sprite_frames = ExtResource("10_outline_frames")
+animation = &"idle"
+autoplay = "idle"
+
+[node name="FutureRegion" type="Control" parent="TemporalCharacterLayer"]
+layout_mode = 1
+anchor_left = 0.666667
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Figure" type="Control" parent="TemporalCharacterLayer/FutureRegion"]
+layout_mode = 1
+anchor_left = 0.5
+anchor_top = 0.54
+anchor_right = 0.5
+anchor_bottom = 0.54
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Float" type="Node2D" parent="TemporalCharacterLayer/FutureRegion/Figure"]
+
+[node name="TransitionHalo" type="Sprite2D" parent="TemporalCharacterLayer/FutureRegion/Figure/Float"]
+visible = false
+texture_filter = 1
+modulate = Color(1, 0.7, 0.2, 0)
+texture = ExtResource("12_transition_ring")
+
+[node name="Core" type="AnimatedSprite2D" parent="TemporalCharacterLayer/FutureRegion/Figure/Float"]
+texture_filter = 1
+scale = Vector2(4, 4)
+self_modulate = Color(1, 1, 1, 0.84)
+sprite_frames = ExtResource("9_character_frames")
+animation = &"idle"
+autoplay = "idle"
+
+[node name="Outline" type="AnimatedSprite2D" parent="TemporalCharacterLayer/FutureRegion/Figure/Float"]
+texture_filter = 1
+material = SubResource("Material_future_outline")
+scale = Vector2(4, 4)
+sprite_frames = ExtResource("10_outline_frames")
+animation = &"idle"
+autoplay = "idle"
+
+[node name="ButtonLayer" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="TitleReveal" type="Control" parent="ButtonLayer"]
+clip_contents = true
+layout_mode = 1
+anchor_left = 0.065
+anchor_top = 0.08
+anchor_right = 0.58
+anchor_bottom = 0.22
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Title" type="Label" parent="ButtonLayer/TitleReveal"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -363,172 +460,147 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-texture = ExtResource("7_background")
-expand_mode = 1
-stretch_mode = 6
-
-[node name="RayOverlay" type="ColorRect" parent="." unique_id=1442657247]
-self_modulate = Color(0.75, 0.95, 0.9, 0.02)
-material = SubResource("ShaderMaterial_rays")
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-color = Color(0, 0, 0, 0)
-
-[node name="Vignette" type="ColorRect" parent="." unique_id=634276069]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-color = Color(0.006, 0.012, 0.016, 0.42)
-
-[node name="CalibrationVeil" type="ColorRect" parent="."]
-modulate = Color(1, 1, 1, 0.18)
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-color = Color(0.006, 0.024, 0.03, 0.92)
-
-[node name="ButtonLayer" type="Control" parent="." unique_id=275157490]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-
-[node name="Header" type="VBoxContainer" parent="ButtonLayer" unique_id=1565921217]
-self_modulate = Color(1, 1, 1, 0)
-layout_mode = 1
-offset_left = 92.0
-offset_top = 76.0
-offset_right = 760.0
-offset_bottom = 286.0
-theme_override_constants/separation = 5
-
-[node name="TechnicalMark" type="Label" parent="ButtonLayer/Header"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.47, 0.88, 0.82, 0.78)
-theme_override_colors/font_outline_color = Color(0.004, 0.012, 0.016, 0.92)
-theme_override_constants/outline_size = 2
-theme_override_font_sizes/font_size = 17
-text = "ECHO CHASE  //  TEMPORAL TRACE"
-
-[node name="Title" type="Label" parent="ButtonLayer/Header" unique_id=1907461744]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.94, 0.96, 0.91, 1)
-theme_override_colors/font_outline_color = Color(0.004, 0.012, 0.016, 0.94)
-theme_override_constants/outline_size = 5
-theme_override_font_sizes/font_size = 94
+theme_override_colors/font_color = Color(0.98, 0.98, 0.94, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 74
 text = "回声追猎"
+vertical_alignment = 1
 
-[node name="Subtitle" type="Label" parent="ButtonLayer/Header" unique_id=1571964643]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.79, 0.84, 0.8, 0.86)
-theme_override_colors/font_outline_color = Color(0.004, 0.012, 0.016, 0.9)
-theme_override_constants/outline_size = 3
-theme_override_font_sizes/font_size = 23
-text = "你的过去，正在追上你。"
-
-[node name="MenuButtons" type="VBoxContainer" parent="ButtonLayer" unique_id=1680120959]
-self_modulate = Color(1, 1, 1, 0)
+[node name="TitleLine" type="ColorRect" parent="ButtonLayer"]
 layout_mode = 1
-anchors_preset = 3
-anchor_left = 1.0
+anchor_left = 0.068
+anchor_top = 0.215
+anchor_right = 0.34
+anchor_bottom = 0.218
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.96, 0.96, 0.92, 0.86)
+
+[node name="RouteNav" type="Control" parent="ButtonLayer"]
+layout_mode = 1
+anchor_left = 0.7
+anchor_top = 0.58
+anchor_right = 0.94
+anchor_bottom = 0.94
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="RouteLine" type="ColorRect" parent="ButtonLayer/RouteNav"]
+layout_mode = 0
+offset_left = 9.0
+offset_top = 28.0
+offset_right = 11.0
+offset_bottom = 284.0
+mouse_filter = 2
+color = Color(0.86, 0.86, 0.82, 0.74)
+
+[node name="Marker1" type="ColorRect" parent="ButtonLayer/RouteNav"]
+layout_mode = 0
+offset_left = 6.0
+offset_top = 24.0
+offset_right = 14.0
+offset_bottom = 32.0
+mouse_filter = 2
+color = Color(0.96, 0.96, 0.92, 1)
+
+[node name="Marker2" type="ColorRect" parent="ButtonLayer/RouteNav"]
+layout_mode = 0
+offset_left = 6.0
+offset_top = 88.0
+offset_right = 14.0
+offset_bottom = 96.0
+mouse_filter = 2
+color = Color(0.96, 0.96, 0.92, 1)
+
+[node name="Marker3" type="ColorRect" parent="ButtonLayer/RouteNav"]
+layout_mode = 0
+offset_left = 6.0
+offset_top = 152.0
+offset_right = 14.0
+offset_bottom = 160.0
+mouse_filter = 2
+color = Color(0.96, 0.96, 0.92, 1)
+
+[node name="Marker4" type="ColorRect" parent="ButtonLayer/RouteNav"]
+layout_mode = 0
+offset_left = 6.0
+offset_top = 216.0
+offset_right = 14.0
+offset_bottom = 224.0
+mouse_filter = 2
+color = Color(0.96, 0.96, 0.92, 1)
+
+[node name="Marker5" type="ColorRect" parent="ButtonLayer/RouteNav"]
+layout_mode = 0
+offset_left = 6.0
+offset_top = 280.0
+offset_right = 14.0
+offset_bottom = 288.0
+mouse_filter = 2
+color = Color(0.96, 0.96, 0.92, 1)
+
+[node name="MenuButtons" type="VBoxContainer" parent="ButtonLayer/RouteNav"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 28.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 8
+
+[node name="StartButton" parent="ButtonLayer/RouteNav/MenuButtons" instance=ExtResource("2_button")]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 56)
+layout_mode = 2
+theme_override_font_sizes/font_size = 30
+text = "开始游戏"
+
+[node name="ContinueButton" parent="ButtonLayer/RouteNav/MenuButtons" instance=ExtResource("2_button")]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 56)
+layout_mode = 2
+theme_override_font_sizes/font_size = 30
+text = "继续游戏"
+
+[node name="SettingButton" parent="ButtonLayer/RouteNav/MenuButtons" instance=ExtResource("2_button")]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 56)
+layout_mode = 2
+theme_override_font_sizes/font_size = 30
+text = "设置"
+
+[node name="ThanksButton" parent="ButtonLayer/RouteNav/MenuButtons" instance=ExtResource("2_button")]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 56)
+layout_mode = 2
+theme_override_font_sizes/font_size = 30
+text = "感谢"
+
+[node name="ExitButton" parent="ButtonLayer/RouteNav/MenuButtons" instance=ExtResource("2_button")]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 56)
+layout_mode = 2
+theme_override_font_sizes/font_size = 30
+text = "退出"
+
+[node name="StatusLabel" type="Label" parent="ButtonLayer/RouteNav"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 12
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -450.0
-offset_top = -520.0
-offset_right = -80.0
-offset_bottom = -70.0
-grow_horizontal = 0
+offset_left = 28.0
+offset_top = 8.0
+offset_bottom = 40.0
+grow_horizontal = 2
 grow_vertical = 0
-theme_override_constants/separation = 10
-
-[node name="SectionLabel" type="Label" parent="ButtonLayer/MenuButtons"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.58, 0.73, 0.71, 0.8)
-theme_override_font_sizes/font_size = 15
-text = "RUN COMMANDS  /  行动命令"
-
-[node name="Divider" type="ColorRect" parent="ButtonLayer/MenuButtons"]
-custom_minimum_size = Vector2(0, 1)
-layout_mode = 2
-mouse_filter = 2
-color = Color(0.31, 0.73, 0.68, 0.38)
-
-[node name="StartButton" parent="ButtonLayer/MenuButtons" unique_id=2138551991 instance=ExtResource("3_button")]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(370, 50)
-layout_mode = 2
-theme_override_font_sizes/font_size = 24
-panel_style_box = SubResource("Style_menu_warm")
-outline_color = Color(0.95, 0.52, 0.28, 1)
-bb_text = "[color=#f0a36b]开始游戏"
-
-[node name="ContinueButton" parent="ButtonLayer/MenuButtons" unique_id=1024345183 instance=ExtResource("3_button")]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(370, 50)
-layout_mode = 2
-theme_override_font_sizes/font_size = 24
-panel_style_box = SubResource("Style_menu_cold")
-outline_color = Color(0.32, 0.9, 0.82, 1)
-bb_text = "[color=#82d8cf]继续游戏"
-
-[node name="SettingButton" parent="ButtonLayer/MenuButtons" unique_id=1867568161 instance=ExtResource("3_button")]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(370, 50)
-layout_mode = 2
-theme_override_font_sizes/font_size = 24
-panel_style_box = SubResource("Style_menu_neutral")
-outline_color = Color(0.5, 0.68, 0.66, 1)
-bb_text = "[color=#d8ece8]设置"
-
-[node name="ThanksButton" parent="ButtonLayer/MenuButtons" unique_id=1525053367 instance=ExtResource("3_button")]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(370, 50)
-layout_mode = 2
-theme_override_font_sizes/font_size = 24
-panel_style_box = SubResource("Style_menu_cold")
-outline_color = Color(0.32, 0.76, 0.72, 1)
-bb_text = "[color=#8ddbd4]感谢"
-
-[node name="ExitButton" parent="ButtonLayer/MenuButtons" unique_id=784002292 instance=ExtResource("3_button")]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(370, 50)
-layout_mode = 2
-theme_override_font_sizes/font_size = 24
-panel_style_box = SubResource("Style_menu_danger")
-outline_color = Color(0.78, 0.29, 0.28, 1)
-bb_text = "[color=#ff7169]退出"
-
-[node name="SystemStatus" type="Label" parent="ButtonLayer/MenuButtons"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.49, 0.68, 0.65, 0.72)
-theme_override_font_sizes/font_size = 14
-text = "GRAYBOX REQUIRED  ·  TEMPORAL TRACE OFFLINE"
-horizontal_alignment = 2
-
-[node name="StatusLabel" type="Label" parent="ButtonLayer/MenuButtons" unique_id=130990905]
-unique_name_in_owner = true
-visible = false
-layout_mode = 2
-theme_override_colors/font_color = Color(0.95, 0.61, 0.45, 0.92)
-theme_override_font_sizes/font_size = 15
-horizontal_alignment = 2
-vertical_alignment = 1
+theme_override_colors/font_color = Color(0.72, 0.72, 0.69, 1)
+theme_override_font_sizes/font_size = 18
 
 [node name="MenuAnimationPlayer" type="AnimationPlayer" parent="."]
 unique_name_in_owner = true
@@ -536,100 +608,20 @@ libraries = {&"": SubResource("AnimationLibrary_menu")}
 
 [node name="PhaseCycleAnimationPlayer" type="AnimationPlayer" parent="."]
 unique_name_in_owner = true
-libraries = {&"": SubResource("AnimationLibrary_phase_cycle")}
+libraries = {&"": SubResource("AnimationLibrary_idle")}
 
-[node name="ModeSelection" type="ColorRect" parent="." unique_id=844180808]
+[node name="TransitionAnimationPlayer" type="AnimationPlayer" parent="."]
 unique_name_in_owner = true
-visible = false
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-color = Color(0.004, 0.008, 0.012, 0.86)
+libraries = {&"": SubResource("AnimationLibrary_transition")}
 
-[node name="Panel" type="PanelContainer" parent="ModeSelection" unique_id=1674722922]
-layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -330.0
-offset_top = -270.0
-offset_right = 330.0
-offset_bottom = 270.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_styles/panel = SubResource("Style_menu_neutral")
-
-[node name="Margin" type="MarginContainer" parent="ModeSelection/Panel" unique_id=2120745801]
-layout_mode = 2
-theme_override_constants/margin_left = 54
-theme_override_constants/margin_top = 42
-theme_override_constants/margin_right = 54
-theme_override_constants/margin_bottom = 42
-
-[node name="VBox" type="VBoxContainer" parent="ModeSelection/Panel/Margin" unique_id=1417693024]
-layout_mode = 2
-theme_override_constants/separation = 20
-alignment = 1
-
-[node name="Title" type="Label" parent="ModeSelection/Panel/Margin/VBox" unique_id=1212944076]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.84, 1, 0.96, 1)
-theme_override_font_sizes/font_size = 38
-text = "选择游玩模式"
-horizontal_alignment = 1
-
-[node name="Description" type="Label" parent="ModeSelection/Panel/Margin/VBox" unique_id=1952662793]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.72, 0.82, 0.8, 0.92)
-theme_override_font_sizes/font_size = 19
-text = "灰盒入口尚未接入。"
-horizontal_alignment = 1
-
-[node name="SoloModeButton" parent="ModeSelection/Panel/Margin/VBox" unique_id=960340577 instance=ExtResource("3_button")]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(500, 72)
-layout_mode = 2
-theme_override_font_sizes/font_size = 29
-panel_style_box = SubResource("Style_menu_cold")
-bb_text = "[color=#73f1e4]单人模式"
-
-[node name="CoopModeButton" parent="ModeSelection/Panel/Margin/VBox" unique_id=506463018 instance=ExtResource("3_button")]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(500, 72)
-layout_mode = 2
-theme_override_font_sizes/font_size = 29
-panel_style_box = SubResource("Style_menu_warm")
-bb_text = "[color=#ffb067]当前不可用"
-
-[node name="ModeHint" type="Label" parent="ModeSelection/Panel/Margin/VBox" unique_id=1140241163]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.72, 0.78, 0.78, 0.86)
-theme_override_font_sizes/font_size = 17
-text = "双人模式未检测到手柄时，会等待玩家 2 连接。"
-horizontal_alignment = 1
-autowrap_mode = 2
-
-[node name="ModeCancelButton" parent="ModeSelection/Panel/Margin/VBox" unique_id=187243326 instance=ExtResource("3_button")]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(500, 58)
-layout_mode = 2
-theme_override_font_sizes/font_size = 24
-panel_style_box = SubResource("Style_menu_neutral")
-bb_text = "[color=#d8ece8]返回"
-
-[node name="SettingScreen" parent="." unique_id=1307681498 instance=ExtResource("4_settings")]
+[node name="SettingScreen" parent="." instance=ExtResource("3_settings")]
 unique_name_in_owner = true
 visible = false
 layout_mode = 1
 color = Color(0, 0, 0, 0)
 modal_offset = Vector2(0, 0)
 
-[node name="ThankScreen" parent="." unique_id=1000698819 instance=ExtResource("5_thanks")]
+[node name="ThankScreen" parent="." instance=ExtResource("4_thanks")]
 unique_name_in_owner = true
 visible = false
 layout_mode = 1
