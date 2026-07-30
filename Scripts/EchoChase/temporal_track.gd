@@ -24,6 +24,12 @@ func clear() -> void:
 	_frames.clear()
 
 
+# 删除锚点之后的废弃可能性，保留锚点及更早历史。
+func trim_after(end_time: float) -> void:
+	while not _frames.is_empty() and _frames.back().time_seconds > end_time:
+		_frames.pop_back()
+
+
 # 判断路径是否存在可回放样本。
 func is_empty() -> bool:
 	return _frames.is_empty()

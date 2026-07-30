@@ -143,12 +143,50 @@ func get_current_state() -> State:
 	return _state
 
 
-# 将玩家送回记录器起点，并在分离阶段提供接触免疫。
-func apply_temporal_recall(target_position: Vector2, phase_seconds: float) -> void:
-	global_position = target_position
-	velocity = Vector2.ZERO
+# 捕获录制起点的当前体运动状态，不包含之后的输入请求。
+func capture_temporal_anchor(time_seconds: float) -> Dictionary:
+	return {
+		"frame": build_temporal_frame(time_seconds),
+		"state": _state,
+		"dash_available": _dash_available,
+		"dash_aim_remaining": _dash_aim_remaining,
+		"dash_remaining": _dash_remaining,
+		"dash_recovery_remaining": _dash_recovery_remaining,
+		"dash_direction": _dash_direction,
+		"dash_started_on_floor": _dash_started_on_floor,
+		"jump_buffer_remaining": _jump_buffer_remaining,
+		"coyote_remaining": _coyote_remaining,
+		"wall_coyote_remaining": _wall_coyote_remaining,
+		"wall_push_remaining": _wall_push_remaining,
+		"wall_normal": _wall_normal,
+		"was_on_floor": _was_on_floor,
+	}
+
+
+# 将玩家恢复到录制锚点，并在分离阶段提供接触免疫。
+func apply_temporal_recall(anchor: Dictionary, phase_seconds: float) -> void:
+	var frame := anchor["frame"] as TemporalFrame
+	global_position = frame.position
+	velocity = frame.velocity
+	facing = frame.facing
+	_dash_available = bool(anchor["dash_available"])
+	_dash_aim_remaining = float(anchor["dash_aim_remaining"])
+	_dash_remaining = float(anchor["dash_remaining"])
+	_dash_recovery_remaining = float(anchor["dash_recovery_remaining"])
+	_dash_direction = anchor["dash_direction"] as Vector2
+	_dash_started_on_floor = bool(anchor["dash_started_on_floor"])
+	_jump_buffer_remaining = float(anchor["jump_buffer_remaining"])
+	_coyote_remaining = float(anchor["coyote_remaining"])
+	_wall_coyote_remaining = float(anchor["wall_coyote_remaining"])
+	_wall_push_remaining = float(anchor["wall_push_remaining"])
+	_wall_normal = anchor["wall_normal"] as Vector2
+	_was_on_floor = bool(anchor["was_on_floor"])
+	_dash_requested = false
+	_jump_requested = false
+	_recall_requested = false
 	_temporal_phase_remaining = phase_seconds
-	_change_state(State.IDLE)
+	_change_state(anchor["state"] as State)
+	_update_animation()
 	recalled.emit()
 
 

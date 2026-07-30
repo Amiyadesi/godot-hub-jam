@@ -54,6 +54,13 @@ func start_playback(track: TemporalTrack, duration: float, phase_seconds: float)
 		_apply_frame_visual(first_frame)
 
 
+# 录制锚点回退时从首帧重播现存可能性，不改变槽位占用。
+func restart_playback(phase_seconds: float) -> void:
+	if _track == null:
+		return
+	start_playback(_track, _duration, phase_seconds)
+
+
 # 只推进当前 authored 路径；退场快照拥有独立视觉生命周期。
 func advance(delta: float) -> void:
 	if not _active:

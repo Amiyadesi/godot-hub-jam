@@ -16,6 +16,7 @@
 [ext_resource type="Resource" path="res://resources/scene_transitions/echo_start_present_radial_reduced.tres" id="14_start_transition_reduced"]
 [ext_resource type="Resource" path="res://resources/scene_transitions/echo_continue_past_radial.tres" id="15_continue_transition"]
 [ext_resource type="Resource" path="res://resources/scene_transitions/echo_continue_past_radial_reduced.tres" id="16_continue_transition_reduced"]
+[ext_resource type="Shader" path="res://assets/echo_chase/vfx/menu_edge_glow.gdshader" id="17_edge_glow"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_grid"]
 shader = ExtResource("8_grid")
@@ -24,6 +25,16 @@ shader_parameter/cross_color = Color(0.82, 0.88, 0.88, 0.16)
 shader_parameter/grid_size = 64.0
 shader_parameter/cross_arm = 6.0
 shader_parameter/line_width = 1.0
+
+[sub_resource type="ShaderMaterial" id="Material_menu_top_glow"]
+shader = ExtResource("17_edge_glow")
+shader_parameter/from_top = true
+shader_parameter/fade_distance = 0.82
+
+[sub_resource type="ShaderMaterial" id="Material_menu_bottom_glow"]
+shader = ExtResource("17_edge_glow")
+shader_parameter/from_top = false
+shader_parameter/fade_distance = 0.82
 
 [sub_resource type="ShaderMaterial" id="Material_past_outline"]
 shader = ExtResource("11_outline_shader")
@@ -527,11 +538,35 @@ tracks/0/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Arr
 tracks/1/type = "value"
 tracks/1/path = NodePath("TemporalFrame/Glow:self_modulate")
 tracks/1/interp = 1
-tracks/1/keys = {"times": PackedFloat32Array(0, 1.2, 2.4), "transitions": PackedFloat32Array(1, 1, 1), "update": 0, "values": [Color(1, 1, 1, 0.38), Color(1, 1, 1, 1), Color(1, 1, 1, 0.38)]}
+tracks/1/keys = {"times": PackedFloat32Array(0, 1.2, 2.4), "transitions": PackedFloat32Array(1, 1, 1), "update": 0, "values": [Color(1, 1, 1, 0.72), Color(1, 1, 1, 1), Color(1, 1, 1, 0.72)]}
 tracks/2/type = "value"
 tracks/2/path = NodePath("TemporalFrame/Lines:self_modulate")
 tracks/2/interp = 1
 tracks/2/keys = {"times": PackedFloat32Array(0, 1.2, 2.4), "transitions": PackedFloat32Array(1, 1, 1), "update": 0, "values": [Color(1, 1, 1, 0.78), Color(1, 1, 1, 1), Color(1, 1, 1, 0.78)]}
+tracks/3/type = "value"
+tracks/3/path = NodePath("TemporalFrame/Glow/TopPast:offset_bottom")
+tracks/3/interp = 1
+tracks/3/keys = {"times": PackedFloat32Array(0, 0.3, 0.72, 2.4), "transitions": PackedFloat32Array(0.5, 1, 1, 1), "update": 0, "values": [8.0, 32.0, 8.0, 8.0]}
+tracks/4/type = "value"
+tracks/4/path = NodePath("TemporalFrame/Glow/BottomPast:offset_top")
+tracks/4/interp = 1
+tracks/4/keys = {"times": PackedFloat32Array(0, 0.3, 0.72, 2.4), "transitions": PackedFloat32Array(0.5, 1, 1, 1), "update": 0, "values": [-8.0, -32.0, -8.0, -8.0]}
+tracks/5/type = "value"
+tracks/5/path = NodePath("TemporalFrame/Glow/TopPresent:offset_bottom")
+tracks/5/interp = 1
+tracks/5/keys = {"times": PackedFloat32Array(0, 0.72, 1.02, 1.44, 2.4), "transitions": PackedFloat32Array(1, 0.5, 1, 1, 1), "update": 0, "values": [8.0, 8.0, 32.0, 8.0, 8.0]}
+tracks/6/type = "value"
+tracks/6/path = NodePath("TemporalFrame/Glow/BottomPresent:offset_top")
+tracks/6/interp = 1
+tracks/6/keys = {"times": PackedFloat32Array(0, 0.72, 1.02, 1.44, 2.4), "transitions": PackedFloat32Array(1, 0.5, 1, 1, 1), "update": 0, "values": [-8.0, -8.0, -32.0, -8.0, -8.0]}
+tracks/7/type = "value"
+tracks/7/path = NodePath("TemporalFrame/Glow/TopFuture:offset_bottom")
+tracks/7/interp = 1
+tracks/7/keys = {"times": PackedFloat32Array(0, 1.44, 1.74, 2.16, 2.4), "transitions": PackedFloat32Array(1, 0.5, 1, 1, 1), "update": 0, "values": [8.0, 8.0, 32.0, 8.0, 8.0]}
+tracks/8/type = "value"
+tracks/8/path = NodePath("TemporalFrame/Glow/BottomFuture:offset_top")
+tracks/8/interp = 1
+tracks/8/keys = {"times": PackedFloat32Array(0, 1.44, 1.74, 2.16, 2.4), "transitions": PackedFloat32Array(1, 0.5, 1, 1, 1), "update": 0, "values": [-8.0, -8.0, -32.0, -8.0, -8.0]}
 
 [sub_resource type="Animation" id="Animation_frame_reduced"]
 resource_name = "frame_reduced"
@@ -915,32 +950,36 @@ grow_vertical = 2
 mouse_filter = 2
 
 [node name="TopPast" type="ColorRect" parent="TemporalFrame/Glow"]
+material = SubResource("Material_menu_top_glow")
 layout_mode = 1
 anchor_right = 0.333333
 offset_bottom = 8.0
 grow_horizontal = 2
 mouse_filter = 2
-color = Color(1, 0.24, 0.82, 0.22)
+color = Color(1, 0.24, 0.82, 0.48)
 
 [node name="TopPresent" type="ColorRect" parent="TemporalFrame/Glow"]
+material = SubResource("Material_menu_top_glow")
 layout_mode = 1
 anchor_left = 0.333333
 anchor_right = 0.666667
 offset_bottom = 8.0
 grow_horizontal = 2
 mouse_filter = 2
-color = Color(0.7, 1, 1, 0.22)
+color = Color(0.7, 1, 1, 0.48)
 
 [node name="TopFuture" type="ColorRect" parent="TemporalFrame/Glow"]
+material = SubResource("Material_menu_top_glow")
 layout_mode = 1
 anchor_left = 0.666667
 anchor_right = 1.0
 offset_bottom = 8.0
 grow_horizontal = 2
 mouse_filter = 2
-color = Color(1, 0.7, 0.2, 0.22)
+color = Color(1, 0.7, 0.2, 0.48)
 
 [node name="BottomPast" type="ColorRect" parent="TemporalFrame/Glow"]
+material = SubResource("Material_menu_bottom_glow")
 layout_mode = 1
 anchor_top = 1.0
 anchor_right = 0.333333
@@ -949,9 +988,10 @@ offset_top = -8.0
 grow_horizontal = 2
 grow_vertical = 0
 mouse_filter = 2
-color = Color(1, 0.24, 0.82, 0.22)
+color = Color(1, 0.24, 0.82, 0.48)
 
 [node name="BottomPresent" type="ColorRect" parent="TemporalFrame/Glow"]
+material = SubResource("Material_menu_bottom_glow")
 layout_mode = 1
 anchor_left = 0.333333
 anchor_top = 1.0
@@ -961,9 +1001,10 @@ offset_top = -8.0
 grow_horizontal = 2
 grow_vertical = 0
 mouse_filter = 2
-color = Color(0.7, 1, 1, 0.22)
+color = Color(0.7, 1, 1, 0.48)
 
 [node name="BottomFuture" type="ColorRect" parent="TemporalFrame/Glow"]
+material = SubResource("Material_menu_bottom_glow")
 layout_mode = 1
 anchor_left = 0.666667
 anchor_top = 1.0
@@ -973,57 +1014,7 @@ offset_top = -8.0
 grow_horizontal = 2
 grow_vertical = 0
 mouse_filter = 2
-color = Color(1, 0.7, 0.2, 0.22)
-
-[node name="DividerPastPresent" type="Control" parent="TemporalFrame/Glow"]
-layout_mode = 1
-anchor_left = 0.333333
-anchor_right = 0.333333
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-
-[node name="PastSide" type="ColorRect" parent="TemporalFrame/Glow/DividerPastPresent"]
-layout_mode = 1
-anchor_bottom = 1.0
-offset_left = -6.0
-grow_vertical = 2
-mouse_filter = 2
-color = Color(1, 0.24, 0.82, 0.18)
-
-[node name="PresentSide" type="ColorRect" parent="TemporalFrame/Glow/DividerPastPresent"]
-layout_mode = 1
-anchor_bottom = 1.0
-offset_right = 6.0
-grow_vertical = 2
-mouse_filter = 2
-color = Color(0.7, 1, 1, 0.18)
-
-[node name="DividerPresentFuture" type="Control" parent="TemporalFrame/Glow"]
-layout_mode = 1
-anchor_left = 0.666667
-anchor_right = 0.666667
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-
-[node name="PresentSide" type="ColorRect" parent="TemporalFrame/Glow/DividerPresentFuture"]
-layout_mode = 1
-anchor_bottom = 1.0
-offset_left = -6.0
-grow_vertical = 2
-mouse_filter = 2
-color = Color(0.7, 1, 1, 0.18)
-
-[node name="FutureSide" type="ColorRect" parent="TemporalFrame/Glow/DividerPresentFuture"]
-layout_mode = 1
-anchor_bottom = 1.0
-offset_right = 6.0
-grow_vertical = 2
-mouse_filter = 2
-color = Color(1, 0.7, 0.2, 0.18)
+color = Color(1, 0.7, 0.2, 0.48)
 
 [node name="Lines" type="Control" parent="TemporalFrame"]
 layout_mode = 1
@@ -1094,56 +1085,6 @@ grow_horizontal = 2
 grow_vertical = 0
 mouse_filter = 2
 color = Color(1, 0.7, 0.2, 0.96)
-
-[node name="DividerPastPresent" type="Control" parent="TemporalFrame/Lines"]
-layout_mode = 1
-anchor_left = 0.333333
-anchor_right = 0.333333
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-
-[node name="PastSide" type="ColorRect" parent="TemporalFrame/Lines/DividerPastPresent"]
-layout_mode = 1
-anchor_bottom = 1.0
-offset_left = -2.0
-grow_vertical = 2
-mouse_filter = 2
-color = Color(1, 0.24, 0.82, 0.92)
-
-[node name="PresentSide" type="ColorRect" parent="TemporalFrame/Lines/DividerPastPresent"]
-layout_mode = 1
-anchor_bottom = 1.0
-offset_right = 2.0
-grow_vertical = 2
-mouse_filter = 2
-color = Color(0.7, 1, 1, 0.92)
-
-[node name="DividerPresentFuture" type="Control" parent="TemporalFrame/Lines"]
-layout_mode = 1
-anchor_left = 0.666667
-anchor_right = 0.666667
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-
-[node name="PresentSide" type="ColorRect" parent="TemporalFrame/Lines/DividerPresentFuture"]
-layout_mode = 1
-anchor_bottom = 1.0
-offset_left = -2.0
-grow_vertical = 2
-mouse_filter = 2
-color = Color(0.7, 1, 1, 0.92)
-
-[node name="FutureSide" type="ColorRect" parent="TemporalFrame/Lines/DividerPresentFuture"]
-layout_mode = 1
-anchor_bottom = 1.0
-offset_right = 2.0
-grow_vertical = 2
-mouse_filter = 2
-color = Color(1, 0.7, 0.2, 0.92)
 
 [node name="ButtonLayer" type="Control" parent="." unique_id=2020807709]
 layout_mode = 1

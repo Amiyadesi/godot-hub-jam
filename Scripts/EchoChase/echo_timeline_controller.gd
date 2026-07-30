@@ -35,8 +35,11 @@ var _phase_warning_remaining := 0.0
 var _run_track := TemporalTrack.new()
 var _recording_track: TemporalTrack
 var _recording_recorder: FutureRecorder
+var _recording_future_echo: FutureEcho
+var _recording_future_a_was_active := false
+var _recording_future_b_was_active := false
 var _recording_started_at := 0.0
-var _recording_start_position := Vector2.ZERO
+var _recording_anchor: Dictionary = {}
 var _future_slots_used := 0
 
 
@@ -81,11 +84,25 @@ func start_future_recording(recorder: FutureRecorder) -> bool:
 	if _recording_track != null or _future_slots_used >= FUTURE_SLOT_COUNT:
 		future_recording_rejected.emit()
 		return false
+	var reserved_future := _get_available_future_echo()
+	if reserved_future == null:
+		future_recording_rejected.emit()
+		return false
 	_recording_track = TemporalTrack.new()
 	_recording_recorder = recorder
+	_recording_future_echo = reserved_future
+	_recording_future_a_was_active = not future_echo_a.is_available()
+	_recording_future_b_was_active = not future_echo_b.is_available()
 	_recording_started_at = _timeline_seconds
-	_recording_start_position = player.global_position
-	var start_frame := player.build_temporal_frame(_timeline_seconds)
+	_recording_anchor = player.capture_temporal_anchor(_timeline_seconds)
+	_recording_anchor["past_delay_seconds"] = _past_delay_seconds
+	_recording_anchor["pending_past_delay_seconds"] = _pending_past_delay_seconds
+	_recording_anchor["past_delay_switch_id"] = _past_delay_switch_id
+	_recording_anchor["pending_past_delay_switch_id"] = _pending_past_delay_switch_id
+	_recording_anchor["phase_warning_remaining"] = _phase_warning_remaining
+	var anchor_frame := _recording_anchor["frame"] as TemporalFrame
+	_run_track.append(anchor_frame)
+	var start_frame := anchor_frame.copy()
 	start_frame.time_seconds = 0.0
 	_recording_track.append(start_frame)
 	_future_slots_used += 1
@@ -101,22 +118,34 @@ func commit_future_recording() -> bool:
 	if _recording_track == null:
 		return false
 	var duration := _timeline_seconds - _recording_started_at
-	var future_echo := _get_available_future_echo()
+	var future_echo := _recording_future_echo
 	if future_echo == null:
-		push_error("EchoTimelineController has no authored FutureEcho available for a reserved slot")
+		push_error("EchoTimelineController lost its reserved FutureEcho slot")
 		return false
 	var finished_track := _recording_track
 	var finished_recorder := _recording_recorder
+	var finished_anchor := _recording_anchor
+	var restore_future_a := _recording_future_a_was_active
+	var restore_future_b := _recording_future_b_was_active
 	var playback_duration := clampf(duration, FUTURE_MINIMUM_SECONDS, FUTURE_MAXIMUM_SECONDS)
 	finished_track.hold_last_frame_until(playback_duration)
 	_recording_track = null
 	_recording_recorder = null
+	_recording_future_echo = null
+	_recording_future_a_was_active = false
+	_recording_future_b_was_active = false
+	_recording_anchor = {}
+	_timeline_seconds = _recording_started_at
+	_run_track.trim_after(_timeline_seconds)
+	player.apply_temporal_recall(finished_anchor, TEMPORAL_PHASE_SECONDS)
+	_restore_past_anchor(finished_anchor)
+	if restore_future_a:
+		future_echo_a.restart_playback(TEMPORAL_PHASE_SECONDS)
+	if restore_future_b:
+		future_echo_b.restart_playback(TEMPORAL_PHASE_SECONDS)
 	future_echo.start_playback(finished_track, playback_duration, TEMPORAL_PHASE_SECONDS)
+	_sync_future_slot_count()
 	finished_recorder.recording_finished()
-	player.apply_temporal_recall(_recording_start_position, TEMPORAL_PHASE_SECONDS)
-	var recall_frame := player.build_temporal_frame(_timeline_seconds)
-	recall_frame.flags |= TemporalFrame.Flag.RECALL
-	record_player_frame(recall_frame)
 	future_recording_finished.emit()
 	return true
 
@@ -171,6 +200,10 @@ func reset_timeline(
 	_run_track.clear()
 	_recording_track = null
 	_recording_recorder = null
+	_recording_future_echo = null
+	_recording_future_a_was_active = false
+	_recording_future_b_was_active = false
+	_recording_anchor = {}
 	if cancelled_recorder != null:
 		cancelled_recorder.recording_cancelled()
 	_future_slots_used = 0
@@ -202,6 +235,28 @@ func get_selected_delay_switch_id() -> StringName:
 	return _pending_past_delay_switch_id
 
 
+# 恢复录像起点的过去延迟与切档剩余时间，并同步 authored 延迟台表现。
+func _restore_past_anchor(anchor: Dictionary) -> void:
+	_past_delay_seconds = float(anchor["past_delay_seconds"])
+	_pending_past_delay_seconds = float(anchor["pending_past_delay_seconds"])
+	_past_delay_switch_id = anchor["past_delay_switch_id"] as StringName
+	_pending_past_delay_switch_id = anchor["pending_past_delay_switch_id"] as StringName
+	_phase_warning_remaining = float(anchor["phase_warning_remaining"])
+	if _phase_warning_remaining > 0.0:
+		past_echo.begin_phase_shift()
+		var elapsed_warning := PAST_PHASE_WARNING_SECONDS - _phase_warning_remaining
+		past_echo.preview_phase_target(
+			_run_track,
+			_timeline_seconds - _pending_past_delay_seconds,
+			elapsed_warning
+		)
+		past_delay_switch_started.emit(_pending_past_delay_seconds, _pending_past_delay_switch_id)
+		return
+	past_echo.end_phase_shift()
+	past_echo.play_at(_run_track, _timeline_seconds - _past_delay_seconds)
+	past_delay_changed.emit(_past_delay_seconds, _past_delay_switch_id)
+
+
 # 先推进相位预警，再应用选定的历史偏移。
 func _advance_past_delay_shift(delta: float) -> void:
 	if is_zero_approx(_phase_warning_remaining):
@@ -231,6 +286,15 @@ func _get_available_future_echo() -> FutureEcho:
 	if future_echo_b.is_available():
 		return future_echo_b
 	return null
+
+
+# 回退恢复可能性后，用真实活动槽修正录制期间的释放计数。
+func _sync_future_slot_count() -> void:
+	var active_slots := int(not future_echo_a.is_available()) + int(not future_echo_b.is_available())
+	if active_slots == _future_slots_used:
+		return
+	_future_slots_used = active_slots
+	future_slots_changed.emit(_future_slots_used, FUTURE_SLOT_COUNT)
 
 
 # 未来体停止影响玩法时只释放一个可能性槽。

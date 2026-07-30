@@ -45,6 +45,11 @@ func _run() -> void:
 	await _test_past_echo_previews_each_clean_timeline()
 	await _test_future_echo_releases_a_pressure_plate()
 	await _test_future_echoes_use_independent_durations()
+	await _test_future_recording_rewinds_temporal_anchor()
+	await _test_future_recording_rewinds_derived_world_state()
+	await _test_future_commit_restarts_existing_possibilities()
+	await _test_future_commit_restores_an_expired_existing_possibility()
+	await _test_future_commit_restores_pending_delay_shift()
 	await _test_past_dissipates_overlapping_futures_together()
 	await _test_recorder_commits_a_future_echo_from_recall_input()
 	await _test_recorder_state_feedback_and_reuse()
@@ -858,22 +863,26 @@ func _test_menu_entry_scene_contract() -> void:
 		if line_layer != null:
 			for segment_name in ["TopPast", "TopPresent", "TopFuture", "BottomPast", "BottomPresent", "BottomFuture"]:
 				_expect(line_layer.get_node_or_null(segment_name) is ColorRect, "Temporal frame authors %s" % segment_name)
-			var first_divider := line_layer.get_node_or_null("DividerPastPresent") as Control
-			var second_divider := line_layer.get_node_or_null("DividerPresentFuture") as Control
-			_expect(first_divider != null and second_divider != null, "Temporal frame authors both one-third dividers")
-			if first_divider != null:
-				var past_side := first_divider.get_node("PastSide") as ColorRect
-				var present_side := first_divider.get_node("PresentSide") as ColorRect
-				_expect(not past_side.color.is_equal_approx(present_side.color), "Past/present divider keeps adjacent colors separate")
-			if second_divider != null:
-				var present_side := second_divider.get_node("PresentSide") as ColorRect
-				var future_side := second_divider.get_node("FutureSide") as ColorRect
-				_expect(not present_side.color.is_equal_approx(future_side.color), "Present/future divider keeps adjacent colors separate")
+			_expect(line_layer.find_children("*Divider*", "Control", true, false).is_empty(), "Temporal frame removes vertical dividers")
+		if glow_layer != null:
+			_expect(glow_layer.find_children("*Divider*", "Control", true, false).is_empty(), "Temporal glow removes vertical dividers")
 	var frame_player := menu.get_node_or_null("FrameAnimationPlayer") as AnimationPlayer
 	_expect(
 		frame_player != null and frame_player.has_animation(&"frame_standard") and frame_player.has_animation(&"frame_reduced"),
 		"Menu authors standard and low-flash temporal frame animations"
 	)
+	if frame_player != null and frame_player.has_animation(&"frame_standard"):
+		var standard_frame := frame_player.get_animation(&"frame_standard")
+		for segment_name in ["TopPast", "TopPresent", "TopFuture"]:
+			_expect(
+				standard_frame.find_track(NodePath("TemporalFrame/Glow/%s:offset_bottom" % segment_name), Animation.TYPE_VALUE) >= 0,
+				"Standard temporal glow expands inward on %s" % segment_name
+			)
+		for segment_name in ["BottomPast", "BottomPresent", "BottomFuture"]:
+			_expect(
+				standard_frame.find_track(NodePath("TemporalFrame/Glow/%s:offset_top" % segment_name), Animation.TYPE_VALUE) >= 0,
+				"Standard temporal glow expands inward on %s" % segment_name
+			)
 	_expect(menu.get_node_or_null("ButtonLayer/TitleReveal") != null, "Menu title uses an authored clipping reveal")
 	var start_transition := menu.get("start_transition") as SceneTransition
 	var start_transition_reduced := menu.get("start_transition_reduced") as SceneTransition
@@ -1400,6 +1409,162 @@ func _test_future_echoes_use_independent_durations() -> void:
 	_expect(not timeline.future_echo_b.is_available(), "Longer FutureEcho remains active when the short one ends")
 	timeline.future_echo_b.advance(2.0)
 	_expect(timeline.future_echo_b.is_available(), "Longer FutureEcho releases only after its own duration")
+	fixture.queue_free()
+	await process_frame
+
+
+# 验证提交未来录像会把现在体、过去体和主时间退回录制起点。
+func _test_future_recording_rewinds_temporal_anchor() -> void:
+	var fixture := TIMELINE_FIXTURE.instantiate()
+	root.add_child(fixture)
+	await physics_frame
+	var timeline := fixture.get_node("EchoTimelineController") as EchoTimelineController
+	var player := fixture.get_node("EchoPlayer") as EchoPlayer
+	var recorder := fixture.get_node("FutureRecorder") as FutureRecorder
+	if timeline != null and player != null and recorder != null:
+		timeline.set_physics_process(false)
+		player.set_physics_process(false)
+		timeline.reset_timeline(1.0, &"delay_1s")
+		player.global_position = Vector2.ZERO
+		_advance_timeline(timeline, player, 1.0)
+		player.global_position = Vector2(32.0, 0.0)
+		_advance_timeline(timeline, player, 1.0)
+		var anchor_time := timeline.get_timeline_seconds()
+		var past_anchor_position := timeline.past_echo.global_position
+		player.global_position = Vector2(64.0, 0.0)
+		player.velocity = Vector2(120.0, -40.0)
+		player.facing = -1.0
+		_expect(timeline.start_future_recording(recorder), "Future recording captures a temporal anchor")
+		player.global_position = Vector2(384.0, 0.0)
+		player.velocity = Vector2(-80.0, 20.0)
+		player.facing = 1.0
+		_advance_timeline(timeline, player, 1.1)
+		_expect(timeline.commit_future_recording(), "Future recording commits after leaving its anchor")
+		_expect(is_equal_approx(timeline.get_timeline_seconds(), anchor_time), "Future commit rewinds the main timeline to the recording anchor")
+		_expect(player.global_position.is_equal_approx(Vector2(64.0, 0.0)), "Future commit restores the current player anchor position")
+		_expect(player.velocity.is_equal_approx(Vector2(120.0, -40.0)), "Future commit restores the current player anchor velocity")
+		_expect(is_equal_approx(player.facing, -1.0), "Future commit restores the current player anchor facing")
+		_expect(timeline.past_echo.global_position.is_equal_approx(past_anchor_position), "Future commit rewinds PastEcho to its anchor history position")
+		_expect(not timeline.future_echo_a.is_available(), "Future commit preserves the recorded path as a FutureEcho")
+	fixture.queue_free()
+	await process_frame
+
+
+# 验证回退后机关先恢复锚点状态，再由未来轨迹重新产生结果。
+func _test_future_recording_rewinds_derived_world_state() -> void:
+	var fixture := TIMELINE_FIXTURE.instantiate()
+	root.add_child(fixture)
+	await physics_frame
+	var timeline := fixture.get_node("EchoTimelineController") as EchoTimelineController
+	var player := fixture.get_node("EchoPlayer") as EchoPlayer
+	var recorder := fixture.get_node("FutureRecorder") as FutureRecorder
+	var plate := fixture.get_node("TemporalPressurePlate") as TemporalPressurePlate
+	var door := fixture.get_node("TemporalDoor") as TemporalDoor
+	if timeline != null and player != null and recorder != null and plate != null and door != null:
+		timeline.set_physics_process(false)
+		player.set_physics_process(false)
+		player.global_position = Vector2.ZERO
+		_expect(timeline.start_future_recording(recorder), "World-state recording captures a closed-door anchor")
+		player.global_position = plate.global_position
+		_advance_timeline(timeline, player, 1.1)
+		await physics_frame
+		await physics_frame
+		_expect(door.is_open(), "Present movement can change a derived world device during recording")
+		_expect(timeline.commit_future_recording(), "World-state recording commits")
+		await physics_frame
+		await physics_frame
+		_expect(not door.is_open(), "Future commit restores the derived door state at the recording anchor")
+		timeline._physics_process(0.2)
+		await physics_frame
+		await physics_frame
+		_expect(door.is_open(), "Recorded FutureEcho later reproduces the pressure-plate result")
+	fixture.queue_free()
+	await process_frame
+
+
+# 验证每次提交都会让现存与新增未来体从各自首帧同步重播。
+func _test_future_commit_restarts_existing_possibilities() -> void:
+	var fixture := TIMELINE_FIXTURE.instantiate()
+	root.add_child(fixture)
+	await physics_frame
+	var timeline := fixture.get_node("EchoTimelineController") as EchoTimelineController
+	var player := fixture.get_node("EchoPlayer") as EchoPlayer
+	var recorder := fixture.get_node("FutureRecorder") as FutureRecorder
+	if timeline != null and player != null and recorder != null:
+		timeline.set_physics_process(false)
+		player.set_physics_process(false)
+		player.global_position = Vector2.ZERO
+		_expect(timeline.start_future_recording(recorder), "First possibility recording starts")
+		for position_x in [100.0, 200.0, 300.0]:
+			player.global_position = Vector2(position_x, 0.0)
+			_advance_timeline(timeline, player, 1.0)
+		_expect(timeline.commit_future_recording(), "First possibility recording commits")
+		player.global_position = Vector2(200.0, 0.0)
+		_expect(timeline.start_future_recording(recorder), "Second possibility recording starts while the first remains active")
+		player.global_position = Vector2(320.0, 0.0)
+		_advance_timeline(timeline, player, 1.0)
+		_expect(not timeline.future_echo_a.global_position.is_equal_approx(Vector2.ZERO), "Existing FutureEcho advances while the second recording runs")
+		_expect(timeline.commit_future_recording(), "Second possibility recording commits")
+		_expect(timeline.future_echo_a.global_position.is_equal_approx(Vector2.ZERO), "Existing FutureEcho restarts from its first frame")
+		_expect(timeline.future_echo_b.global_position.is_equal_approx(Vector2(200.0, 0.0)), "New FutureEcho starts from the second recording anchor")
+		_expect(timeline.future_echo_a.is_temporally_phased() and timeline.future_echo_b.is_temporally_phased(), "All FutureEchoes restart with the same separation phase")
+	fixture.queue_free()
+	await process_frame
+
+
+# 验证旧未来体在录制期间结束后仍按锚点恢复，不会吞掉新录像槽。
+func _test_future_commit_restores_an_expired_existing_possibility() -> void:
+	var fixture := TIMELINE_FIXTURE.instantiate()
+	root.add_child(fixture)
+	await physics_frame
+	var timeline := fixture.get_node("EchoTimelineController") as EchoTimelineController
+	var player := fixture.get_node("EchoPlayer") as EchoPlayer
+	var recorder := fixture.get_node("FutureRecorder") as FutureRecorder
+	if timeline != null and player != null and recorder != null:
+		timeline.set_physics_process(false)
+		player.set_physics_process(false)
+		player.global_position = Vector2.ZERO
+		_expect(timeline.start_future_recording(recorder), "Short first possibility recording starts")
+		player.global_position = Vector2(96.0, 0.0)
+		_advance_timeline(timeline, player, 1.0)
+		_expect(timeline.commit_future_recording(), "Short first possibility recording commits")
+		player.global_position = Vector2(200.0, 0.0)
+		_expect(timeline.start_future_recording(recorder), "Longer second possibility recording reserves the other slot")
+		player.global_position = Vector2(320.0, 0.0)
+		_advance_timeline(timeline, player, 1.2)
+		_expect(timeline.future_echo_a.is_available(), "First FutureEcho can expire during the second recording")
+		_expect(timeline.commit_future_recording(), "Second possibility commits after the old FutureEcho expires")
+		_expect(not timeline.future_echo_a.is_available(), "Expired existing FutureEcho is restored from the recording anchor")
+		_expect(timeline.future_echo_a.global_position.is_equal_approx(Vector2.ZERO), "Restored existing FutureEcho returns to its own first frame")
+		_expect(not timeline.future_echo_b.is_available(), "Reserved second slot receives the new FutureEcho")
+		_expect(timeline.future_echo_b.global_position.is_equal_approx(Vector2(200.0, 0.0)), "New FutureEcho keeps the second recording anchor")
+	fixture.queue_free()
+	await process_frame
+
+
+# 验证录制锚点保留切档剩余时间，不把录制期间完成的延迟永久带回。
+func _test_future_commit_restores_pending_delay_shift() -> void:
+	var fixture := TIMELINE_FIXTURE.instantiate()
+	root.add_child(fixture)
+	await physics_frame
+	var timeline := fixture.get_node("EchoTimelineController") as EchoTimelineController
+	var player := fixture.get_node("EchoPlayer") as EchoPlayer
+	var recorder := fixture.get_node("FutureRecorder") as FutureRecorder
+	if timeline != null and player != null and recorder != null:
+		timeline.set_physics_process(false)
+		player.set_physics_process(false)
+		timeline.reset_timeline(3.0, &"delay_3s")
+		_expect(timeline.request_past_delay(1.0, &"delay_1s"), "Pending delay starts before future recording")
+		_advance_timeline(timeline, player, 0.2)
+		_expect(timeline.start_future_recording(recorder), "Future recording captures a pending delay shift")
+		_advance_timeline(timeline, player, 0.5)
+		var applied_delays: Array[float] = []
+		timeline.past_delay_changed.connect(func(seconds: float, _switch_id: StringName) -> void: applied_delays.append(seconds))
+		_expect(timeline.commit_future_recording(), "Future recording with pending delay commits")
+		_advance_timeline(timeline, player, 0.39)
+		_expect(applied_delays.is_empty(), "Restored delay shift keeps its remaining warning before applying")
+		_advance_timeline(timeline, player, 0.02)
+		_expect(not applied_delays.is_empty() and is_equal_approx(applied_delays.back(), 1.0), "Restored delay shift applies after its original remaining warning")
 	fixture.queue_free()
 	await process_frame
 
