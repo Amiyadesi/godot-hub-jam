@@ -146,11 +146,12 @@ func check_conflict(new_event: InputEvent) -> Array:
 func rebind_action_primary(action: String, new_event: InputEvent) -> void:
 	if not _require_action(action):
 		return
-	# 移除旧的第一个事件，插入新事件
 	var events := InputMap.action_get_events(action)
-	if events.size() > 0:
-		InputMap.action_erase_event(action, events[0])
-	InputMap.action_add_event(action, new_event)
+	if events.is_empty():
+		events.append(new_event)
+	else:
+		events[0] = new_event
+	_replace_action_events(action, events)
 	_emit_bindings_changed()
 
 ## 获取动作的所有绑定事件
@@ -159,6 +160,14 @@ func get_action_events(action: String) -> Array[InputEvent]:
 		return []
 	return InputMap.action_get_events(action)
 
+
+# Reports whether one action already contains an equivalent event.
+func has_action_event(action: String, candidate: InputEvent) -> bool:
+	for event: InputEvent in get_action_events(action):
+		if _events_equal(event, candidate):
+			return true
+	return false
+
 # ──────────────────────────────────────────────
 # 内部辅助
 # ──────────────────────────────────────────────
@@ -166,9 +175,23 @@ func get_action_events(action: String) -> Array[InputEvent]:
 ## 比较两个输入事件是否相等
 func _events_equal(a: InputEvent, b: InputEvent) -> bool:
 	if a is InputEventKey and b is InputEventKey:
-		return a.keycode == b.keycode
+		return (
+			a.keycode == b.keycode
+			and a.physical_keycode == b.physical_keycode
+			and a.location == b.location
+			and a.ctrl_pressed == b.ctrl_pressed
+			and a.shift_pressed == b.shift_pressed
+			and a.alt_pressed == b.alt_pressed
+			and a.meta_pressed == b.meta_pressed
+		)
 	elif a is InputEventMouseButton and b is InputEventMouseButton:
-		return a.button_index == b.button_index
+		return (
+			a.button_index == b.button_index
+			and a.ctrl_pressed == b.ctrl_pressed
+			and a.shift_pressed == b.shift_pressed
+			and a.alt_pressed == b.alt_pressed
+			and a.meta_pressed == b.meta_pressed
+		)
 	elif a is InputEventJoypadButton and b is InputEventJoypadButton:
 		return a.button_index == b.button_index
 	elif a is InputEventJoypadMotion and b is InputEventJoypadMotion:
@@ -187,6 +210,19 @@ func get_primary_event(action: String) -> InputEvent:
 	var events := InputMap.action_get_events(action)
 	return events[0] if events.size() > 0 else null
 
+
+# Returns the current primary binding as localized player-facing text.
+func get_primary_display_string(action: String) -> String:
+	return ResourceSerializer.event_to_display_string(get_primary_event(action))
+
+
+# Returns every current binding as localized player-facing text.
+func get_action_display_strings(action: String) -> PackedStringArray:
+	var result: PackedStringArray = []
+	for event in get_action_events(action):
+		result.append(ResourceSerializer.event_to_display_string(event))
+	return result
+
 ## 获取所有用户动作名称（过滤内置前缀）
 func get_user_actions() -> PackedStringArray:
 	var result: PackedStringArray = []
@@ -204,6 +240,7 @@ func _snapshot_defaults() -> void:
 	# 从 ProjectSettings 原始 InputMap 快照（在任何 apply_data 之前）
 	InputMap.load_from_project_settings()
 	_defaults = collect_data()
+
 
 # Reports and rejects missing InputMap actions for mutating APIs.
 func _require_action(action: String) -> bool:

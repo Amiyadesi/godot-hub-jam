@@ -1,0 +1,12 @@
+Pixel Art Platformer Character
+Author: pixelgearz
+Source: https://pixelgearz.itch.io/pixel-art-platformer-character
+License: CC0 1.0 Universal
+License URL: https://creativecommons.org/publicdomain/zero/1.0/
+
+The official asset page states that these files are released under CC0 1.0
+Universal and may be used in commercial projects without required attribution.
+
+Downloaded: 2026-07-28
+Archive SHA256: 881BA925131BBEB772BA55EF5D0BF4F713514F6AA38D2170548C07F7B8C5C987
+Repository changes: extracted the nine PNG animation sheets; archive not included.

@@ -13,20 +13,17 @@ var _serial: int
 
 
 func _ready() -> void:
-	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_rng.randomize()
-	add_theme_font_size_override("font_size", 14)
-	add_theme_color_override("font_color", Color(1.0, 0.78, 0.42, 0.78))
-	horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	vertical_alignment = VERTICAL_ALIGNMENT_BOTTOM
 	_start_loop()
 
 
+# Starts one authored diagnostic text loop after the label enters the tree.
 func _start_loop() -> void:
 	_serial += 1
 	call_deferred("_run_loop", _serial)
 
 
+# Types and erases one diagnostic line until the label leaves the scene.
 func _run_loop(serial: int) -> void:
 	while is_inside_tree() and serial == _serial:
 		var line := LINES[_rng.randi_range(0, LINES.size() - 1)]
@@ -46,6 +43,7 @@ func _run_loop(serial: int) -> void:
 		await _wait(_rng.randf_range(0.44, 1.0))
 
 
+# Waits through the tree timer without changing authored UI state.
 func _wait(seconds: float) -> void:
 	if get_tree() == null:
 		return

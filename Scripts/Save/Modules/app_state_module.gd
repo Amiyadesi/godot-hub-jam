@@ -34,11 +34,14 @@ func is_global() -> bool:
 
 # Captures app-level flags, counters, and custom values for serialization.
 func collect_data() -> Dictionary:
+	var stored_values := {}
+	for key: String in DEFAULT_VALUES:
+		stored_values[key] = values.get(key, DEFAULT_VALUES[key])
 	return {
 		"has_played_before": has_played_before,
 		"open_count": open_count,
 		"pending_menu_event": pending_menu_event,
-		"values": values.duplicate(true),
+		"values": stored_values,
 	}
 
 
@@ -49,8 +52,9 @@ func apply_data(data: Dictionary) -> void:
 	pending_menu_event = str(data.get("pending_menu_event", ""))
 	values = DEFAULT_VALUES.duplicate(true)
 	var loaded_values := (data.get("values", {}) as Dictionary)
-	for key in loaded_values:
-		values[key] = loaded_values[key]
+	for key: String in DEFAULT_VALUES:
+		if loaded_values.has(key):
+			values[key] = loaded_values[key]
 
 
 # Provides the first-run payload for global app state.

@@ -1470,17 +1470,4 @@ func get_host_layers() -> int:
 func is_physics_based() -> bool:
 	return _follow_target_physics_based
 
-## 强制相机瞬间传送到当前活跃 PhantomCamera2D 的位置，跳过所有插值和 tween。
-## 用于切换关卡和进入游戏时立即对准玩家。
-func force_snap_to_active_pcam() -> void:
-	if not _is_2d: return
-	if not is_instance_valid(_active_pcam_2d): return
-	if not is_instance_valid(camera_2d): return
-	# teleport_position 会清零 velocity、lookahead，并触发 pcam_teleport 信号让 host 直接覆盖相机位置
-	_active_pcam_2d.teleport_position()
-	# 确保 tween 状态也被重置，不会再从旧位置播放
-	_trigger_pcam_tween = false
-	_tween_elapsed_time = _tween_duration
-	_prev_active_pcam_2d_transform = _active_pcam_2d.get_transform_output()
-
 #endregion

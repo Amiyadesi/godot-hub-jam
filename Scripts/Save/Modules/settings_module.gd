@@ -30,6 +30,7 @@ const DEFAULTS := {
 	"ui_volume"      : 0.8,
 	"ambient_volume" : 0.8,
 	"screen_shake"   : 0.5,
+	"low_flash_mode" : false,
 	"language"       : "zh_CN",
 	"display_mode"   : "fullscreen",
 	"borderless_enabled": false,
@@ -112,8 +113,12 @@ func set_value(key: String, value: Variant) -> void:
 
 # Restores all settings to defaults and queues persistence.
 func reset_to_defaults() -> void:
+	var previous_values := _values.duplicate(true)
 	_values = DEFAULTS.duplicate(true)
 	apply_all()
+	for key: String in DEFAULTS:
+		if previous_values.get(key) != _values[key]:
+			settings_changed.emit(key, _values[key])
 	_queue_save()
 
 # Returns a defensive copy of all current settings.
@@ -147,7 +152,7 @@ func apply_setting(key: String, value: Variant) -> void:
 			_apply_display_mode()
 		"vsync_enabled":
 			_apply_vsync(_is_truthy(value))
-		"timezone_mode", "custom_time_hour", "custom_time_minute", "screen_shake":
+		"timezone_mode", "custom_time_hour", "custom_time_minute", "screen_shake", "low_flash_mode":
 			pass
 
 
@@ -186,6 +191,7 @@ func _normalize_values() -> void:
 	_values["ui_volume"] = clampf(float(_values.get("ui_volume", DEFAULTS["ui_volume"])), 0.0, 1.0)
 	_values["ambient_volume"] = clampf(float(_values.get("ambient_volume", DEFAULTS["ambient_volume"])), 0.0, 1.0)
 	_values["screen_shake"] = clampf(float(_values.get("screen_shake", DEFAULTS["screen_shake"])), 0.0, 1.0)
+	_values["low_flash_mode"] = _is_truthy(_values.get("low_flash_mode", DEFAULTS["low_flash_mode"]))
 	_values["display_mode"] = _normalize_display_mode(str(_values.get("display_mode", DEFAULTS["display_mode"])))
 	_values["borderless_enabled"] = _is_truthy(_values.get("borderless_enabled", DEFAULTS["borderless_enabled"]))
 	_values["window_width"] = maxi(640, int(_values.get("window_width", DEFAULTS["window_width"])))
@@ -194,7 +200,7 @@ func _normalize_values() -> void:
 	_values["timezone_mode"] = "custom" if str(_values.get("timezone_mode", DEFAULTS["timezone_mode"])) == "custom" else "system"
 	_values["custom_time_hour"] = clampi(int(_values.get("custom_time_hour", DEFAULTS["custom_time_hour"])), 0, 23)
 	_values["custom_time_minute"] = clampi(int(_values.get("custom_time_minute", DEFAULTS["custom_time_minute"])), 0, 59)
-	_values["language"] = str(_values.get("language", DEFAULTS["language"]))
+	_values["language"] = _normalize_language(str(_values.get("language", DEFAULTS["language"])))
 
 
 # Converts unknown display mode strings back to a supported mode.
@@ -206,9 +212,15 @@ func _normalize_display_mode(value: String) -> String:
 			return str(DEFAULTS["display_mode"])
 
 
+# 只保留项目实际提供的两种语言，避免旧存档写入无效 locale。
+func _normalize_language(value: String) -> String:
+	return "en" if value == "en" else "zh_CN"
+
+
 # Applies the active locale to Godot's translation server.
 func _apply_language(language_code: String) -> void:
 	TranslationServer.set_locale(language_code)
+	DisplayServer.window_set_title(TranslationServer.translate(&"GAME_TITLE"))
 
 
 

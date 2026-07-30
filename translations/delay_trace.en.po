@@ -1,0 +1,199 @@
+msgid ""
+msgstr ""
+"Language: en\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+
+msgid "GAME_TITLE"
+msgstr "Delay Trace"
+
+msgid "MENU_START"
+msgstr "START"
+
+msgid "MENU_CONTINUE"
+msgstr "CONTINUE"
+
+msgid "MENU_SETTINGS"
+msgstr "SETTINGS"
+
+msgid "MENU_CREDITS"
+msgstr "CREDITS"
+
+msgid "MENU_QUIT"
+msgstr "QUIT"
+
+msgid "MENU_MISSING_ENTRY"
+msgstr "START SCENE MISSING"
+
+msgid "MENU_RESTART_TITLE"
+msgstr "START OVER"
+
+msgid "MENU_RESTART_BODY"
+msgstr "Starting a new game will replace the current checkpoint. Continue?"
+
+msgid "MENU_RESTART_CONFIRM"
+msgstr "START OVER"
+
+msgid "MENU_QUIT_TITLE"
+msgstr "QUIT GAME"
+
+msgid "MENU_QUIT_BODY"
+msgstr "Quit Delay Trace?"
+
+msgid "COMMON_BACK"
+msgstr "BACK"
+
+msgid "COMMON_CONFIRM"
+msgstr "CONFIRM"
+
+msgid "COMMON_CANCEL"
+msgstr "CANCEL"
+
+msgid "COMMON_NOTICE"
+msgstr "NOTICE"
+
+msgid "SETTINGS_TITLE"
+msgstr "SETTINGS"
+
+msgid "SETTINGS_GENERAL"
+msgstr "GENERAL"
+
+msgid "SETTINGS_CONTROLS"
+msgstr "CONTROLS"
+
+msgid "SETTINGS_DISPLAY"
+msgstr "DISPLAY"
+
+msgid "SETTINGS_DISPLAY_MODE"
+msgstr "DISPLAY MODE"
+
+msgid "SETTINGS_FULLSCREEN"
+msgstr "FULLSCREEN"
+
+msgid "SETTINGS_LANGUAGE"
+msgstr "LANGUAGE"
+
+msgid "SETTINGS_LANGUAGE_ZH"
+msgstr "Simplified Chinese"
+
+msgid "SETTINGS_LANGUAGE_EN"
+msgstr "English"
+
+msgid "SETTINGS_VSYNC"
+msgstr "VSYNC"
+
+msgid "SETTINGS_AUDIO"
+msgstr "AUDIO"
+
+msgid "SETTINGS_MASTER_VOLUME"
+msgstr "MASTER VOLUME"
+
+msgid "SETTINGS_MUSIC_VOLUME"
+msgstr "MUSIC VOLUME"
+
+msgid "SETTINGS_SFX_VOLUME"
+msgstr "SFX VOLUME"
+
+msgid "SETTINGS_UI_VOLUME"
+msgstr "UI VOLUME"
+
+msgid "SETTINGS_AMBIENT_VOLUME"
+msgstr "AMBIENT VOLUME"
+
+msgid "SETTINGS_ASSIST"
+msgstr "ACCESSIBILITY"
+
+msgid "SETTINGS_SCREEN_SHAKE"
+msgstr "SCREEN SHAKE"
+
+msgid "SETTINGS_LOW_FLASH"
+msgstr "LOW FLASH MODE"
+
+msgid "SETTINGS_RESET_DEFAULTS"
+msgstr "RESET DEFAULTS"
+
+msgid "SETTINGS_ON"
+msgstr "ON"
+
+msgid "SETTINGS_OFF"
+msgstr "OFF"
+
+msgid "PAUSE_TITLE"
+msgstr "PAUSED"
+
+msgid "PAUSE_CONTINUE"
+msgstr "RESUME"
+
+msgid "PAUSE_RESTART"
+msgstr "RESTART ROOM"
+
+msgid "PAUSE_HINT"
+msgstr "HINT"
+
+msgid "PAUSE_MAIN_MENU"
+msgstr "MAIN MENU"
+
+msgid "THANK_TITLE"
+msgstr "CREDITS"
+
+msgid "THANK_CREDITS_BODY"
+msgstr "[font_size=28][b]CREATED BY[/b][/font_size]\n[url=https://sayori.org]Amiya_desi[/url] · Codex · Claude Code\n\n[font_size=28][b]CHARACTER[/b][/font_size]\n[url=https://pixelgearz.itch.io/pixel-art-platformer-character]pixelgearz · Pixel Art Platformer Character · CC0[/url]\n\n[font_size=28][b]MAP & SOUND[/b][/font_size]\n[url=https://kenney.nl/assets/1-bit-platformer-pack]Kenney · 1-Bit Platformer Pack · CC0[/url]\n[url=https://kenney.nl/assets/digital-audio]Kenney · Digital Audio · CC0[/url]\n[url=https://kenney.nl/assets/impact-sounds]Kenney · Impact Sounds · CC0[/url]\n\n[font_size=28][b]FONT[/b][/font_size]\n[url=https://github.com/TakWolf/fusion-pixel-font]TakWolf · Fusion Pixel Font · SIL OFL 1.1[/url]\n\n[font_size=28][b]MUSIC[/b][/font_size]\n[url=https://opengameart.org/content/mysterious-futuristic-8-bit-music-loop]Frenchyboy · Mysterious, Futuristic 8-bit Music Loop · CC0[/url]\n\n[font_size=28][b]TOOLS[/b][/font_size]\n[url=https://godotengine.org/]Godot Engine[/url]\n[url=https://github.com/nathanhoad/godot_dialogue_manager]Dialogue Manager[/url]"
+
+msgid "INPUT_MOVE_LEFT"
+msgstr "MOVE LEFT"
+
+msgid "INPUT_MOVE_RIGHT"
+msgstr "MOVE RIGHT"
+
+msgid "INPUT_MOVE_UP"
+msgstr "MOVE UP"
+
+msgid "INPUT_MOVE_DOWN"
+msgstr "MOVE DOWN"
+
+msgid "INPUT_DASH"
+msgstr "DASH"
+
+msgid "INPUT_JUMP"
+msgstr "JUMP"
+
+msgid "INPUT_RECALL"
+msgstr "END RECORDING / RECALL"
+
+msgid "INPUT_PAUSE"
+msgstr "PAUSE"
+
+msgid "INPUT_UNBOUND"
+msgstr "UNBOUND"
+
+msgid "INPUT_MOUSE_LEFT"
+msgstr "MOUSE LEFT"
+
+msgid "INPUT_MOUSE_RIGHT"
+msgstr "MOUSE RIGHT"
+
+msgid "INPUT_MOUSE_MIDDLE"
+msgstr "MOUSE MIDDLE"
+
+msgid "INPUT_MOUSE_BUTTON"
+msgstr "MOUSE {index}"
+
+msgid "INPUT_GAMEPAD_BUTTON"
+msgstr "PAD BUTTON {index}"
+
+msgid "INPUT_GAMEPAD_AXIS"
+msgstr "PAD AXIS {axis} ({value})"
+
+msgid "INPUT_KEY"
+msgstr "KEY ({keycode})"
+
+msgid "KEY_CAPTURE_TITLE"
+msgstr "KEY BINDING"
+
+msgid "KEY_CAPTURE_PROMPT"
+msgstr "{action}\nPRESS A NEW {inputs} INPUT"
+
+msgid "KEY_CAPTURE_INPUTS_ALL"
+msgstr "KEYBOARD, MOUSE OR GAMEPAD"
+
+msgid "KEY_CAPTURE_INPUTS_NO_MOUSE"
+msgstr "KEYBOARD OR GAMEPAD"

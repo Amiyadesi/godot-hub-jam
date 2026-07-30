@@ -1,0 +1,241 @@
+[gd_scene format=3]
+
+[ext_resource type="TileSet" path="res://assets/echo_chase/tilemap/echo_platform_tileset.tres" id="1_tileset"]
+[ext_resource type="Shader" path="res://assets/echo_chase/vfx/menu_cross_grid.gdshader" id="2_grid"]
+[ext_resource type="SpriteFrames" uid="uid://c5fwtfmpwe8fq" path="res://assets/echo_chase/character/echo_character_frames.tres" id="3_frames"]
+[ext_resource type="SpriteFrames" uid="uid://da37aey76yc08" path="res://assets/echo_chase/character/echo_character_outline_frames.tres" id="4_outline_frames"]
+[ext_resource type="Shader" uid="uid://ccnr3f2ov4cnc" path="res://assets/echo_chase/vfx/temporal_outline.gdshader" id="5_outline_shader"]
+[ext_resource type="Texture2D" uid="uid://bqyfshrwdgvmw" path="res://assets/echo_chase/vfx/temporal_transition_ring.svg" id="6_ring"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_grid_world"]
+shader = ExtResource("2_grid")
+shader_parameter/background_color = Color(0.018, 0.025, 0.028, 1)
+shader_parameter/cross_color = Color(0.82, 0.88, 0.88, 0.16)
+shader_parameter/grid_size = 16.0
+shader_parameter/cross_arm = 2.0
+shader_parameter/line_width = 1.0
+
+[sub_resource type="ShaderMaterial" id="Material_past_world"]
+shader = ExtResource("5_outline_shader")
+shader_parameter/temporal_color = Color(1, 0.24, 0.82, 1)
+shader_parameter/outline_alpha = 1.0
+shader_parameter/fill_alpha = 0.12
+
+[sub_resource type="ShaderMaterial" id="Material_present_world"]
+shader = ExtResource("5_outline_shader")
+shader_parameter/temporal_color = Color(0.7, 1, 1, 1)
+shader_parameter/outline_alpha = 1.0
+shader_parameter/fill_alpha = 0.12
+
+[sub_resource type="ShaderMaterial" id="Material_future_world"]
+shader = ExtResource("5_outline_shader")
+shader_parameter/temporal_color = Color(1, 0.7, 0.2, 1)
+shader_parameter/outline_alpha = 1.0
+shader_parameter/fill_alpha = 0.12
+
+[sub_resource type="Animation" id="Animation_world_enter"]
+resource_name = "world_enter"
+length = 1.8
+tracks/0/type = "value"
+tracks/0/path = NodePath("WorldParallax/PastEcho:modulate")
+tracks/0/interp = 1
+tracks/0/keys = {"times": PackedFloat32Array(0, 0.18, 0.58), "transitions": PackedFloat32Array(1, 1, 1), "update": 0, "values": [Color(1, 1, 1, 0), Color(1, 1, 1, 0), Color(1, 1, 1, 1)]}
+tracks/1/type = "value"
+tracks/1/path = NodePath("WorldParallax/PresentEcho:modulate")
+tracks/1/interp = 1
+tracks/1/keys = {"times": PackedFloat32Array(0, 0.58, 0.98), "transitions": PackedFloat32Array(1, 1, 1), "update": 0, "values": [Color(1, 1, 1, 0), Color(1, 1, 1, 0), Color(1, 1, 1, 1)]}
+tracks/2/type = "value"
+tracks/2/path = NodePath("WorldParallax/FutureEcho:modulate")
+tracks/2/interp = 1
+tracks/2/keys = {"times": PackedFloat32Array(0, 0.98, 1.38), "transitions": PackedFloat32Array(1, 1, 1), "update": 0, "values": [Color(1, 1, 1, 0), Color(1, 1, 1, 0), Color(1, 1, 1, 1)]}
+
+[sub_resource type="Animation" id="Animation_world_enter_reduced"]
+resource_name = "world_enter_reduced"
+length = 1.8
+tracks/0/type = "value"
+tracks/0/path = NodePath("WorldParallax/PastEcho:modulate")
+tracks/0/interp = 1
+tracks/0/keys = {"times": PackedFloat32Array(0, 0.58), "transitions": PackedFloat32Array(1, 1), "update": 0, "values": [Color(1, 1, 1, 0), Color(1, 1, 1, 1)]}
+tracks/1/type = "value"
+tracks/1/path = NodePath("WorldParallax/PresentEcho:modulate")
+tracks/1/interp = 1
+tracks/1/keys = {"times": PackedFloat32Array(0, 0.98), "transitions": PackedFloat32Array(1, 1), "update": 0, "values": [Color(1, 1, 1, 0), Color(1, 1, 1, 1)]}
+tracks/2/type = "value"
+tracks/2/path = NodePath("WorldParallax/FutureEcho:modulate")
+tracks/2/interp = 1
+tracks/2/keys = {"times": PackedFloat32Array(0, 1.38), "transitions": PackedFloat32Array(1, 1), "update": 0, "values": [Color(1, 1, 1, 0), Color(1, 1, 1, 1)]}
+
+[sub_resource type="Animation" id="Animation_world_idle"]
+resource_name = "world_idle"
+length = 2.4
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/path = NodePath("WorldParallax/PastEcho:position")
+tracks/0/keys = {"times": PackedFloat32Array(0, 0.6, 1.2, 1.8, 2.4), "transitions": PackedFloat32Array(1, 1, 1, 1, 1), "update": 0, "values": [Vector2(80, 146), Vector2(80, 152), Vector2(80, 146), Vector2(80, 140), Vector2(80, 146)]}
+tracks/1/type = "value"
+tracks/1/path = NodePath("WorldParallax/PresentEcho:position")
+tracks/1/keys = {"times": PackedFloat32Array(0, 0.6, 1.2, 1.8, 2.4), "transitions": PackedFloat32Array(1, 1, 1, 1, 1), "update": 0, "values": [Vector2(240, 140), Vector2(240, 134), Vector2(240, 140), Vector2(240, 146), Vector2(240, 140)]}
+tracks/2/type = "value"
+tracks/2/path = NodePath("WorldParallax/FutureEcho:position")
+tracks/2/keys = {"times": PackedFloat32Array(0, 0.6, 1.2, 1.8, 2.4), "transitions": PackedFloat32Array(1, 1, 1, 1, 1), "update": 0, "values": [Vector2(400, 146), Vector2(400, 140), Vector2(400, 146), Vector2(400, 152), Vector2(400, 146)]}
+
+[sub_resource type="Animation" id="Animation_world_pulse_present"]
+resource_name = "pulse_present"
+length = 0.55
+tracks/0/type = "value"
+tracks/0/path = NodePath("WorldParallax/PresentEcho/TransitionHalo:visible")
+tracks/0/keys = {"times": PackedFloat32Array(0, 0.55), "transitions": PackedFloat32Array(1, 1), "update": 1, "values": [true, false]}
+tracks/1/type = "value"
+tracks/1/path = NodePath("WorldParallax/PresentEcho/TransitionHalo:scale")
+tracks/1/keys = {"times": PackedFloat32Array(0, 0.55), "transitions": PackedFloat32Array(1, 1), "update": 0, "values": [Vector2(0.2, 0.2), Vector2(3.2, 3.2)]}
+tracks/2/type = "value"
+tracks/2/path = NodePath("WorldParallax/PresentEcho/TransitionHalo:modulate")
+tracks/2/keys = {"times": PackedFloat32Array(0, 0.55), "transitions": PackedFloat32Array(1, 1), "update": 0, "values": [Color(0.7, 1, 1, 0.95), Color(0.7, 1, 1, 0)]}
+
+[sub_resource type="Animation" id="Animation_world_pulse_past"]
+resource_name = "pulse_past"
+length = 0.55
+tracks/0/type = "value"
+tracks/0/path = NodePath("WorldParallax/PastEcho/TransitionHalo:visible")
+tracks/0/keys = {"times": PackedFloat32Array(0, 0.55), "transitions": PackedFloat32Array(1, 1), "update": 1, "values": [true, false]}
+tracks/1/type = "value"
+tracks/1/path = NodePath("WorldParallax/PastEcho/TransitionHalo:scale")
+tracks/1/keys = {"times": PackedFloat32Array(0, 0.55), "transitions": PackedFloat32Array(1, 1), "update": 0, "values": [Vector2(0.2, 0.2), Vector2(3.2, 3.2)]}
+tracks/2/type = "value"
+tracks/2/path = NodePath("WorldParallax/PastEcho/TransitionHalo:modulate")
+tracks/2/keys = {"times": PackedFloat32Array(0, 0.55), "transitions": PackedFloat32Array(1, 1), "update": 0, "values": [Color(1, 0.24, 0.82, 0.95), Color(1, 0.24, 0.82, 0)]}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_world"]
+_data = {
+&"pulse_past": SubResource("Animation_world_pulse_past"),
+&"pulse_present": SubResource("Animation_world_pulse_present"),
+&"world_enter": SubResource("Animation_world_enter"),
+&"world_enter_reduced": SubResource("Animation_world_enter_reduced"),
+&"world_idle": SubResource("Animation_world_idle")
+}
+
+[node name="MenuWorld" type="Node2D"]
+unique_name_in_owner = true
+
+[node name="WorldParallax" type="Node2D" parent="." unique_id=191223001]
+unique_name_in_owner = true
+
+[node name="Grid" type="ColorRect" parent="WorldParallax" unique_id=191223002]
+material = SubResource("ShaderMaterial_grid_world")
+offset_left = -16.0
+offset_top = -10.0
+offset_right = 496.0
+offset_bottom = 280.0
+mouse_filter = 2
+color = Color(1, 1, 1, 1)
+
+[node name="Road" type="TileMapLayer" parent="WorldParallax" unique_id=191223003]
+texture_filter = 1
+position = Vector2(-16, 112)
+tile_map_data = PackedByteArray("AAAAABEAAAAAAAgAAAABABEAAAABAAgAAAACABEAAAABAAgAAAADABEAAAABAAgAAAAEABEAAAABAAgAAAAFABEAAAABAAgAAAAGABEAAAABAAgAAAAHABEAAAABAAgAAAAIABEAAAABAAgAAAAJABEAAAABAAgAAAAKABEAAAABAAgAAAALABEAAAABAAgAAAAMABEAAAABAAgAAAANABEAAAABAAgAAAAOABEAAAABAAgAAAAQABEAAAABAAgAAAARABEAAAABAAgAAAASABEAAAABAAgAAAATABEAAAABAAgAAAAUABEAAAABAAgAAAAVABEAAAABAAgAAAAWABEAAAABAAgAAAAXABEAAAABAAgAAAAYABEAAAABAAgAAAAZABEAAAABAAgAAAAaABEAAAABAAgAAAAbABEAAAABAAgAAAAcABEAAAABAAgAAAAdABEAAAABAAgAAAAeABEAAAACAAgAAAA=")
+tile_set = ExtResource("1_tileset")
+collision_enabled = false
+
+[node name="PastEcho" type="Node2D" parent="WorldParallax" unique_id=191223010]
+position = Vector2(80, 146)
+modulate = Color(1, 1, 1, 0)
+
+[node name="TransitionHalo" type="Sprite2D" parent="WorldParallax/PastEcho"]
+visible = false
+modulate = Color(1, 0.24, 0.82, 0)
+texture_filter = 1
+texture = ExtResource("6_ring")
+
+[node name="HistoryGhostFar" type="AnimatedSprite2D" parent="WorldParallax/PastEcho"]
+position = Vector2(-3, 1)
+self_modulate = Color(1, 0.08, 0.62, 0.18)
+texture_filter = 1
+sprite_frames = ExtResource("3_frames")
+animation = &"idle"
+autoplay = "idle"
+
+[node name="HistoryGhost" type="AnimatedSprite2D" parent="WorldParallax/PastEcho"]
+position = Vector2(-2, 1)
+self_modulate = Color(1, 0.14, 0.7, 0.3)
+texture_filter = 1
+sprite_frames = ExtResource("3_frames")
+animation = &"idle"
+autoplay = "idle"
+
+[node name="Core" type="AnimatedSprite2D" parent="WorldParallax/PastEcho"]
+self_modulate = Color(1, 0.34, 0.72, 0.84)
+texture_filter = 1
+sprite_frames = ExtResource("3_frames")
+animation = &"idle"
+autoplay = "idle"
+
+[node name="Outline" type="AnimatedSprite2D" parent="WorldParallax/PastEcho"]
+texture_filter = 1
+material = SubResource("Material_past_world")
+sprite_frames = ExtResource("4_outline_frames")
+animation = &"idle"
+autoplay = "idle"
+
+[node name="PresentEcho" type="Node2D" parent="WorldParallax" unique_id=191223020]
+position = Vector2(240, 146)
+modulate = Color(1, 1, 1, 0)
+
+[node name="TransitionHalo" type="Sprite2D" parent="WorldParallax/PresentEcho"]
+visible = false
+modulate = Color(0.7, 1, 1, 0)
+texture_filter = 1
+texture = ExtResource("6_ring")
+
+[node name="Core" type="AnimatedSprite2D" parent="WorldParallax/PresentEcho"]
+texture_filter = 1
+sprite_frames = ExtResource("3_frames")
+animation = &"idle"
+autoplay = "idle"
+
+[node name="Outline" type="AnimatedSprite2D" parent="WorldParallax/PresentEcho"]
+texture_filter = 1
+material = SubResource("Material_present_world")
+sprite_frames = ExtResource("4_outline_frames")
+animation = &"idle"
+autoplay = "idle"
+
+[node name="FutureEcho" type="Node2D" parent="WorldParallax" unique_id=191223030]
+position = Vector2(400, 146)
+modulate = Color(1, 1, 1, 0)
+
+[node name="TransitionHalo" type="Sprite2D" parent="WorldParallax/FutureEcho"]
+visible = false
+modulate = Color(1, 0.7, 0.2, 0)
+texture_filter = 1
+texture = ExtResource("6_ring")
+
+[node name="PredictionGhost" type="AnimatedSprite2D" parent="WorldParallax/FutureEcho"]
+position = Vector2(3, 1)
+self_modulate = Color(1, 0.7, 0.2, 0.28)
+texture_filter = 1
+sprite_frames = ExtResource("3_frames")
+animation = &"idle"
+autoplay = "idle"
+
+[node name="Core" type="AnimatedSprite2D" parent="WorldParallax/FutureEcho"]
+texture_filter = 1
+self_modulate = Color(1, 0.76, 0.24, 0.84)
+sprite_frames = ExtResource("3_frames")
+animation = &"idle"
+autoplay = "idle"
+
+[node name="Outline" type="AnimatedSprite2D" parent="WorldParallax/FutureEcho"]
+texture_filter = 1
+material = SubResource("Material_future_world")
+sprite_frames = ExtResource("4_outline_frames")
+animation = &"idle"
+autoplay = "idle"
+
+[node name="WorldCamera" type="Camera2D" parent="." unique_id=191223040]
+position = Vector2(240, 135)
+zoom = Vector2(4, 4)
+position_smoothing_enabled = false
+
+[node name="WorldAnimationPlayer" type="AnimationPlayer" parent="." unique_id=191223050]
+unique_name_in_owner = true
+libraries/ = SubResource("AnimationLibrary_world")

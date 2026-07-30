@@ -1,0 +1,246 @@
+[gd_scene format=4 uid="uid://bp2lv00fqncpi"]
+
+[ext_resource type="TileSet" uid="uid://ckrayr142ya8" path="res://assets/echo_chase/tilemap/echo_platform_tileset.tres" id="1_ojqkq"]
+[ext_resource type="PackedScene" uid="uid://dapi6xdedsy5h" path="res://Scenes/EchoChase/Prefabs/echo_player.tscn" id="4_ukg33"]
+[ext_resource type="PackedScene" uid="uid://ctcye83jn6esj" path="res://Scenes/EchoChase/Prefabs/echo_checkpoint.tscn" id="6_smevq"]
+[ext_resource type="PackedScene" uid="uid://dl7b3wmwdq67u" path="res://Scenes/UI/PauseScreen/pause_screen.tscn" id="8_wwiui"]
+[ext_resource type="PackedScene" uid="uid://b7hivg2dnaer8" path="res://Scenes/UI/Menu/setting_screen.tscn" id="10_hg02a"]
+[ext_resource type="Script" uid="uid://blg8o5qqjypkc" path="res://Scripts/EchoChase/echo_chase_start.gd" id="12_pasgv"]
+[ext_resource type="AudioStream" uid="uid://bj0g7n60xthrv" path="res://assets/echo_chase/audio/phaserDown2.ogg" id="13_55wkc"]
+[ext_resource type="PackedScene" path="res://Scenes/EchoChase/Prefabs/delay_pickup.tscn" id="15_delay"]
+[ext_resource type="PackedScene" uid="uid://bvn43sm7w0wuc" path="res://Scenes/EchoChase/Prefabs/future_recorder.tscn" id="16_recorder"]
+[ext_resource type="PackedScene" uid="uid://bsobfsoalx0im" path="res://Scenes/EchoChase/Prefabs/temporal_pressure_plate.tscn" id="17_plate"]
+[ext_resource type="PackedScene" uid="uid://br7rd6p2opv2n" path="res://Scenes/EchoChase/Prefabs/temporal_door.tscn" id="18_door"]
+[ext_resource type="PackedScene" path="res://Scenes/EchoChase/UI/temporal_recording_hud.tscn" id="19_recording_hud"]
+[ext_resource type="Resource" path="res://resources/scene_transitions/echo_entry_present_fade.tres" id="20_present_entry"]
+[ext_resource type="Resource" path="res://resources/scene_transitions/echo_entry_past_fade.tres" id="21_past_entry"]
+[ext_resource type="Script" uid="uid://bd046eokvcnu2" path="res://addons/phantom_camera/scripts/phantom_camera_host/phantom_camera_host.gd" id="23_pcam_host"]
+[ext_resource type="Script" uid="uid://bhexx6mj1xv3q" path="res://addons/phantom_camera/scripts/phantom_camera/phantom_camera_2d.gd" id="24_pcam_2d"]
+[ext_resource type="Script" uid="uid://8umksf8e80fw" path="res://addons/phantom_camera/scripts/resources/tween_resource.gd" id="25_pcam_tween"]
+[ext_resource type="Script" uid="uid://t8wa4e5y5hcf" path="res://addons/phantom_camera/examples/scripts/2D/2d_trigger_area.gd" id="26_room_trigger"]
+
+[sub_resource type="Resource" id="PhantomCameraTween_room"]
+script = ExtResource("25_pcam_tween")
+duration = 0.35
+transition = 4
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_room_a"]
+size = Vector2(480, 270)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_room_b"]
+size = Vector2(480, 270)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_room_c"]
+size = Vector2(480, 270)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_room_d"]
+size = Vector2(480, 270)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_k2awt"]
+size = Vector2(2304, 256)
+
+[node name="EchoChaseStart" type="Node2D" unique_id=1352532759]
+
+[node name="Backdrop" type="CanvasLayer" parent="." unique_id=66640476]
+layer = -10
+
+[node name="BaseColor" type="ColorRect" parent="Backdrop" unique_id=1486957051]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.018, 0.055, 0.06, 1)
+
+[node name="World" type="Node2D" parent="." unique_id=1334494193]
+process_mode = 1
+
+[node name="Platform" type="TileMapLayer" parent="World" unique_id=1022236242]
+position = Vector2(192, 880)
+tile_map_data = PackedByteArray("AAAAAAAAAQABAAAAAAABAAAAAQABAAAAAAACAAAAAQABAAAAAAADAAAAAQABAAAAAAAEAAAAAQABAAAAAAAFAAAAAQABAAAAAAAGAAAAAQABAAEAAAAHAAAAAQABAAEAAAAIAAAAAQABAAEAAAAJAAAAAQABAAEAAAAKAAAAAQABAAEAAAALAAAAAQABAAEAAAAMAAAAAQABAAEAAAANAAAAAQABAAEAAAAOAAAAAQABAAEAAAAPAAAAAQABAAEAAAAQAAAAAQABAAEAAAASAAAAAAABAAgAAAATAAAAAAABAAgAAAAUAAAAAAABAAgAAAAVAAAAAAABAAgAAAAWAAAAAAABAAgAAAAXAAAAAAABAAgAAAAYAAAAAAABAAgAAAAZAAAAAAABAAgAAAAaAAAAAAABAAgAAAAbAAAAAAABAAgAAAAcAAAAAAABAAgAAAAdAAAAAAABAAgAAAAeAAAAAAABAAgAAAAfAAAAAAABAAgAAAAgAAAAAAABAAgAAAAhAAAAAAABAAgAAAAiAAAAAAABAAgAAAAjAAAAAAABAAgAAAAkAAAAAAABAAgAAAAlAAAAAAABAAgAAAAmAAAAAAABAAgAAAAnAAAAAAABAAgAAAAoAAAAAAABAAgAAAApAAAAAAABAAgAAAAqAAAAAAABAAgAAAArAAAAAAABAAgAAAAsAAAAAAABAAgAAAAtAAAAAAABAAgAAAAuAAAAAQAAAAAAAAAvAAAAAQADAAwAAAAwAAAAAAABAAgAAAAxAAAAAAABAAgAAAAyAAAAAAABAAgAAAAzAAAAAAABAAgAAAA0AAAAAAABAAgAAAA1AAAAAAABAAgAAAA2AAAAAAABAAgAAAA3AAAAAAABAAgAAAA4AAAAAAABAAgAAAA5AAAAAAABAAgAAAA6AAAAAAABAAgAAAA7AAAAAAABAAgAAAA8AAAAAAABAAgAAAA9AAAAAAABAAgAAAA+AAAAAAABAAgAAAA/AAAAAAABAAgAAABAAAAAAAABAAgAAABBAAAAAAABAAgAAABCAAAAAAABAAgAAABDAAAAAAABAAgAAABEAAAAAAABAAgAAABFAAAAAAABAAgAAABGAAAAAAABAAgAAABHAAAAAAABAAgAAABIAAAAAAABAAgAAABJAAAAAAABAAgAAABKAAAAAAABAAgAAABLAAAAAAABAAgAAABMAAAAAAABAAgAAABNAAAAAAABAAgAAABOAAAAAAABAAgAAABPAAAAAAABAAgAAABQAAAAAAABAAgAAABRAAAAAAABAAgAAABSAAAAAAABAAgAAABTAAAAAAABAAgAAABUAAAAAAABAAgAAABVAAAAAAABAAgAAABWAAAAAAABAAgAAABXAAAAAAABAAgAAABYAAAAAAABAAgAAABZAAAAAAABAAgAAABaAAAAAAABAAgAAABbAAAAAAABAAgAAABcAAAAAAABAAgAAABdAAAAAAABAAgAAABeAAAAAAABAAgAAABfAAAAAAACAAgAAAD0//P/AQAAAAwAAAD0//T/AQADAA0AAAD0//X/AQADAA0AAAD0//b/AQADAA0AAAD0//f/AQADAA0AAAD0//j/AQADAA0AAAD0//n/AQADAA0AAAD0//r/AQADAA0AAAD0//v/AQADAA0AAAD0//z/AQADAA0AAAD0//3/AQADAA0AAAD0//7/AQADAA0AAAD0////AQADAA0AAAD0/wAAAQADAA0AAAD0/wEAAQADAA0AAAD0/wIAAQADAA0AAAD0/wMAAQAAAA4AAAD1/wMAAQABAA8AAAD2/wMAAQABAA8AAAD3/wMAAQABAA8AAAD4/wMAAQABAA8AAAD5/wMAAQABAA8AAAD6/wMAAQABAA8AAAD7/wMAAQABAA8AAAD8/wMAAQABAA8AAAD9/wMAAQABAA8AAAD+/wMAAQABAA8AAAD//wMAAQABAA8AAAAAAAMAAQABAA8AAAABAAMAAQABAA8AAAACAAMAAQABAA8AAAADAAMAAQABAA8AAAAEAAMAAQABAA8AAAAFAAMAAQABAA8AAAAGAAMAAQABAA8AAAD1//P/AQABAA8AAAD2//P/AQABAA8AAAD3//P/AQABAA8AAAD4//P/AQABAA8AAAD5//P/AQABAA8AAAD6//P/AQABAA8AAAD7//P/AQABAA8AAAD8//P/AQABAA8AAAD9//P/AQABAA8AAAD+//P/AQABAA8AAAD///P/AQABAA8AAAAAAPP/AQABAA8AAAABAPP/AQABAA8AAAACAPP/AQABAA8AAAADAPP/AQABAA8AAAAEAPP/AQABAA8AAAAHAAMAAQABAA8AAAAIAAMAAQABAA8AAAAJAAMAAQABAA8AAAAKAAMAAQABAA8AAAALAAMAAQABAA8AAAAMAAMAAQABAA8AAAANAAMAAQABAA8AAAAOAAMAAQABAA8AAAAPAAMAAQABAA8AAAAQAAMAAQABAA8AAAAHAPP/AQABAA8AAAAIAPP/AQABAA8AAAAJAPP/AQABAA8AAAAKAPP/AQABAA8AAAALAPP/AQABAA8AAAAMAPP/AQABAA8AAAANAPP/AQABAA8AAAAOAPP/AQABAA8AAAAPAPP/AQABAA8AAAAQAPP/AQABAA8AAAARAAMAAQABAA8AAAARAPP/AQABAA8AAAD2/wAAAQABAAAAAAD3/wAAAQABAAAAAAD4/wAAAQABAAAAAAD5/wAAAQABAAAAAAD6/wAAAQABAAAAAAD7/wAAAQABAAAAAAD8/wAAAQABAAAAAAD9/wAAAQABAAAAAAD+/wAAAQABAAAAAAD//wAAAQABAAAAAAD+//T/AQABAAMAAAAEAPT/AQACAAMAAAAHAPX/AQADAAEAAAAHAPb/AQADAAEAAAAHAPf/AQADAAEAAAAIAPj/AQACAAMAAAAHAPj/AQAAAAEAAAAHAPn/AQADAAIAAAAGAPr/AQACAAMAAAAFAPr/AQABAAMAAAAEAPr/AQABAAMAAAADAPr/AQABAAMAAAACAPr/AQABAAMAAAABAPr/AQABAAMAAAAAAPr/AQABAAMAAAD///r/AQABAAMAAAD+//r/AQABAAMAAAD9//r/AQAAAAMAAAD8//n/AQACAAMAAAD7//n/AQAAAAMAAAD6//j/AQACAAMAAAD5//j/AQAAAAMAAAD3//X/AQACAAIAAAD2//T/AQABAAAAAAD2//X/AQABAAEAAAD1//X/AQAAAAEAAAD1//T/AQAAAAAAAAD1//b/AQAAAAEAAAD1//f/AQAAAAEAAAD1//j/AQADAAEAAAD1//n/AQADAAIAAAD2//f/AQACAAIAAAD2//b/AQACAAEAAAD3//T/AQABAAAAAAD4//T/AQABAAMAAAD5//T/AQABAAMAAAD6//T/AQABAAMAAAD7//T/AQABAAMAAAD8//T/AQABAAMAAAD9//T/AQABAAMAAAD///T/AQABAAMAAAAAAPT/AQABAAMAAAABAPT/AQABAAMAAAACAPT/AQABAAMAAAADAPT/AQABAAMAAAAHAPT/AQAAAAAAAAAIAPT/AQABAAMAAAAJAPT/AQABAAMAAAAKAPT/AQABAAMAAAALAPT/AQABAAMAAAAMAPT/AQABAAMAAAANAPT/AQABAAMAAAAOAPT/AQABAAMAAAAPAPT/AQABAAMAAAAQAPT/AQABAAMAAAARAPT/AQACAAAAAAARAPX/AQADAAEAAAARAPb/AQADAAEAAAARAPf/AQADAAIAAAARAPv/AQACAAAAAAAQAPv/AQABAAAAAAAPAPv/AQABAAAAAAAOAPv/AQAAAAAAAAAOAPz/AQAAAAEAAAAOAP3/AQABAAEAAAANAP3/AQABAAAAAAAMAP3/AQABAAAAAAALAP3/AQABAAAAAAAKAP3/AQAAAAAAAAAKAP7/AQABAAEAAAAJAP7/AQABAAAAAAAIAP7/AQAAAAAAAAAIAP//AQABAAEAAAAHAP//AQABAAAAAAAGAP//AQAAAAAAAAAPAPz/AQABAAEAAAAPAP3/AQABAAEAAAAPAP7/AQABAAEAAAAOAP7/AQABAAEAAAANAP7/AQABAAEAAAAMAP7/AQABAAEAAAALAP7/AQABAAEAAAAKAP//AQABAAEAAAAJAP//AQABAAEAAAAMAP//AQABAAEAAAANAP//AQABAAEAAAAOAP//AQABAAEAAAAPAP//AQABAAEAAAAQAP//AQABAAEAAAAQAP7/AQABAAEAAAAQAP3/AQABAAEAAAARAP3/AQACAAEAAAARAPz/AQACAAEAAAAQAPz/AQABAAEAAAARAP7/AQACAAEAAAALAP//AQABAAEAAAD1/wAAAQAAAAAAAAD1/wEAAQAAAAEAAAD1/wIAAQAAAAIAAAD2/wIAAQABAAIAAAD3/wIAAQABAAIAAAD4/wIAAQABAAIAAAD5/wIAAQABAAIAAAD6/wIAAQABAAIAAAD7/wIAAQABAAIAAAD8/wIAAQABAAIAAAD9/wIAAQABAAIAAAD+/wIAAQABAAIAAAD//wIAAQABAAIAAAAAAAIAAQABAAIAAAABAAIAAQABAAIAAAACAAIAAQABAAIAAAADAAIAAQABAAIAAAAEAAIAAQABAAIAAAAFAAIAAQABAAIAAAAGAAIAAQABAAIAAAAHAAIAAQABAAIAAAAIAAIAAQABAAIAAAAJAAIAAQABAAIAAAAKAAIAAQABAAIAAAALAAIAAQABAAIAAAAMAAIAAQABAAIAAAANAAIAAQABAAIAAAAOAAIAAQABAAIAAAAPAAIAAQABAAIAAAAQAAIAAQABAAIAAAARAAIAAQACAAIAAAARAAEAAQACAAEAAAARAAAAAQACAAEAAAARAP//AQACAAEAAAAQAAEAAQABAAEAAAAPAAEAAQABAAEAAAAOAAEAAQABAAEAAAANAAEAAQABAAEAAAAMAAEAAQABAAEAAAALAAEAAQABAAEAAAAKAAEAAQABAAEAAAAJAAEAAQABAAEAAAAIAAEAAQABAAEAAAAHAAEAAQABAAEAAAAGAAEAAQABAAEAAAAFAAEAAQABAAEAAAAEAAEAAQABAAEAAAADAAEAAQABAAEAAAACAAEAAQABAAEAAAABAAEAAQABAAEAAAAAAAEAAQABAAEAAAD//wEAAQABAAEAAAD+/wEAAQABAAEAAAD9/wEAAQABAAEAAAD8/wEAAQABAAEAAAD7/wEAAQABAAEAAAD6/wEAAQABAAEAAAD5/wEAAQABAAEAAAD4/wEAAQABAAEAAAD3/wEAAQABAAEAAAD2/wEAAQABAAEAAAASAPP/AQABAA8AAAATAPP/AQABAA8AAAAUAPP/AQABAA8AAAAVAPP/AQABAA8AAAAWAPP/AQABAA8AAAAXAPP/AQABAA8AAAAYAPP/AQABAA8AAAAZAPP/AQABAA8AAAAaAPP/AQABAA8AAAAbAPP/AQABAA8AAAAcAPP/AQABAA8AAAAdAPP/AQABAA8AAAAeAPP/AQABAA8AAAAfAPP/AQABAA8AAAAgAPP/AQABAA8AAAAhAPP/AQABAA8AAAAiAPP/AQABAA8AAAAjAPP/AQABAA8AAAAkAPP/AQABAA8AAAAlAPP/AQABAA8AAAAmAPP/AQABAA8AAAAnAPP/AQABAA8AAAAoAPP/AQABAA8AAAApAPP/AQABAA8AAAAqAPP/AQABAA8AAAArAPP/AQABAA8AAAAsAPP/AQABAA8AAAAtAPP/AQABAA8AAAAuAPP/AQABAA8AAAAuAPT/AQAAAAEAAAAuAPX/AQAAAAEAAAAuAPb/AQAAAAEAAAAuAPf/AQAAAAEAAAAuAPj/AQAAAAEAAAAuAPn/AQAAAAEAAAAuAPr/AQAAAAEAAAAuAPv/AQADAAEAAAAuAAEAAQADAAEAAAAuAAIAAQAAAAEAAAAuAAMAAQABAA8AAAAuAAQAAQACAAIAAAAtAAQAAQAAAAIAAAAtAAMAAQABAA8AAAAsAAMAAQABAA8AAAArAAMAAQABAA8AAAAqAAMAAQABAA8AAAApAAMAAQABAA8AAAAoAAMAAQABAA8AAAAnAAMAAQABAA8AAAAmAAMAAQABAA8AAAAlAAMAAQABAA8AAAAkAAMAAQABAA8AAAAjAAMAAQABAA8AAAAiAAMAAQABAA8AAAAhAAMAAQABAA8AAAAgAAMAAQABAA8AAAAfAAMAAQABAA8AAAAeAAMAAQABAA8AAAAdAAMAAQABAA8AAAAcAAMAAQABAA8AAAAbAAMAAQABAA8AAAAaAAMAAQABAA8AAAAZAAMAAQABAA8AAAAYAAMAAQABAA8AAAAXAAMAAQABAA8AAAAWAAMAAQABAA8AAAAVAAMAAQABAA8AAAAUAAMAAQABAA8AAAATAAMAAQABAA8AAAASAAMAAQABAA8AAAAvAAMAAQACAA4AAAAvAAIAAQADAA0AAAAvAAEAAQADAA0AAAAvAPv/AQADAA4AAAAvAPr/AQADAA0AAAAvAPn/AQADAA0AAAAvAPj/AQADAA0AAAAvAPf/AQADAA0AAAAvAPb/AQADAA0AAAAvAPX/AQADAA0AAAAvAPT/AQADAA0AAAAvAPP/AQACAAwAAAABAP//AAAGAAkAAAA=")
+tile_set = ExtResource("1_ojqkq")
+use_kinematic_bodies = true
+
+[node name="SpawnPoint" type="Marker2D" parent="World" unique_id=2132630730]
+position = Vector2(43, 840)
+
+[node name="EchoPlayer" parent="World" unique_id=605191803 instance=ExtResource("4_ukg33")]
+position = Vector2(320, 840)
+
+[node name="RoomCamera" type="Node2D" parent="World" unique_id=928911101]
+
+[node name="Camera2D" type="Camera2D" parent="World/RoomCamera" unique_id=995484073]
+top_level = true
+position = Vector2(240, 810)
+zoom = Vector2(4, 4)
+limit_left = 0
+limit_top = 640
+limit_right = 480
+limit_bottom = 910
+
+[node name="PhantomCameraHost" type="Node" parent="World/RoomCamera/Camera2D" unique_id=859404765]
+process_priority = 300
+process_physics_priority = 300
+script = ExtResource("23_pcam_host")
+
+[node name="RoomCameras" type="Node2D" parent="World" unique_id=159211377]
+position = Vector2(0, 35)
+
+[node name="RoomPcamA" type="Node2D" parent="World/RoomCameras" unique_id=159211378]
+position = Vector2(240, 775)
+script = ExtResource("24_pcam_2d")
+priority = 10
+zoom = Vector2(4, 4)
+snap_to_pixel = true
+frame_preview = false
+tween_resource = SubResource("PhantomCameraTween_room")
+tween_on_load = false
+limit_target = NodePath("../../RoomCameraTriggers/RoomAreaA/CollisionShape2D")
+
+[node name="RoomPcamB" type="Node2D" parent="World/RoomCameras" unique_id=159211379]
+position = Vector2(720, 740)
+script = ExtResource("24_pcam_2d")
+zoom = Vector2(4, 4)
+snap_to_pixel = true
+frame_preview = false
+tween_resource = SubResource("PhantomCameraTween_room")
+tween_on_load = false
+limit_target = NodePath("../../RoomCameraTriggers/RoomAreaB/CollisionShape2D")
+
+[node name="RoomPcamC" type="Node2D" parent="World/RoomCameras" unique_id=159211380]
+position = Vector2(1200, 740)
+script = ExtResource("24_pcam_2d")
+zoom = Vector2(4, 4)
+snap_to_pixel = true
+frame_preview = false
+tween_resource = SubResource("PhantomCameraTween_room")
+tween_on_load = false
+limit_target = NodePath("../../RoomCameraTriggers/RoomAreaC/CollisionShape2D")
+
+[node name="RoomPcamD" type="Node2D" parent="World/RoomCameras" unique_id=159211381]
+position = Vector2(1680, 740)
+script = ExtResource("24_pcam_2d")
+zoom = Vector2(4, 4)
+snap_to_pixel = true
+frame_preview = false
+tween_resource = SubResource("PhantomCameraTween_room")
+tween_on_load = false
+limit_target = NodePath("../../RoomCameraTriggers/RoomAreaD/CollisionShape2D")
+
+[node name="RoomCameraTriggers" type="Node2D" parent="World" unique_id=159211382]
+position = Vector2(0, 33)
+
+[node name="RoomAreaA" type="Area2D" parent="World/RoomCameraTriggers" unique_id=159211383 node_paths=PackedStringArray("area_pcam")]
+position = Vector2(240, 775)
+collision_layer = 0
+collision_mask = 2
+script = ExtResource("26_room_trigger")
+area_pcam = NodePath("../../RoomCameras/RoomPcamA")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="World/RoomCameraTriggers/RoomAreaA" unique_id=505479935]
+shape = SubResource("RectangleShape2D_room_a")
+
+[node name="RoomAreaB" type="Area2D" parent="World/RoomCameraTriggers" unique_id=159211384 node_paths=PackedStringArray("area_pcam")]
+position = Vector2(720, 775)
+collision_layer = 0
+collision_mask = 2
+script = ExtResource("26_room_trigger")
+area_pcam = NodePath("../../RoomCameras/RoomPcamB")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="World/RoomCameraTriggers/RoomAreaB" unique_id=1468231923]
+shape = SubResource("RectangleShape2D_room_b")
+
+[node name="RoomAreaC" type="Area2D" parent="World/RoomCameraTriggers" unique_id=159211385 node_paths=PackedStringArray("area_pcam")]
+position = Vector2(1200, 775)
+collision_layer = 0
+collision_mask = 2
+script = ExtResource("26_room_trigger")
+area_pcam = NodePath("../../RoomCameras/RoomPcamC")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="World/RoomCameraTriggers/RoomAreaC" unique_id=1988310053]
+shape = SubResource("RectangleShape2D_room_c")
+
+[node name="RoomAreaD" type="Area2D" parent="World/RoomCameraTriggers" unique_id=159211386 node_paths=PackedStringArray("area_pcam")]
+position = Vector2(1680, 775)
+collision_layer = 0
+collision_mask = 2
+script = ExtResource("26_room_trigger")
+area_pcam = NodePath("../../RoomCameras/RoomPcamD")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="World/RoomCameraTriggers/RoomAreaD" unique_id=113957313]
+shape = SubResource("RectangleShape2D_room_d")
+
+[node name="EchoCheckpoint" parent="World" unique_id=996919644 instance=ExtResource("6_smevq")]
+position = Vector2(101, 856)
+checkpoint_id = &"start_checkpoint"
+
+[node name="DelayPickup1s" parent="World" unique_id=197557776 instance=ExtResource("15_delay")]
+position = Vector2(640, 844)
+delay_seconds = 1
+delay_switch_id = &"delay_1s"
+
+[node name="DelayPickup3s" parent="World" unique_id=627379123 instance=ExtResource("15_delay")]
+position = Vector2(800, 844)
+default_active = true
+
+[node name="DelayPickup5s" parent="World" unique_id=532268979 instance=ExtResource("15_delay")]
+position = Vector2(960, 844)
+delay_seconds = 5
+delay_switch_id = &"delay_5s"
+
+[node name="FutureRecorderA" parent="World" unique_id=1512468546 instance=ExtResource("16_recorder")]
+position = Vector2(1120, 863)
+
+[node name="TemporalDoor" parent="World" unique_id=1049961104 instance=ExtResource("18_door")]
+position = Vector2(1584, 879)
+
+[node name="TemporalPressurePlate" parent="World" unique_id=1206486289 node_paths=PackedStringArray("target_door") instance=ExtResource("17_plate")]
+position = Vector2(1440, 872)
+target_door = NodePath("../TemporalDoor")
+
+[node name="FallResetArea" type="Area2D" parent="World" unique_id=1597453730]
+position = Vector2(960, 1200)
+collision_layer = 0
+collision_mask = 2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="World/FallResetArea" unique_id=1368477528]
+shape = SubResource("RectangleShape2D_k2awt")
+
+[node name="UI" type="CanvasLayer" parent="." unique_id=2042448453]
+
+[node name="TemporalRecordingHUD" parent="UI" unique_id=845923935 node_paths=PackedStringArray("player") instance=ExtResource("19_recording_hud")]
+player = NodePath("../../World/EchoPlayer")
+
+[node name="PauseScreen" parent="UI" unique_id=948210252 instance=ExtResource("8_wwiui")]
+visible = false
+color = Color(0, 0, 0, 0.68)
+modal_offset = Vector2(0, 0.08)
+
+[node name="SettingScreen" parent="UI" unique_id=992903176 instance=ExtResource("10_hg02a")]
+process_mode = 3
+visible = false
+size_flags_horizontal = 3
+size_flags_vertical = 3
+color = Color(0, 0, 0, 0.68)
+modal_offset = Vector2(0, 0.08)
+
+[node name="SceneController" type="Node" parent="." unique_id=1768837849 node_paths=PackedStringArray("player", "gameplay_world", "spawn_point", "fall_reset_area", "pause_screen", "setting_screen", "reset_audio")]
+process_mode = 3
+script = ExtResource("12_pasgv")
+checkpoint_scene_path = "res://Scenes/EchoChase/echo_chase_start.tscn"
+menu_scene_path = "res://Scenes/UI/Menu/menu.tscn"
+player = NodePath("../World/EchoPlayer")
+gameplay_world = NodePath("../World")
+spawn_point = NodePath("../World/SpawnPoint")
+fall_reset_area = NodePath("../World/FallResetArea")
+pause_screen = NodePath("../UI/PauseScreen")
+setting_screen = NodePath("../UI/SettingScreen")
+reset_audio = NodePath("ResetAudio")
+present_entry_transition = ExtResource("20_present_entry")
+past_entry_transition = ExtResource("21_past_entry")
+
+[node name="ResetAudio" type="AudioStreamPlayer" parent="SceneController" unique_id=1802961427]
+stream = ExtResource("13_55wkc")
+volume_db = -4.0
+bus = &"SFX"

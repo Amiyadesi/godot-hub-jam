@@ -1,0 +1,64 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://addons/godot_terrain_authoring/ui/terrain_authoring_panel.gd" id="1_panel"]
+
+[node name="TerrainAuthoringPanel" type="VBoxContainer"]
+custom_minimum_size = Vector2(380, 320)
+layout_mode = 2
+theme_override_constants/separation = 8
+script = ExtResource("1_panel")
+
+[node name="Title" type="Label" parent="."]
+layout_mode = 2
+theme_type_variation = &"HeaderSmall"
+text = "Godot Terrain Authoring"
+
+[node name="ManifestLabel" type="Label" parent="."]
+layout_mode = 2
+text = "Manifest"
+
+[node name="ManifestPathEdit" type="LineEdit" parent="."]
+unique_name_in_owner = true
+layout_mode = 2
+placeholder_text = "res://terrain_manifest.tres"
+
+[node name="ActionRow" type="HBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="ValidateButton" type="Button" parent="ActionRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Validate"
+
+[node name="GenerateButton" type="Button" parent="ActionRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Generate / Update"
+
+[node name="Separator" type="HSeparator" parent="."]
+layout_mode = 2
+
+[node name="EntriesLabel" type="Label" parent="."]
+layout_mode = 2
+text = "Terrain Entries"
+
+[node name="EntriesScroll" type="ScrollContainer" parent="."]
+custom_minimum_size = Vector2(0, 150)
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="EntriesContainer" type="VBoxContainer" parent="EntriesScroll"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="StatusLabel" type="Label" parent="."]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
+text = "Ready"
+autowrap_mode = 2
+
+[connection signal="pressed" from="ActionRow/ValidateButton" to="." method="_on_validate_button_pressed"]
+[connection signal="pressed" from="ActionRow/GenerateButton" to="." method="_on_generate_button_pressed"]

@@ -1,0 +1,11 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://Scripts/EchoChase/echo_timeline_controller.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://Scenes/EchoChase/Prefabs/past_echo.tscn" id="2_past"]
+
+[node name="EchoTimeline" type="Node"]
+process_priority = -100
+script = ExtResource("1_script")
+
+[node name="PastEcho" parent="." instance=ExtResource("2_past")]
+unique_name_in_owner = true

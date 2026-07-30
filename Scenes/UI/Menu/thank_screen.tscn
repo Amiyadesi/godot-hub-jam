@@ -1,48 +1,29 @@
-[gd_scene load_steps=9 format=3 uid="uid://bbq46x1emgrc3"]
+[gd_scene load_steps=4 format=3 uid="uid://bbq46x1emgrc3"]
 
-[ext_resource type="Script" uid="uid://dw35wdmcgr3qy" path="res://Scenes/UI/Menu/thank_screen.gd" id="1_thanks"]
-[ext_resource type="Shader" uid="uid://dtcjm8c7boghc" path="res://resources/shader/blur.gdshader" id="2_blur"]
-[ext_resource type="PackedScene" uid="uid://c8eisrp4kcf52" path="res://Scenes/UI/Menu/setting_ambient_vfx.tscn" id="3_ambient"]
-[ext_resource type="PackedScene" uid="uid://uacp5p6j6svs" path="res://Scenes/UI/Menu/setting_local_light_vfx.tscn" id="4_light"]
-[ext_resource type="PackedScene" uid="uid://dssid7iw4aqb6" path="res://Scenes/UIorgan/ShaderButton/shader_button.tscn" id="5_button"]
+[ext_resource type="Script" uid="uid://dw35wdmcgr3qy" path="res://Scenes/UI/Menu/thank_screen.gd" id="1_script"]
+[ext_resource type="PackedScene" uid="uid://dssid7iw4aqb6" path="res://Scenes/UIorgan/ShaderButton/shader_button.tscn" id="2_button"]
+[ext_resource type="Theme" uid="uid://136hg33mma1d" path="res://resources/main_theme.tres" id="3_theme"]
 
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_thanks_blur"]
-shader = ExtResource("2_blur")
-shader_parameter/strength = 3.3
-shader_parameter/mix_percentage = 0.3
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_thanks_frame"]
-bg_color = Color(0, 0, 0, 0)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(0.98, 0.72, 0.36, 0.26)
-
-[sub_resource type="StyleBoxLine" id="StyleBoxLine_thanks_sep"]
-color = Color(0.98, 0.72, 0.36, 0.42)
-thickness = 1
-grow_begin = 30.0
-grow_end = 30.0
-
-[node name="ThankScreen" type="Container" unique_id=1166487123]
+[node name="ThankScreen" type="Container"]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-script = ExtResource("1_thanks")
-color = Color(0, 0, 0, 0.68)
+theme = ExtResource("3_theme")
+script = ExtResource("1_script")
+color = Color(0, 0, 0, 0.9)
 close_modal_on_clicked = false
 modal_offset_unit = 2
-modal_offset = Vector2(0, 0.08)
+modal_offset = Vector2(0, 0)
+opening_duration = 0.16
+closing_duration = 0.14
 metadata/_custom_type_script = "uid://c5r3km1v05kuj"
 
 [node name="PanelRoot" type="Control" parent="."]
 layout_mode = 2
 
-[node name="GlassBlur" type="ColorRect" parent="PanelRoot"]
-material = SubResource("ShaderMaterial_thanks_blur")
+[node name="Backdrop" type="ColorRect" parent="PanelRoot"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -50,109 +31,57 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-color = Color(0.01, 0.008, 0.008, 0.54)
+color = Color(0.018, 0.018, 0.016, 0.98)
 
-[node name="GlassFrame" type="Panel" parent="PanelRoot"]
+[node name="TopRule" type="ColorRect" parent="PanelRoot"]
 layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
+anchor_left = 0.055
+anchor_top = 0.055
+anchor_right = 0.945
+anchor_bottom = 0.057
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_thanks_frame")
+color = Color(0.92, 0.92, 0.88, 0.9)
 
-[node name="SettingAmbientVFX" parent="PanelRoot" instance=ExtResource("3_ambient")]
+[node name="Title" type="Label" parent="PanelRoot"]
 layout_mode = 1
-
-[node name="SettingLocalLightVFX" parent="PanelRoot" instance=ExtResource("4_light")]
-layout_mode = 1
-
-[node name="OuterMargin" type="MarginContainer" parent="PanelRoot"]
-layout_mode = 1
-offset_right = 1915.0
-offset_bottom = 1084.0
-theme_override_constants/margin_left = 188
-theme_override_constants/margin_top = 28
-theme_override_constants/margin_right = 188
-
-[node name="ShellPanel" type="Control" parent="PanelRoot/OuterMargin"]
-custom_minimum_size = Vector2(760, 520)
-clip_contents = true
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-
-[node name="ShellMargin" type="MarginContainer" parent="PanelRoot/OuterMargin/ShellPanel"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
+anchor_left = 0.055
+anchor_top = 0.085
+anchor_right = 0.28
+anchor_bottom = 0.19
 grow_horizontal = 2
 grow_vertical = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-theme_override_constants/margin_left = 34
-theme_override_constants/margin_top = 30
-theme_override_constants/margin_right = 28
-theme_override_constants/margin_bottom = 28
+theme_override_font_sizes/font_size = 50
+text = "THANK_TITLE"
+vertical_alignment = 1
 
-[node name="MainVBox" type="VBoxContainer" parent="PanelRoot/OuterMargin/ShellPanel/ShellMargin"]
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-theme_override_constants/separation = 18
-
-[node name="Title" type="Label" parent="PanelRoot/OuterMargin/ShellPanel/ShellMargin/MainVBox"]
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 0.82, 0.42, 1)
-theme_override_font_sizes/font_size = 46
-text = "感谢"
-horizontal_alignment = 1
-
-[node name="HSeparator" type="HSeparator" parent="PanelRoot/OuterMargin/ShellPanel/ShellMargin/MainVBox"]
-layout_mode = 2
-theme_override_styles/separator = SubResource("StyleBoxLine_thanks_sep")
-
-[node name="Body" type="VBoxContainer" parent="PanelRoot/OuterMargin/ShellPanel/ShellMargin/MainVBox"]
-custom_minimum_size = Vector2(0, 360)
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-theme_override_constants/separation = 16
-
-[node name="Subtitle" type="Label" parent="PanelRoot/OuterMargin/ShellPanel/ShellMargin/MainVBox/Body"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.92, 0.9, 0.84, 0.92)
-theme_override_font_sizes/font_size = 22
-text = "感谢参与这个项目。"
-horizontal_alignment = 1
-
-[node name="CreditsText" type="RichTextLabel" parent="PanelRoot/OuterMargin/ShellPanel/ShellMargin/MainVBox/Body"]
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-theme_override_colors/default_color = Color(0.86, 0.84, 0.78, 0.96)
-theme_override_font_sizes/normal_font_size = 20
-bbcode_enabled = true
-text = "[b]制作[/b]
-Your Team
-
-[b]工具[/b]
-Godot Engine
-
-[b]Template[/b]
-这个页面保留了设置页同款玻璃、扫描线和局部光风格。你可以直接替换这里的名单、鸣谢和授权信息。"
-fit_content = true
-scroll_active = false
-
-[node name="Footer" type="HBoxContainer" parent="PanelRoot/OuterMargin/ShellPanel/ShellMargin/MainVBox"]
-layout_mode = 2
-
-[node name="ReturnButton" parent="PanelRoot/OuterMargin/ShellPanel/ShellMargin/MainVBox/Footer" instance=ExtResource("5_button")]
+[node name="CreditsText" type="RichTextLabel" parent="PanelRoot"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(170, 64)
-layout_mode = 2
-theme_override_font_sizes/font_size = 30
-text = "返回"
+layout_mode = 1
+anchor_left = 0.31
+anchor_top = 0.09
+anchor_right = 0.94
+anchor_bottom = 0.91
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/default_color = Color(0.88, 0.88, 0.84, 1)
+theme_override_colors/font_meta_color = Color(0.98, 0.98, 0.94, 1)
+theme_override_colors/font_meta_hover_color = Color(0.64, 0.64, 0.61, 1)
+theme_override_font_sizes/normal_font_size = 22
+bbcode_enabled = true
+text = "THANK_CREDITS_BODY"
+scroll_active = true
+meta_underlined = true
 
+[node name="ReturnButton" parent="PanelRoot" instance=ExtResource("2_button")]
+unique_name_in_owner = true
+layout_mode = 1
+anchor_left = 0.055
+anchor_top = 0.79
+anchor_right = 0.22
+anchor_bottom = 0.86
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_font_sizes/font_size = 27
+text = "COMMON_BACK"

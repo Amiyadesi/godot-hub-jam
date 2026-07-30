@@ -1,0 +1,30 @@
+[gd_scene format=3 uid="uid://br7rd6p2opv2n"]
+
+[ext_resource type="Script" uid="uid://b8y1k5bqvh085" path="res://Scripts/EchoChase/temporal_door.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://bgrnghgd1ccr6" path="res://assets/echo_chase/tilemap/monochrome_tilemap_transparent_packed.png" id="2_tilemap"]
+
+[sub_resource type="RectangleShape2D" id="Shape_door"]
+size = Vector2(32, 32)
+
+[sub_resource type="AtlasTexture" id="Atlas_door"]
+atlas = ExtResource("2_tilemap")
+region = Rect2(272, 32, 16, 16)
+
+[node name="TemporalDoor" type="StaticBody2D" unique_id=613174771]
+collision_mask = 0
+script = ExtResource("1_script")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1430891442]
+unique_name_in_owner = true
+position = Vector2(0, -15)
+shape = SubResource("Shape_door")
+
+[node name="Visual" type="Node2D" parent="." unique_id=466649335]
+unique_name_in_owner = true
+modulate = Color(0.96, 0.34, 0.36, 1)
+
+[node name="PanelUpper" type="Sprite2D" parent="Visual" unique_id=1772692644]
+texture_filter = 1
+position = Vector2(0, -16)
+scale = Vector2(2, 2)
+texture = SubResource("Atlas_door")

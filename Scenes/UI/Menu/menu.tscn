@@ -1,181 +1,744 @@
-[gd_scene load_steps=9 format=3]
+[gd_scene format=3 uid="uid://dvt5m7mo6n1d6"]
 
-[ext_resource type="Script" path="res://Scenes/UI/Menu/menu.gd" id="1_menu"]
-[ext_resource type="Shader" path="res://resources/shader/god_ray.gdshader" id="2_godray"]
-[ext_resource type="PackedScene" path="res://Scenes/UIorgan/ShaderButton/shader_button.tscn" id="3_button"]
-[ext_resource type="PackedScene" path="res://Scenes/UI/Menu/setting_screen.tscn" id="4_settings"]
-[ext_resource type="PackedScene" path="res://Scenes/UI/Menu/thank_screen.tscn" id="5_thanks"]
+[ext_resource type="Script" uid="uid://bp3qbmklg2a2k" path="res://Scenes/UI/Menu/menu.gd" id="1_menu"]
+[ext_resource type="PackedScene" uid="uid://dssid7iw4aqb6" path="res://Scenes/UIorgan/ShaderButton/shader_button.tscn" id="2_button"]
+[ext_resource type="PackedScene" uid="uid://b7hivg2dnaer8" path="res://Scenes/UI/Menu/setting_screen.tscn" id="3_settings"]
+[ext_resource type="PackedScene" uid="uid://bbq46x1emgrc3" path="res://Scenes/UI/Menu/thank_screen.tscn" id="4_thanks"]
+[ext_resource type="AudioStream" uid="uid://bimcr3aamkxsc" path="res://assets/echo_chase/audio/music/mysterious_futuristic_loop.ogg" id="5_music"]
+[ext_resource type="TileSet" path="res://assets/echo_chase/tilemap/echo_platform_tileset.tres" id="6_tile_set"]
+[ext_resource type="Theme" uid="uid://136hg33mma1d" path="res://resources/main_theme.tres" id="7_theme"]
+[ext_resource type="Shader" path="res://assets/echo_chase/vfx/menu_cross_grid.gdshader" id="8_grid"]
+[ext_resource type="SpriteFrames" uid="uid://c5fwtfmpwe8fq" path="res://assets/echo_chase/character/echo_character_frames.tres" id="9_character_frames"]
+[ext_resource type="SpriteFrames" uid="uid://da37aey76yc08" path="res://assets/echo_chase/character/echo_character_outline_frames.tres" id="10_outline_frames"]
+[ext_resource type="Shader" uid="uid://ccnr3f2ov4cnc" path="res://assets/echo_chase/vfx/temporal_outline.gdshader" id="11_outline_shader"]
+[ext_resource type="Texture2D" uid="uid://bqyfshrwdgvmw" path="res://assets/echo_chase/vfx/temporal_transition_ring.svg" id="12_transition_ring"]
+[ext_resource type="Resource" path="res://resources/scene_transitions/echo_start_present_radial.tres" id="13_start_transition"]
+[ext_resource type="Resource" path="res://resources/scene_transitions/echo_start_present_radial_reduced.tres" id="14_start_transition_reduced"]
+[ext_resource type="Resource" path="res://resources/scene_transitions/echo_continue_past_radial.tres" id="15_continue_transition"]
+[ext_resource type="Resource" path="res://resources/scene_transitions/echo_continue_past_radial_reduced.tres" id="16_continue_transition_reduced"]
+[ext_resource type="Shader" path="res://assets/echo_chase/vfx/menu_edge_glow.gdshader" id="17_edge_glow"]
+[ext_resource type="PackedScene" path="res://Scenes/UI/Menu/menu_world.tscn" id="18_world"]
 
-[sub_resource type="Gradient" id="Gradient_background"]
-offsets = PackedFloat32Array(0, 0.58, 1)
-colors = PackedColorArray(0.055, 0.045, 0.052, 1, 0.13, 0.095, 0.06, 1, 0.02, 0.018, 0.02, 1)
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_grid"]
+shader = ExtResource("8_grid")
+shader_parameter/background_color = Color(0.018, 0.025, 0.028, 1)
+shader_parameter/cross_color = Color(0.82, 0.88, 0.88, 0.16)
+shader_parameter/grid_size = 64.0
+shader_parameter/cross_arm = 6.0
+shader_parameter/line_width = 1.0
 
-[sub_resource type="GradientTexture2D" id="GradientTexture2D_background"]
-gradient = SubResource("Gradient_background")
-width = 1920
-height = 1080
-fill = 1
-fill_from = Vector2(0.18, 0.08)
-fill_to = Vector2(0.96, 0.92)
+[sub_resource type="ShaderMaterial" id="Material_menu_top_glow"]
+shader = ExtResource("17_edge_glow")
+shader_parameter/from_top = true
+shader_parameter/fade_distance = 0.82
 
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_rays"]
-shader = ExtResource("2_godray")
-shader_parameter/blend_mode = 1
-shader_parameter/angle = 112.642
-shader_parameter/position = -0.2
-shader_parameter/spread = 0.5
-shader_parameter/cutoff = 0.1
-shader_parameter/falloff = 0.2
-shader_parameter/edge_fade = 0.15
-shader_parameter/speed = 1.0
-shader_parameter/ray1_density = 8.0
-shader_parameter/ray2_density = 30.0
-shader_parameter/ray2_intensity = 0.3
-shader_parameter/color = Color(1, 0.9, 0.65, 0.8)
-shader_parameter/hdr = false
-shader_parameter/seed = 0.0
+[sub_resource type="ShaderMaterial" id="Material_menu_bottom_glow"]
+shader = ExtResource("17_edge_glow")
+shader_parameter/from_top = false
+shader_parameter/fade_distance = 0.82
 
-[node name="Menu" type="Control"]
+[sub_resource type="ShaderMaterial" id="Material_past_outline"]
+shader = ExtResource("11_outline_shader")
+shader_parameter/temporal_color = Color(1, 0.24, 0.82, 1)
+shader_parameter/outline_alpha = 1.0
+shader_parameter/fill_alpha = 0.12
+
+[sub_resource type="ShaderMaterial" id="Material_present_outline"]
+shader = ExtResource("11_outline_shader")
+shader_parameter/temporal_color = Color(0.7, 1, 1, 1)
+shader_parameter/outline_alpha = 1.0
+shader_parameter/fill_alpha = 0.12
+
+[sub_resource type="ShaderMaterial" id="Material_future_outline"]
+shader = ExtResource("11_outline_shader")
+shader_parameter/temporal_color = Color(1, 0.7, 0.2, 1)
+shader_parameter/outline_alpha = 1.0
+shader_parameter/fill_alpha = 0.12
+
+[sub_resource type="ShaderMaterial" id="Material_future_outer_outline"]
+shader = ExtResource("11_outline_shader")
+shader_parameter/temporal_color = Color(1, 0.72, 0.18, 0.62)
+shader_parameter/outline_alpha = 0.7
+shader_parameter/fill_alpha = 0.0
+
+[sub_resource type="Animation" id="Animation_menu_enter"]
+resource_name = "menu_enter"
+length = 1.8
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Background:self_modulate")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.7),
+"transitions": PackedFloat32Array(0.6, 1),
+"update": 0,
+"values": [Color(0.46, 0.46, 0.46, 1), Color(1, 1, 1, 1)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("ButtonLayer/TitleReveal/Title:position")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.72),
+"transitions": PackedFloat32Array(0.55, 1),
+"update": 0,
+"values": [Vector2(-220, 0), Vector2(0, 0)]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("ButtonLayer/TitleReveal/Title:modulate")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0, 0.18, 0.72),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Color(1, 1, 1, 0), Color(1, 1, 1, 0.22), Color(1, 1, 1, 1)]
+}
+tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("TemporalCharacterLayer/PastRegion/Figure:modulate")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(0, 0.18, 0.5),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Color(1, 1, 1, 0), Color(1, 1, 1, 0), Color(1, 1, 1, 1)]
+}
+tracks/4/type = "value"
+tracks/4/imported = false
+tracks/4/enabled = true
+tracks/4/path = NodePath("TemporalCharacterLayer/PresentRegion/Figure:modulate")
+tracks/4/interp = 1
+tracks/4/loop_wrap = true
+tracks/4/keys = {
+"times": PackedFloat32Array(0, 0.5, 0.82),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Color(1, 1, 1, 0), Color(1, 1, 1, 0), Color(1, 1, 1, 1)]
+}
+tracks/5/type = "value"
+tracks/5/imported = false
+tracks/5/enabled = true
+tracks/5/path = NodePath("TemporalCharacterLayer/FutureRegion/Figure:modulate")
+tracks/5/interp = 1
+tracks/5/loop_wrap = true
+tracks/5/keys = {
+"times": PackedFloat32Array(0, 0.82, 1.14),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Color(1, 1, 1, 0), Color(1, 1, 1, 0), Color(1, 1, 1, 1)]
+}
+tracks/6/type = "value"
+tracks/6/imported = false
+tracks/6/enabled = true
+tracks/6/path = NodePath("TemporalCharacterLayer/PastRegion/Figure/Float/Outline:scale")
+tracks/6/interp = 1
+tracks/6/loop_wrap = true
+tracks/6/keys = {
+"times": PackedFloat32Array(0.18, 0.5),
+"transitions": PackedFloat32Array(0.55, 1),
+"update": 0,
+"values": [Vector2(6, 6), Vector2(4, 4)]
+}
+tracks/7/type = "value"
+tracks/7/imported = false
+tracks/7/enabled = true
+tracks/7/path = NodePath("TemporalCharacterLayer/PresentRegion/Figure/Float/Outline:scale")
+tracks/7/interp = 1
+tracks/7/loop_wrap = true
+tracks/7/keys = {
+"times": PackedFloat32Array(0.5, 0.82),
+"transitions": PackedFloat32Array(0.55, 1),
+"update": 0,
+"values": [Vector2(6, 6), Vector2(4, 4)]
+}
+tracks/8/type = "value"
+tracks/8/imported = false
+tracks/8/enabled = true
+tracks/8/path = NodePath("TemporalCharacterLayer/FutureRegion/Figure/Float/Outline:scale")
+tracks/8/interp = 1
+tracks/8/loop_wrap = true
+tracks/8/keys = {
+"times": PackedFloat32Array(0.82, 1.14),
+"transitions": PackedFloat32Array(0.55, 1),
+"update": 0,
+"values": [Vector2(6, 6), Vector2(4, 4)]
+}
+tracks/9/type = "value"
+tracks/9/imported = false
+tracks/9/enabled = true
+tracks/9/path = NodePath("ButtonLayer/RouteNav/MenuButtons/StartButton:position")
+tracks/9/interp = 1
+tracks/9/loop_wrap = true
+tracks/9/keys = {
+"times": PackedFloat32Array(0, 0.45, 0.75),
+"transitions": PackedFloat32Array(1, 0.55, 1),
+"update": 0,
+"values": [Vector2(0, 32), Vector2(0, 32), Vector2(0, 0)]
+}
+tracks/10/type = "value"
+tracks/10/imported = false
+tracks/10/enabled = true
+tracks/10/path = NodePath("ButtonLayer/RouteNav/MenuButtons/StartButton:modulate")
+tracks/10/interp = 1
+tracks/10/loop_wrap = true
+tracks/10/keys = {
+"times": PackedFloat32Array(0, 0.45, 0.75),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Color(1, 1, 1, 0), Color(1, 1, 1, 0), Color(1, 1, 1, 1)]
+}
+tracks/11/type = "value"
+tracks/11/imported = false
+tracks/11/enabled = true
+tracks/11/path = NodePath("ButtonLayer/RouteNav/MenuButtons/ContinueButton:position")
+tracks/11/interp = 1
+tracks/11/loop_wrap = true
+tracks/11/keys = {
+"times": PackedFloat32Array(0, 0.58, 0.88),
+"transitions": PackedFloat32Array(1, 0.55, 1),
+"update": 0,
+"values": [Vector2(0, 96), Vector2(0, 96), Vector2(0, 64)]
+}
+tracks/12/type = "value"
+tracks/12/imported = false
+tracks/12/enabled = true
+tracks/12/path = NodePath("ButtonLayer/RouteNav/MenuButtons/ContinueButton:modulate")
+tracks/12/interp = 1
+tracks/12/loop_wrap = true
+tracks/12/keys = {
+"times": PackedFloat32Array(0, 0.58, 0.88),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Color(1, 1, 1, 0), Color(1, 1, 1, 0), Color(1, 1, 1, 1)]
+}
+tracks/13/type = "value"
+tracks/13/imported = false
+tracks/13/enabled = true
+tracks/13/path = NodePath("ButtonLayer/RouteNav/MenuButtons/SettingButton:position")
+tracks/13/interp = 1
+tracks/13/loop_wrap = true
+tracks/13/keys = {
+"times": PackedFloat32Array(0, 0.71, 1.01),
+"transitions": PackedFloat32Array(1, 0.55, 1),
+"update": 0,
+"values": [Vector2(0, 160), Vector2(0, 160), Vector2(0, 128)]
+}
+tracks/14/type = "value"
+tracks/14/imported = false
+tracks/14/enabled = true
+tracks/14/path = NodePath("ButtonLayer/RouteNav/MenuButtons/SettingButton:modulate")
+tracks/14/interp = 1
+tracks/14/loop_wrap = true
+tracks/14/keys = {
+"times": PackedFloat32Array(0, 0.71, 1.01),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Color(1, 1, 1, 0), Color(1, 1, 1, 0), Color(1, 1, 1, 1)]
+}
+tracks/15/type = "value"
+tracks/15/imported = false
+tracks/15/enabled = true
+tracks/15/path = NodePath("ButtonLayer/RouteNav/MenuButtons/ThanksButton:position")
+tracks/15/interp = 1
+tracks/15/loop_wrap = true
+tracks/15/keys = {
+"times": PackedFloat32Array(0, 0.84, 1.14),
+"transitions": PackedFloat32Array(1, 0.55, 1),
+"update": 0,
+"values": [Vector2(0, 224), Vector2(0, 224), Vector2(0, 192)]
+}
+tracks/16/type = "value"
+tracks/16/imported = false
+tracks/16/enabled = true
+tracks/16/path = NodePath("ButtonLayer/RouteNav/MenuButtons/ThanksButton:modulate")
+tracks/16/interp = 1
+tracks/16/loop_wrap = true
+tracks/16/keys = {
+"times": PackedFloat32Array(0, 0.84, 1.14),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Color(1, 1, 1, 0), Color(1, 1, 1, 0), Color(1, 1, 1, 1)]
+}
+tracks/17/type = "value"
+tracks/17/imported = false
+tracks/17/enabled = true
+tracks/17/path = NodePath("ButtonLayer/RouteNav/MenuButtons/ExitButton:position")
+tracks/17/interp = 1
+tracks/17/loop_wrap = true
+tracks/17/keys = {
+"times": PackedFloat32Array(0, 0.97, 1.27),
+"transitions": PackedFloat32Array(1, 0.55, 1),
+"update": 0,
+"values": [Vector2(0, 288), Vector2(0, 288), Vector2(0, 256)]
+}
+tracks/18/type = "value"
+tracks/18/imported = false
+tracks/18/enabled = true
+tracks/18/path = NodePath("ButtonLayer/RouteNav/MenuButtons/ExitButton:modulate")
+tracks/18/interp = 1
+tracks/18/loop_wrap = true
+tracks/18/keys = {
+"times": PackedFloat32Array(0, 0.97, 1.27),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Color(1, 1, 1, 0), Color(1, 1, 1, 0), Color(1, 1, 1, 1)]
+}
+
+[sub_resource type="Animation" id="Animation_menu_enter_reduced"]
+resource_name = "menu_enter_reduced"
+length = 1.8
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("ButtonLayer/TitleReveal/Title:position")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.8),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector2(-220, 0), Vector2(0, 0)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("ButtonLayer/TitleReveal/Title:modulate")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.8),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Color(1, 1, 1, 0), Color(1, 1, 1, 1)]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("TemporalCharacterLayer/PastRegion/Figure:modulate")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0, 0.18, 0.58),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Color(1, 1, 1, 0), Color(1, 1, 1, 0), Color(1, 1, 1, 1)]
+}
+tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("TemporalCharacterLayer/PresentRegion/Figure:modulate")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(0, 0.58, 0.98),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Color(1, 1, 1, 0), Color(1, 1, 1, 0), Color(1, 1, 1, 1)]
+}
+tracks/4/type = "value"
+tracks/4/imported = false
+tracks/4/enabled = true
+tracks/4/path = NodePath("TemporalCharacterLayer/FutureRegion/Figure:modulate")
+tracks/4/interp = 1
+tracks/4/loop_wrap = true
+tracks/4/keys = {
+"times": PackedFloat32Array(0, 0.98, 1.38),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Color(1, 1, 1, 0), Color(1, 1, 1, 0), Color(1, 1, 1, 1)]
+}
+tracks/5/type = "value"
+tracks/5/imported = false
+tracks/5/enabled = true
+tracks/5/path = NodePath("ButtonLayer/RouteNav/MenuButtons/StartButton:position")
+tracks/5/interp = 1
+tracks/5/loop_wrap = true
+tracks/5/keys = {
+"times": PackedFloat32Array(0, 0.45, 0.75),
+"transitions": PackedFloat32Array(1, 0.55, 1),
+"update": 0,
+"values": [Vector2(0, 32), Vector2(0, 32), Vector2(0, 0)]
+}
+tracks/6/type = "value"
+tracks/6/imported = false
+tracks/6/enabled = true
+tracks/6/path = NodePath("ButtonLayer/RouteNav/MenuButtons/StartButton:modulate")
+tracks/6/interp = 1
+tracks/6/loop_wrap = true
+tracks/6/keys = {
+"times": PackedFloat32Array(0, 0.45, 0.75),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Color(1, 1, 1, 0), Color(1, 1, 1, 0), Color(1, 1, 1, 1)]
+}
+tracks/7/type = "value"
+tracks/7/imported = false
+tracks/7/enabled = true
+tracks/7/path = NodePath("ButtonLayer/RouteNav/MenuButtons/ContinueButton:position")
+tracks/7/interp = 1
+tracks/7/loop_wrap = true
+tracks/7/keys = {
+"times": PackedFloat32Array(0, 0.58, 0.88),
+"transitions": PackedFloat32Array(1, 0.55, 1),
+"update": 0,
+"values": [Vector2(0, 96), Vector2(0, 96), Vector2(0, 64)]
+}
+tracks/8/type = "value"
+tracks/8/imported = false
+tracks/8/enabled = true
+tracks/8/path = NodePath("ButtonLayer/RouteNav/MenuButtons/ContinueButton:modulate")
+tracks/8/interp = 1
+tracks/8/loop_wrap = true
+tracks/8/keys = {
+"times": PackedFloat32Array(0, 0.58, 0.88),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Color(1, 1, 1, 0), Color(1, 1, 1, 0), Color(1, 1, 1, 1)]
+}
+tracks/9/type = "value"
+tracks/9/imported = false
+tracks/9/enabled = true
+tracks/9/path = NodePath("ButtonLayer/RouteNav/MenuButtons/SettingButton:position")
+tracks/9/interp = 1
+tracks/9/loop_wrap = true
+tracks/9/keys = {
+"times": PackedFloat32Array(0, 0.71, 1.01),
+"transitions": PackedFloat32Array(1, 0.55, 1),
+"update": 0,
+"values": [Vector2(0, 160), Vector2(0, 160), Vector2(0, 128)]
+}
+tracks/10/type = "value"
+tracks/10/imported = false
+tracks/10/enabled = true
+tracks/10/path = NodePath("ButtonLayer/RouteNav/MenuButtons/SettingButton:modulate")
+tracks/10/interp = 1
+tracks/10/loop_wrap = true
+tracks/10/keys = {
+"times": PackedFloat32Array(0, 0.71, 1.01),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Color(1, 1, 1, 0), Color(1, 1, 1, 0), Color(1, 1, 1, 1)]
+}
+tracks/11/type = "value"
+tracks/11/imported = false
+tracks/11/enabled = true
+tracks/11/path = NodePath("ButtonLayer/RouteNav/MenuButtons/ThanksButton:position")
+tracks/11/interp = 1
+tracks/11/loop_wrap = true
+tracks/11/keys = {
+"times": PackedFloat32Array(0, 0.84, 1.14),
+"transitions": PackedFloat32Array(1, 0.55, 1),
+"update": 0,
+"values": [Vector2(0, 224), Vector2(0, 224), Vector2(0, 192)]
+}
+tracks/12/type = "value"
+tracks/12/imported = false
+tracks/12/enabled = true
+tracks/12/path = NodePath("ButtonLayer/RouteNav/MenuButtons/ThanksButton:modulate")
+tracks/12/interp = 1
+tracks/12/loop_wrap = true
+tracks/12/keys = {
+"times": PackedFloat32Array(0, 0.84, 1.14),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Color(1, 1, 1, 0), Color(1, 1, 1, 0), Color(1, 1, 1, 1)]
+}
+tracks/13/type = "value"
+tracks/13/imported = false
+tracks/13/enabled = true
+tracks/13/path = NodePath("ButtonLayer/RouteNav/MenuButtons/ExitButton:position")
+tracks/13/interp = 1
+tracks/13/loop_wrap = true
+tracks/13/keys = {
+"times": PackedFloat32Array(0, 0.97, 1.27),
+"transitions": PackedFloat32Array(1, 0.55, 1),
+"update": 0,
+"values": [Vector2(0, 288), Vector2(0, 288), Vector2(0, 256)]
+}
+tracks/14/type = "value"
+tracks/14/imported = false
+tracks/14/enabled = true
+tracks/14/path = NodePath("ButtonLayer/RouteNav/MenuButtons/ExitButton:modulate")
+tracks/14/interp = 1
+tracks/14/loop_wrap = true
+tracks/14/keys = {
+"times": PackedFloat32Array(0, 0.97, 1.27),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Color(1, 1, 1, 0), Color(1, 1, 1, 0), Color(1, 1, 1, 1)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_menu"]
+_data = {
+&"menu_enter": SubResource("Animation_menu_enter"),
+&"menu_enter_reduced": SubResource("Animation_menu_enter_reduced")
+}
+
+[sub_resource type="Animation" id="Animation_menu_idle"]
+resource_name = "menu_idle"
+length = 2.4
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("TemporalCharacterLayer/PastRegion/Figure/Float:position")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.6, 1.2, 1.8, 2.4),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1),
+"update": 0,
+"values": [Vector2(0, 0), Vector2(0, 6), Vector2(0, 0), Vector2(0, -6), Vector2(0, 0)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("TemporalCharacterLayer/PresentRegion/Figure/Float:position")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.2, 0.8, 1.4, 2, 2.4),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1),
+"update": 0,
+"values": [Vector2(0, -5.196), Vector2(0, -6), Vector2(0, 0), Vector2(0, 6), Vector2(0, 0), Vector2(0, -5.196)]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("TemporalCharacterLayer/FutureRegion/Figure/Float:position")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0, 0.4, 1, 1.6, 2.2, 2.4),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1),
+"update": 0,
+"values": [Vector2(0, 5.196), Vector2(0, 0), Vector2(0, -6), Vector2(0, 0), Vector2(0, 6), Vector2(0, 5.196)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_idle"]
+_data = {
+&"menu_idle": SubResource("Animation_menu_idle")
+}
+
+[sub_resource type="Animation" id="Animation_frame_standard"]
+resource_name = "frame_standard"
+length = 2.4
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/path = NodePath("TemporalFrame/Glow:visible")
+tracks/0/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 1, "values": [true]}
+tracks/1/type = "value"
+tracks/1/path = NodePath("TemporalFrame/Glow:self_modulate")
+tracks/1/interp = 1
+tracks/1/keys = {"times": PackedFloat32Array(0, 1.2, 2.4), "transitions": PackedFloat32Array(1, 1, 1), "update": 0, "values": [Color(1, 1, 1, 0.72), Color(1, 1, 1, 1), Color(1, 1, 1, 0.72)]}
+tracks/2/type = "value"
+tracks/2/path = NodePath("TemporalFrame/Lines:self_modulate")
+tracks/2/interp = 1
+tracks/2/keys = {"times": PackedFloat32Array(0, 1.2, 2.4), "transitions": PackedFloat32Array(1, 1, 1), "update": 0, "values": [Color(1, 1, 1, 0.78), Color(1, 1, 1, 1), Color(1, 1, 1, 0.78)]}
+tracks/3/type = "value"
+tracks/3/path = NodePath("TemporalFrame/Glow/TopPast:offset_bottom")
+tracks/3/interp = 1
+tracks/3/keys = {"times": PackedFloat32Array(0, 0.3, 0.72, 2.4), "transitions": PackedFloat32Array(0.5, 1, 1, 1), "update": 0, "values": [8.0, 32.0, 8.0, 8.0]}
+tracks/4/type = "value"
+tracks/4/path = NodePath("TemporalFrame/Glow/BottomPast:offset_top")
+tracks/4/interp = 1
+tracks/4/keys = {"times": PackedFloat32Array(0, 0.3, 0.72, 2.4), "transitions": PackedFloat32Array(0.5, 1, 1, 1), "update": 0, "values": [-8.0, -32.0, -8.0, -8.0]}
+tracks/5/type = "value"
+tracks/5/path = NodePath("TemporalFrame/Glow/TopPresent:offset_bottom")
+tracks/5/interp = 1
+tracks/5/keys = {"times": PackedFloat32Array(0, 0.72, 1.02, 1.44, 2.4), "transitions": PackedFloat32Array(1, 0.5, 1, 1, 1), "update": 0, "values": [8.0, 8.0, 32.0, 8.0, 8.0]}
+tracks/6/type = "value"
+tracks/6/path = NodePath("TemporalFrame/Glow/BottomPresent:offset_top")
+tracks/6/interp = 1
+tracks/6/keys = {"times": PackedFloat32Array(0, 0.72, 1.02, 1.44, 2.4), "transitions": PackedFloat32Array(1, 0.5, 1, 1, 1), "update": 0, "values": [-8.0, -8.0, -32.0, -8.0, -8.0]}
+tracks/7/type = "value"
+tracks/7/path = NodePath("TemporalFrame/Glow/TopFuture:offset_bottom")
+tracks/7/interp = 1
+tracks/7/keys = {"times": PackedFloat32Array(0, 1.44, 1.74, 2.16, 2.4), "transitions": PackedFloat32Array(1, 0.5, 1, 1, 1), "update": 0, "values": [8.0, 8.0, 32.0, 8.0, 8.0]}
+tracks/8/type = "value"
+tracks/8/path = NodePath("TemporalFrame/Glow/BottomFuture:offset_top")
+tracks/8/interp = 1
+tracks/8/keys = {"times": PackedFloat32Array(0, 1.44, 1.74, 2.16, 2.4), "transitions": PackedFloat32Array(1, 0.5, 1, 1, 1), "update": 0, "values": [-8.0, -8.0, -32.0, -8.0, -8.0]}
+
+[sub_resource type="Animation" id="Animation_frame_reduced"]
+resource_name = "frame_reduced"
+length = 2.4
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/path = NodePath("TemporalFrame/Glow:visible")
+tracks/0/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 1, "values": [false]}
+tracks/1/type = "value"
+tracks/1/path = NodePath("TemporalFrame/Glow:self_modulate")
+tracks/1/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 1, "values": [Color(1, 1, 1, 0)]}
+tracks/2/type = "value"
+tracks/2/path = NodePath("TemporalFrame/Lines:self_modulate")
+tracks/2/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 1, "values": [Color(1, 1, 1, 0.86)]}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_frame"]
+_data = {&"frame_reduced": SubResource("Animation_frame_reduced"), &"frame_standard": SubResource("Animation_frame_standard")}
+
+[sub_resource type="Animation" id="Animation_transition_reset"]
+resource_name = "RESET"
+length = 0.05
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("TemporalCharacterLayer/PastRegion/Figure/Float/TransitionHalo:visible")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [false]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("TemporalCharacterLayer/PresentRegion/Figure/Float/TransitionHalo:visible")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [false]
+}
+
+[sub_resource type="Animation" id="Animation_pulse_past"]
+resource_name = "pulse_past"
+length = 0.18
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("TemporalCharacterLayer/PastRegion/Figure/Float/TransitionHalo:visible")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.18),
+"transitions": PackedFloat32Array(1, 1),
+"update": 1,
+"values": [true, false]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("TemporalCharacterLayer/PastRegion/Figure/Float/TransitionHalo:scale")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.18),
+"transitions": PackedFloat32Array(0.5, 1),
+"update": 0,
+"values": [Vector2(0.45, 0.45), Vector2(1.65, 1.65)]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("TemporalCharacterLayer/PastRegion/Figure/Float/TransitionHalo:modulate")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0, 0.08, 0.18),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Color(1, 0.24, 0.82, 0), Color(1, 0.24, 0.82, 1), Color(1, 0.24, 0.82, 0)]
+}
+
+[sub_resource type="Animation" id="Animation_pulse_present"]
+resource_name = "pulse_present"
+length = 0.18
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("TemporalCharacterLayer/PresentRegion/Figure/Float/TransitionHalo:visible")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.18),
+"transitions": PackedFloat32Array(1, 1),
+"update": 1,
+"values": [true, false]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("TemporalCharacterLayer/PresentRegion/Figure/Float/TransitionHalo:scale")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.18),
+"transitions": PackedFloat32Array(0.5, 1),
+"update": 0,
+"values": [Vector2(0.45, 0.45), Vector2(1.65, 1.65)]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("TemporalCharacterLayer/PresentRegion/Figure/Float/TransitionHalo:modulate")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0, 0.08, 0.18),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Color(0.7, 1, 1, 0), Color(0.7, 1, 1, 1), Color(0.7, 1, 1, 0)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_transition"]
+_data = {
+&"RESET": SubResource("Animation_transition_reset"),
+&"pulse_past": SubResource("Animation_pulse_past"),
+&"pulse_present": SubResource("Animation_pulse_present")
+}
+
+[node name="Menu" type="Control" unique_id=507532577]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+theme = ExtResource("7_theme")
 script = ExtResource("1_menu")
+echo_chase_entry_scene_path = "res://Scenes/EchoChase/echo_chase_start.tscn"
+menu_music = ExtResource("5_music")
+start_transition = ExtResource("13_start_transition")
+start_transition_reduced = ExtResource("14_start_transition_reduced")
+continue_transition = ExtResource("15_continue_transition")
+continue_transition_reduced = ExtResource("16_continue_transition_reduced")
 
-[node name="Background" type="TextureRect" parent="."]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-texture = SubResource("GradientTexture2D_background")
-expand_mode = 1
+[node name="MenuWorld" parent="." unique_id=191223000 instance=ExtResource("18_world")]
+z_index = -10
 
-[node name="RayOverlay" type="ColorRect" parent="."]
-self_modulate = Color(0.95, 0.82, 0.62, 0.24)
-material = SubResource("ShaderMaterial_rays")
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-color = Color(0, 0, 0, 0)
+[node name="MenuUi" type="CanvasLayer" parent="." unique_id=191223060]
 
-[node name="Vignette" type="ColorRect" parent="."]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-color = Color(0.01, 0.008, 0.006, 0.24)
-
-[node name="ButtonLayer" type="Control" parent="."]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-
-[node name="Header" type="VBoxContainer" parent="ButtonLayer"]
-layout_mode = 1
-anchors_preset = 5
-anchor_left = 0.5
-anchor_right = 0.5
-offset_left = -440.0
-offset_top = 82.0
-offset_right = 440.0
-offset_bottom = 230.0
-grow_horizontal = 2
-theme_override_constants/separation = 10
-
-[node name="Title" type="Label" parent="ButtonLayer/Header"]
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 0.84, 0.45, 1)
-theme_override_font_sizes/font_size = 92
-text = "Game Jam Template"
-horizontal_alignment = 1
-
-[node name="Subtitle" type="Label" parent="ButtonLayer/Header"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.92, 0.88, 0.74, 0.88)
-theme_override_font_sizes/font_size = 28
-text = "Menu · Settings · Credits · Audio"
-horizontal_alignment = 1
-
-[node name="MenuButtons" type="VBoxContainer" parent="ButtonLayer"]
-layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -108.0
-offset_top = -170.0
-offset_right = 108.0
-offset_bottom = 170.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_constants/separation = 34
-
-[node name="StartButton" parent="ButtonLayer/MenuButtons" instance=ExtResource("3_button")]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(216, 58)
-layout_mode = 2
-theme_override_font_sizes/font_size = 31
-bb_text = "[color=gold]开始"
-
-[node name="SettingButton" parent="ButtonLayer/MenuButtons" instance=ExtResource("3_button")]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(216, 58)
-layout_mode = 2
-theme_override_font_sizes/font_size = 31
-bb_text = "[color=yellow]设置"
-
-[node name="ThanksButton" parent="ButtonLayer/MenuButtons" instance=ExtResource("3_button")]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(216, 58)
-layout_mode = 2
-theme_override_font_sizes/font_size = 31
-bb_text = "[color=cyan]感谢"
-
-[node name="ExitButton" parent="ButtonLayer/MenuButtons" instance=ExtResource("3_button")]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(216, 58)
-layout_mode = 2
-theme_override_font_sizes/font_size = 31
-bb_text = "[color=red]退出"
-
-[node name="StatusLabel" type="Label" parent="ButtonLayer"]
-unique_name_in_owner = true
-layout_mode = 1
-anchors_preset = 7
-anchor_left = 0.5
-anchor_top = 1.0
-anchor_right = 0.5
-anchor_bottom = 1.0
-offset_left = -420.0
-offset_top = -102.0
-offset_right = 420.0
-offset_bottom = -60.0
-grow_horizontal = 2
-grow_vertical = 0
-theme_override_colors/font_color = Color(0.9, 0.84, 0.68, 0.88)
-theme_override_font_sizes/font_size = 22
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="BootFlash" type="ColorRect" parent="ButtonLayer"]
+[node name="Background" type="Control" parent="MenuUi" unique_id=451704620]
 unique_name_in_owner = true
 visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -32.0
+offset_top = -32.0
+offset_right = 32.0
+offset_bottom = 32.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Grid" type="ColorRect" parent="MenuUi/Background"]
+material = SubResource("ShaderMaterial_grid")
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -185,15 +748,545 @@ grow_vertical = 2
 mouse_filter = 2
 color = Color(1, 1, 1, 1)
 
-[node name="SettingScreen" parent="." instance=ExtResource("4_settings")]
+[node name="Road" type="TileMapLayer" parent="MenuUi/Background"]
+texture_filter = 1
+scale = Vector2(4, 4)
+tile_map_data = PackedByteArray("AAAAABEAAAAAAAgAAAABABEAAAABAAgAAAACABEAAAABAAgAAAADABEAAAABAAgAAAAEABEAAAABAAgAAAAFABEAAAABAAgAAAAGABEAAAABAAgAAAAHABEAAAABAAgAAAAIABEAAAABAAgAAAAJABEAAAABAAgAAAAKABEAAAABAAgAAAALABEAAAABAAgAAAAMABEAAAABAAgAAAANABEAAAABAAgAAAAOABEAAAABAAgAAAAPABEAAAABAAgAAAAQABEAAAABAAgAAAARABEAAAABAAgAAAASABEAAAABAAgAAAATABEAAAABAAgAAAAUABEAAAABAAgAAAAVABEAAAABAAgAAAAWABEAAAABAAgAAAAXABEAAAABAAgAAAAYABEAAAABAAgAAAAZABEAAAABAAgAAAAaABEAAAABAAgAAAAbABEAAAABAAgAAAAcABEAAAABAAgAAAAdABEAAAABAAgAAAAeABEAAAACAAgAAAA=")
+tile_set = ExtResource("6_tile_set")
+collision_enabled = false
+
+[node name="MapTint" type="ColorRect" parent="MenuUi" unique_id=267666307]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0, 0, 0, 0.22)
+
+[node name="TemporalCharacterLayer" type="Control" parent="MenuUi" unique_id=782596653]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="PastRegion" type="Control" parent="MenuUi/TemporalCharacterLayer" unique_id=550900941]
+layout_mode = 1
+anchor_right = 0.333333
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Figure" type="Control" parent="MenuUi/TemporalCharacterLayer/PastRegion" unique_id=1338637992]
+layout_mode = 1
+anchor_left = 0.5
+anchor_top = 0.54
+anchor_right = 0.5
+anchor_bottom = 0.54
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Float" type="Node2D" parent="MenuUi/TemporalCharacterLayer/PastRegion/Figure" unique_id=81224803]
+
+[node name="TransitionHalo" type="Sprite2D" parent="MenuUi/TemporalCharacterLayer/PastRegion/Figure/Float" unique_id=855571523]
+visible = false
+modulate = Color(1, 0.24, 0.82, 0)
+texture_filter = 1
+texture = ExtResource("12_transition_ring")
+
+[node name="HistoryGhost" type="AnimatedSprite2D" parent="MenuUi/TemporalCharacterLayer/PastRegion/Figure/Float"]
+position = Vector2(-8, 1)
+self_modulate = Color(1, 0.14, 0.7, 0.28)
+texture_filter = 1
+scale = Vector2(4, 4)
+sprite_frames = ExtResource("9_character_frames")
+animation = &"idle"
+autoplay = "idle"
+
+[node name="HistoryGhostFar" type="AnimatedSprite2D" parent="MenuUi/TemporalCharacterLayer/PastRegion/Figure/Float"]
+position = Vector2(-14, 2)
+self_modulate = Color(1, 0.08, 0.62, 0.14)
+texture_filter = 1
+scale = Vector2(4, 4)
+sprite_frames = ExtResource("9_character_frames")
+animation = &"idle"
+autoplay = "idle"
+
+[node name="Core" type="AnimatedSprite2D" parent="MenuUi/TemporalCharacterLayer/PastRegion/Figure/Float" unique_id=1246121387]
+self_modulate = Color(1, 0.34, 0.72, 0.84)
+texture_filter = 1
+scale = Vector2(4, 4)
+sprite_frames = ExtResource("9_character_frames")
+animation = &"idle"
+autoplay = "idle"
+
+[node name="Outline" type="AnimatedSprite2D" parent="MenuUi/TemporalCharacterLayer/PastRegion/Figure/Float" unique_id=903952759]
+texture_filter = 1
+material = SubResource("Material_past_outline")
+scale = Vector2(4, 4)
+sprite_frames = ExtResource("10_outline_frames")
+animation = &"idle"
+autoplay = "idle"
+
+[node name="PresentRegion" type="Control" parent="MenuUi/TemporalCharacterLayer" unique_id=19502046]
+layout_mode = 1
+anchor_left = 0.333333
+anchor_right = 0.666667
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Figure" type="Control" parent="MenuUi/TemporalCharacterLayer/PresentRegion" unique_id=1080281947]
+layout_mode = 1
+anchor_left = 0.5
+anchor_top = 0.54
+anchor_right = 0.5
+anchor_bottom = 0.54
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Float" type="Node2D" parent="MenuUi/TemporalCharacterLayer/PresentRegion/Figure" unique_id=393736091]
+
+[node name="TransitionHalo" type="Sprite2D" parent="MenuUi/TemporalCharacterLayer/PresentRegion/Figure/Float" unique_id=1653900612]
+visible = false
+modulate = Color(0.7, 1, 1, 0)
+texture_filter = 1
+texture = ExtResource("12_transition_ring")
+
+[node name="Core" type="AnimatedSprite2D" parent="MenuUi/TemporalCharacterLayer/PresentRegion/Figure/Float" unique_id=1511568470]
+texture_filter = 1
+scale = Vector2(4, 4)
+sprite_frames = ExtResource("9_character_frames")
+animation = &"idle"
+autoplay = "idle"
+
+[node name="Outline" type="AnimatedSprite2D" parent="MenuUi/TemporalCharacterLayer/PresentRegion/Figure/Float" unique_id=458720556]
+texture_filter = 1
+material = SubResource("Material_present_outline")
+scale = Vector2(4, 4)
+sprite_frames = ExtResource("10_outline_frames")
+animation = &"idle"
+autoplay = "idle"
+
+[node name="FutureRegion" type="Control" parent="MenuUi/TemporalCharacterLayer" unique_id=1202038038]
+layout_mode = 1
+anchor_left = 0.666667
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Figure" type="Control" parent="MenuUi/TemporalCharacterLayer/FutureRegion" unique_id=1485604567]
+layout_mode = 1
+anchor_left = 0.5
+anchor_top = 0.54
+anchor_right = 0.5
+anchor_bottom = 0.54
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Float" type="Node2D" parent="MenuUi/TemporalCharacterLayer/FutureRegion/Figure" unique_id=1175819475]
+
+[node name="TransitionHalo" type="Sprite2D" parent="MenuUi/TemporalCharacterLayer/FutureRegion/Figure/Float" unique_id=1718986606]
+visible = false
+modulate = Color(1, 0.7, 0.2, 0)
+texture_filter = 1
+texture = ExtResource("12_transition_ring")
+
+[node name="PredictionGhost" type="AnimatedSprite2D" parent="MenuUi/TemporalCharacterLayer/FutureRegion/Figure/Float"]
+position = Vector2(8, 0)
+self_modulate = Color(1, 0.64, 0.1, 0.3)
+texture_filter = 1
+scale = Vector2(4, 4)
+sprite_frames = ExtResource("9_character_frames")
+animation = &"idle"
+autoplay = "idle"
+
+[node name="Core" type="AnimatedSprite2D" parent="MenuUi/TemporalCharacterLayer/FutureRegion/Figure/Float" unique_id=412221389]
+self_modulate = Color(1, 0.74, 0.24, 0.86)
+texture_filter = 1
+scale = Vector2(4, 4)
+sprite_frames = ExtResource("9_character_frames")
+animation = &"idle"
+autoplay = "idle"
+
+[node name="Outline" type="AnimatedSprite2D" parent="MenuUi/TemporalCharacterLayer/FutureRegion/Figure/Float" unique_id=170034899]
+texture_filter = 1
+material = SubResource("Material_future_outline")
+scale = Vector2(4, 4)
+sprite_frames = ExtResource("10_outline_frames")
+animation = &"idle"
+autoplay = "idle"
+
+[node name="OuterOutline" type="AnimatedSprite2D" parent="MenuUi/TemporalCharacterLayer/FutureRegion/Figure/Float"]
+texture_filter = 1
+material = SubResource("Material_future_outer_outline")
+scale = Vector2(4.55, 4.55)
+sprite_frames = ExtResource("10_outline_frames")
+animation = &"idle"
+autoplay = "idle"
+
+[node name="TemporalFrame" type="Control" parent="MenuUi"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Glow" type="Control" parent="MenuUi/TemporalFrame"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="TopPast" type="ColorRect" parent="MenuUi/TemporalFrame/Glow"]
+material = SubResource("Material_menu_top_glow")
+layout_mode = 1
+anchor_right = 0.333333
+offset_bottom = 8.0
+grow_horizontal = 2
+mouse_filter = 2
+color = Color(1, 0.24, 0.82, 0.48)
+
+[node name="TopPresent" type="ColorRect" parent="MenuUi/TemporalFrame/Glow"]
+material = SubResource("Material_menu_top_glow")
+layout_mode = 1
+anchor_left = 0.333333
+anchor_right = 0.666667
+offset_bottom = 8.0
+grow_horizontal = 2
+mouse_filter = 2
+color = Color(0.7, 1, 1, 0.48)
+
+[node name="TopFuture" type="ColorRect" parent="MenuUi/TemporalFrame/Glow"]
+material = SubResource("Material_menu_top_glow")
+layout_mode = 1
+anchor_left = 0.666667
+anchor_right = 1.0
+offset_bottom = 8.0
+grow_horizontal = 2
+mouse_filter = 2
+color = Color(1, 0.7, 0.2, 0.48)
+
+[node name="BottomPast" type="ColorRect" parent="MenuUi/TemporalFrame/Glow"]
+material = SubResource("Material_menu_bottom_glow")
+layout_mode = 1
+anchor_top = 1.0
+anchor_right = 0.333333
+anchor_bottom = 1.0
+offset_top = -8.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 2
+color = Color(1, 0.24, 0.82, 0.48)
+
+[node name="BottomPresent" type="ColorRect" parent="MenuUi/TemporalFrame/Glow"]
+material = SubResource("Material_menu_bottom_glow")
+layout_mode = 1
+anchor_left = 0.333333
+anchor_top = 1.0
+anchor_right = 0.666667
+anchor_bottom = 1.0
+offset_top = -8.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 2
+color = Color(0.7, 1, 1, 0.48)
+
+[node name="BottomFuture" type="ColorRect" parent="MenuUi/TemporalFrame/Glow"]
+material = SubResource("Material_menu_bottom_glow")
+layout_mode = 1
+anchor_left = 0.666667
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -8.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 2
+color = Color(1, 0.7, 0.2, 0.48)
+
+[node name="Lines" type="Control" parent="MenuUi/TemporalFrame"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="TopPast" type="ColorRect" parent="MenuUi/TemporalFrame/Lines"]
+layout_mode = 1
+anchor_right = 0.333333
+offset_bottom = 2.0
+grow_horizontal = 2
+mouse_filter = 2
+color = Color(1, 0.24, 0.82, 0.96)
+
+[node name="TopPresent" type="ColorRect" parent="MenuUi/TemporalFrame/Lines"]
+layout_mode = 1
+anchor_left = 0.333333
+anchor_right = 0.666667
+offset_bottom = 2.0
+grow_horizontal = 2
+mouse_filter = 2
+color = Color(0.7, 1, 1, 0.96)
+
+[node name="TopFuture" type="ColorRect" parent="MenuUi/TemporalFrame/Lines"]
+layout_mode = 1
+anchor_left = 0.666667
+anchor_right = 1.0
+offset_bottom = 2.0
+grow_horizontal = 2
+mouse_filter = 2
+color = Color(1, 0.7, 0.2, 0.96)
+
+[node name="BottomPast" type="ColorRect" parent="MenuUi/TemporalFrame/Lines"]
+layout_mode = 1
+anchor_top = 1.0
+anchor_right = 0.333333
+anchor_bottom = 1.0
+offset_top = -2.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 2
+color = Color(1, 0.24, 0.82, 0.96)
+
+[node name="BottomPresent" type="ColorRect" parent="MenuUi/TemporalFrame/Lines"]
+layout_mode = 1
+anchor_left = 0.333333
+anchor_top = 1.0
+anchor_right = 0.666667
+anchor_bottom = 1.0
+offset_top = -2.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 2
+color = Color(0.7, 1, 1, 0.96)
+
+[node name="BottomFuture" type="ColorRect" parent="MenuUi/TemporalFrame/Lines"]
+layout_mode = 1
+anchor_left = 0.666667
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -2.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 2
+color = Color(1, 0.7, 0.2, 0.96)
+
+[node name="ButtonLayer" type="Control" parent="MenuUi" unique_id=2020807709]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("7_theme")
+
+[node name="TitleReveal" type="Control" parent="MenuUi/ButtonLayer" unique_id=1129034817]
+clip_contents = true
+layout_mode = 1
+anchor_left = 0.065
+anchor_top = 0.08
+anchor_right = 0.79
+anchor_bottom = 0.22
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Title" type="Label" parent="MenuUi/ButtonLayer/TitleReveal" unique_id=2035159257]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(0.98, 0.98, 0.94, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 74
+text = "GAME_TITLE"
+vertical_alignment = 1
+
+[node name="TitleLine" type="ColorRect" parent="MenuUi/ButtonLayer" unique_id=1523276786]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.068
+anchor_top = 0.215
+anchor_right = 0.34
+anchor_bottom = 0.218
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.96, 0.96, 0.92, 0.86)
+
+[node name="RouteNav" type="Control" parent="MenuUi/ButtonLayer" unique_id=19100841]
+layout_mode = 1
+anchor_left = 0.7
+anchor_top = 0.58
+anchor_right = 0.94
+anchor_bottom = 0.94
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="RouteLine" type="ColorRect" parent="MenuUi/ButtonLayer/RouteNav" unique_id=1412426438]
+layout_mode = 0
+offset_left = 9.0
+offset_top = 28.0
+offset_right = 11.0
+offset_bottom = 284.0
+mouse_filter = 2
+color = Color(0.86, 0.86, 0.82, 0.74)
+
+[node name="Marker1" type="ColorRect" parent="MenuUi/ButtonLayer/RouteNav" unique_id=479634922]
+layout_mode = 0
+offset_left = 6.0
+offset_top = 24.0
+offset_right = 14.0
+offset_bottom = 32.0
+mouse_filter = 2
+color = Color(0.96, 0.96, 0.92, 1)
+
+[node name="Marker2" type="ColorRect" parent="MenuUi/ButtonLayer/RouteNav" unique_id=983503419]
+layout_mode = 0
+offset_left = 6.0
+offset_top = 88.0
+offset_right = 14.0
+offset_bottom = 96.0
+mouse_filter = 2
+color = Color(0.96, 0.96, 0.92, 1)
+
+[node name="Marker3" type="ColorRect" parent="MenuUi/ButtonLayer/RouteNav" unique_id=1884627264]
+layout_mode = 0
+offset_left = 6.0
+offset_top = 152.0
+offset_right = 14.0
+offset_bottom = 160.0
+mouse_filter = 2
+color = Color(0.96, 0.96, 0.92, 1)
+
+[node name="Marker4" type="ColorRect" parent="MenuUi/ButtonLayer/RouteNav" unique_id=1988022431]
+layout_mode = 0
+offset_left = 6.0
+offset_top = 216.0
+offset_right = 14.0
+offset_bottom = 224.0
+mouse_filter = 2
+color = Color(0.96, 0.96, 0.92, 1)
+
+[node name="Marker5" type="ColorRect" parent="MenuUi/ButtonLayer/RouteNav" unique_id=1370142364]
+layout_mode = 0
+offset_left = 6.0
+offset_top = 280.0
+offset_right = 14.0
+offset_bottom = 288.0
+mouse_filter = 2
+color = Color(0.96, 0.96, 0.92, 1)
+
+[node name="MenuButtons" type="VBoxContainer" parent="MenuUi/ButtonLayer/RouteNav" unique_id=246253960]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 28.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 8
+
+[node name="StartButton" parent="MenuUi/ButtonLayer/RouteNav/MenuButtons" unique_id=1396341183 instance=ExtResource("2_button")]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 56)
+layout_mode = 2
+theme_override_font_sizes/font_size = 30
+text = "MENU_START"
+
+[node name="ContinueButton" parent="MenuUi/ButtonLayer/RouteNav/MenuButtons" unique_id=388408218 instance=ExtResource("2_button")]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 56)
+layout_mode = 2
+theme_override_font_sizes/font_size = 30
+text = "MENU_CONTINUE"
+
+[node name="SettingButton" parent="MenuUi/ButtonLayer/RouteNav/MenuButtons" unique_id=1950896670 instance=ExtResource("2_button")]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 56)
+layout_mode = 2
+theme_override_font_sizes/font_size = 30
+text = "MENU_SETTINGS"
+
+[node name="ThanksButton" parent="MenuUi/ButtonLayer/RouteNav/MenuButtons" unique_id=2124940100 instance=ExtResource("2_button")]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 56)
+layout_mode = 2
+theme_override_font_sizes/font_size = 30
+text = "MENU_CREDITS"
+
+[node name="ExitButton" parent="MenuUi/ButtonLayer/RouteNav/MenuButtons" unique_id=983195807 instance=ExtResource("2_button")]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 56)
+layout_mode = 2
+theme_override_font_sizes/font_size = 30
+text = "MENU_QUIT"
+
+[node name="StatusLabel" type="Label" parent="MenuUi/ButtonLayer/RouteNav" unique_id=910815655]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 28.0
+offset_top = 8.0
+offset_bottom = 40.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_colors/font_color = Color(0.72, 0.72, 0.69, 1)
+theme_override_font_sizes/font_size = 18
+
+[node name="MenuAnimationPlayer" type="AnimationPlayer" parent="MenuUi" unique_id=476074295]
+unique_name_in_owner = true
+libraries/ = SubResource("AnimationLibrary_menu")
+
+[node name="PhaseCycleAnimationPlayer" type="AnimationPlayer" parent="MenuUi" unique_id=1966694006]
+unique_name_in_owner = true
+libraries/ = SubResource("AnimationLibrary_idle")
+
+[node name="FrameAnimationPlayer" type="AnimationPlayer" parent="MenuUi"]
+unique_name_in_owner = true
+libraries/ = SubResource("AnimationLibrary_frame")
+
+[node name="TransitionAnimationPlayer" type="AnimationPlayer" parent="MenuUi" unique_id=217908985]
+unique_name_in_owner = true
+libraries/ = SubResource("AnimationLibrary_transition")
+
+[node name="SettingScreen" parent="MenuUi" unique_id=1801975981 instance=ExtResource("3_settings")]
 unique_name_in_owner = true
 visible = false
 layout_mode = 1
 color = Color(0, 0, 0, 0)
-modal_offset = Vector2(0, 0)
 
-[node name="ThankScreen" parent="." instance=ExtResource("5_thanks")]
+[node name="ThankScreen" parent="MenuUi" unique_id=685006015 instance=ExtResource("4_thanks")]
 unique_name_in_owner = true
 visible = false
 layout_mode = 1
-modal_offset = Vector2(0, 0)

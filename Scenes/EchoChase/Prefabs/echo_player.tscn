@@ -1,0 +1,204 @@
+[gd_scene format=3 uid="uid://dapi6xdedsy5h"]
+
+[ext_resource type="Script" uid="uid://c0hlsn3j5i3ev" path="res://Scripts/EchoChase/echo_player.gd" id="1_script"]
+[ext_resource type="SpriteFrames" uid="uid://c5fwtfmpwe8fq" path="res://assets/echo_chase/character/echo_character_frames.tres" id="2_frames"]
+[ext_resource type="SpriteFrames" uid="uid://da37aey76yc08" path="res://assets/echo_chase/character/echo_character_outline_frames.tres" id="3_outline_frames"]
+[ext_resource type="AudioStream" uid="uid://c0rg7q0il23jc" path="res://assets/echo_chase/audio/phaseJump2.ogg" id="4_dash_audio"]
+[ext_resource type="AudioStream" uid="uid://byjiljbkdsj4g" path="res://assets/echo_chase/audio/impactGeneric_light_001.ogg" id="5_land_audio"]
+[ext_resource type="Shader" uid="uid://ccnr3f2ov4cnc" path="res://assets/echo_chase/vfx/temporal_outline.gdshader" id="6_outline_shader"]
+[ext_resource type="PackedScene" path="res://Scenes/EchoChase/Prefabs/echo_dash_vfx.tscn" id="7_dash_vfx"]
+
+[sub_resource type="RectangleShape2D" id="Shape_player"]
+size = Vector2(10, 15)
+
+[sub_resource type="RectangleShape2D" id="Shape_hurtbox"]
+size = Vector2(9, 14)
+
+[sub_resource type="ShaderMaterial" id="Material_present_outline"]
+shader = ExtResource("6_outline_shader")
+shader_parameter/temporal_color = Color(0.7, 1, 1, 1)
+shader_parameter/outline_alpha = 1.0
+shader_parameter/fill_alpha = 0.06
+
+[sub_resource type="ShaderMaterial" id="Material_recording_outline"]
+shader = ExtResource("6_outline_shader")
+shader_parameter/temporal_color = Color(1, 0.7, 0.2, 1)
+shader_parameter/outline_alpha = 1.0
+shader_parameter/fill_alpha = 0.08
+
+[sub_resource type="Animation" id="Animation_recording_inactive"]
+resource_name = "inactive"
+length = 0.05
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("RecordingOutline:visible")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [false]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("RecordingOutline:scale")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [Vector2(1, 1)]
+}
+
+[sub_resource type="Animation" id="Animation_recording"]
+resource_name = "recording"
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("RecordingOutline:visible")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [true]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("RecordingOutline:scale")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.5, 1),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Vector2(1, 1), Vector2(1.16, 1.16), Vector2(1, 1)]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("RecordingOutline:modulate")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0, 0.5, 1),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Color(1, 1, 1, 0.58), Color(1, 1, 1, 1), Color(1, 1, 1, 0.58)]
+}
+
+[sub_resource type="Animation" id="Animation_recording_reduced"]
+resource_name = "recording_reduced"
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("RecordingOutline:visible")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [true]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("RecordingOutline:scale")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [Vector2(1.06, 1.06)]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("RecordingOutline:modulate")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [Color(1, 1, 1, 0.8)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_recording"]
+_data = {
+&"inactive": SubResource("Animation_recording_inactive"),
+&"recording": SubResource("Animation_recording"),
+&"recording_reduced": SubResource("Animation_recording_reduced")
+}
+
+[node name="EchoPlayer" type="CharacterBody2D" unique_id=1546555397]
+collision_layer = 2
+script = ExtResource("1_script")
+dash_speed = 400.0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1525065100]
+unique_name_in_owner = true
+shape = SubResource("Shape_player")
+
+[node name="Hurtbox" type="Area2D" parent="." unique_id=1431495591]
+unique_name_in_owner = true
+collision_layer = 0
+collision_mask = 32
+monitorable = false
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Hurtbox" unique_id=742496039]
+shape = SubResource("Shape_hurtbox")
+
+[node name="CameraArea2D" type="Area2D" parent="." unique_id=1431495592]
+collision_layer = 2
+collision_mask = 0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="CameraArea2D" unique_id=742496040]
+shape = SubResource("Shape_hurtbox")
+
+[node name="TemporalOutline" type="AnimatedSprite2D" parent="." unique_id=565748602]
+unique_name_in_owner = true
+material = SubResource("Material_present_outline")
+sprite_frames = ExtResource("3_outline_frames")
+animation = &"idle"
+autoplay = "idle"
+
+[node name="Visual" type="AnimatedSprite2D" parent="." unique_id=1592314738]
+unique_name_in_owner = true
+sprite_frames = ExtResource("2_frames")
+animation = &"idle"
+autoplay = "idle"
+
+[node name="RecordingOutline" type="AnimatedSprite2D" parent="." unique_id=1116180201]
+unique_name_in_owner = true
+visible = false
+material = SubResource("Material_recording_outline")
+sprite_frames = ExtResource("3_outline_frames")
+animation = &"idle"
+
+[node name="RecordingAnimationPlayer" type="AnimationPlayer" parent="." unique_id=1967275341]
+unique_name_in_owner = true
+libraries/ = SubResource("AnimationLibrary_recording")
+
+[node name="DashVfx" parent="." unique_id=1103446558 instance=ExtResource("7_dash_vfx")]
+unique_name_in_owner = true
+
+[node name="DashAudio" type="AudioStreamPlayer2D" parent="." unique_id=1908060336]
+stream = ExtResource("4_dash_audio")
+volume_db = -5.0
+bus = &"SFX"
+
+[node name="LandAudio" type="AudioStreamPlayer2D" parent="." unique_id=1426816605]
+stream = ExtResource("5_land_audio")
+volume_db = -8.0
+bus = &"SFX"
