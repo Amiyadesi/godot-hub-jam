@@ -144,6 +144,11 @@ _data = {
 [node name="EchoPlayer" type="CharacterBody2D" unique_id=1546555397]
 collision_layer = 2
 script = ExtResource("1_script")
+run_speed = 125.0
+run_acceleration = 2048.0
+jump_speed = 200.0
+wall_slide_speed = 50.0
+wall_jump_speed_x = 160.0
 dash_speed = 400.0
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1525065100]

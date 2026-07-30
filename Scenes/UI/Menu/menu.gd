@@ -13,7 +13,6 @@ const ENTRY_STATE_PRESENT := &"present"
 const ENTRY_STATE_PAST := &"past"
 const MENU_INTRO := &"menu_enter"
 const MENU_INTRO_REDUCED := &"menu_enter_reduced"
-const MENU_IDLE := &"menu_idle"
 const WORLD_INTRO := &"world_enter"
 const WORLD_INTRO_REDUCED := &"world_enter_reduced"
 const WORLD_IDLE := &"world_idle"
@@ -41,9 +40,7 @@ const BACKGROUND_FOLLOW_SPEED := 7.0
 @onready var thank_screen: ThankScreen = %ThankScreen
 @onready var status_label: Label = %StatusLabel
 @onready var menu_animation_player: AnimationPlayer = %MenuAnimationPlayer
-@onready var phase_cycle_animation_player: AnimationPlayer = %PhaseCycleAnimationPlayer
 @onready var frame_animation_player: AnimationPlayer = %FrameAnimationPlayer
-@onready var transition_animation_player: AnimationPlayer = %TransitionAnimationPlayer
 @onready var world_parallax: Node2D = $MenuWorld/WorldParallax
 @onready var world_animation_player: AnimationPlayer = $MenuWorld/WorldAnimationPlayer
 

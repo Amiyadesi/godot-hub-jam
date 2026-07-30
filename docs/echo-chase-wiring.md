@@ -142,6 +142,4 @@ timeline.reset_timeline(saved_past_delay_seconds, saved_delay_switch_id)
 
 在每一步都从干净检查点重试。若路径回放不对，先检查 Timeline/Player 的 Inspector 引用和关卡的 `World` 碰撞层，不要通过修改路径算法或动态复制节点掩盖场景错误。
 
-## 自动测试夹具
-
-`Tests/EchoChase/fixtures/echo_timeline_fixture.tscn` 是最小 authored 测试场景，包含 Timeline、Player、记录器、拾取物、压力板与门。它不是可交付关卡，也不应被当作起始场景或地图模板。
+原型阶段只保留路径插值与回传断点两项算法检查。不要添加把节点层级、Prefab 数量、资源路径、颜色、动画时长、房间坐标或 Inspector 参数锁死的测试；这些内容以作者当前的场景与 Inspector 调整为准。

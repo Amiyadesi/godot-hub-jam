@@ -5,7 +5,7 @@
 ## 作者权边界
 
 - 用户负责正式地图、路线、机关位置、出口、最终 Phantom Camera 房间参数、角色成稿和最终试玩删改。
-- Agent 可以负责脚本、prefab wiring、自动测试、资源替换接口和 debug。
+- Agent 可以负责脚本、prefab wiring、资源替换接口和 debug。
 - 未经用户提供或明确确认灰盒，不新增房间、关卡路线、Boss、背景叙事或替代地图。
 
 ## 当前施工入口
@@ -51,7 +51,7 @@ EchoChaseStart
 - 玩家、过去体和未来体的 `Visual` 都是无材质 `AnimatedSprite2D`；洋红、青白、琥珀仅由独立 Outline/Halo 层表达。
 - 平台使用 `assets/echo_chase/tilemap/echo_platform_tileset.tres`，逻辑格为 `16x16`。
 - checkpoint 临时图来自同一 Kenney atlas 的 `(7,2)`。
-- 菜单地图与三时态剪影位于 `MenuWorld`，由 `WorldCamera` 产生轻微世界视差；标题、按钮、设置、感谢和转场位于固定 `MenuUi`。
+- 菜单地图与三时态剪影只存在于 `MenuWorld/WorldParallax`，由 `WorldCamera` 产生轻微世界视差；标题、按钮、设置、感谢、转场和 `TemporalFrame` 位于固定 `MenuUi`。改地图、道路、剪影或其动画时只编辑 `menu_world.tscn`；不得在 `menu.tscn` 重建副本。
 - 音效节点已 authored：玩家冲刺/落地、过去体出现、失败复位、checkpoint 激活。
 - 菜单音乐为 Frenchyboy 的 CC0 `Mysterious2.wav` 转码版本：`assets/echo_chase/audio/music/mysterious_futuristic_loop.ogg`；来源与 SHA256 见 `docs/asset-attributions.md`。
 - Past/Future prefab 的 `OutlineVisual`、`PixelBurst`、`VfxAnimationPlayer`、`DepartureVfx` 是 authored 合同；`DepartureVfx` 是 `top_level` 旧位置快照，主体移动或槽位复用都不能带走它。
@@ -98,6 +98,8 @@ $env:APPDATA = Join-Path $env:TEMP 'echo-chase-test-appdata'
 & $godot --headless --path . --scene res://Tests/EchoChase/run_tests.tscn
 & $godot --headless --path . --scene res://Scenes/EchoChase/echo_chase_start.tscn --quit-after 5
 ```
+
+原型阶段的测试只验证路径插值与回传断点。不要添加把节点层级、Prefab 数量、资源路径、颜色、动画时长、房间坐标或 Inspector 参数锁死的测试；这些内容以作者当前的场景与 Inspector 调整为准。
 
 人工只检查 `1920x1080` 与同比例 `1280x720`。不做超宽屏批量截图。
 
