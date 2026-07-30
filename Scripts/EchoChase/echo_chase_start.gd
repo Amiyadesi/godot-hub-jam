@@ -12,11 +12,8 @@ const ENTRY_STATE_PAST := &"past"
 @export_file("*.tscn") var checkpoint_scene_path := ""
 @export_file("*.tscn") var menu_scene_path := ""
 @export var player: EchoPlayer
-@export var timeline: EchoTimelineController
 @export var gameplay_world: Node2D
 @export var spawn_point: Marker2D
-@export var checkpoint_paths: Array[NodePath] = []
-@export var delay_switch_paths: Array[NodePath] = []
 @export var fall_reset_area: Area2D
 @export var pause_screen: PauseScreen
 @export var setting_screen: SettingScreen
@@ -28,27 +25,16 @@ var _checkpoints: Array[EchoCheckpoint] = []
 var _delay_switches: Array[DelayPickup] = []
 var _default_delay_switch: DelayPickup
 var _respawn_position := Vector2.ZERO
-var _respawn_past_delay_seconds := EchoTimelineController.DEFAULT_PAST_DELAY
-var _respawn_delay_switch_id := EchoTimelineController.DEFAULT_DELAY_SWITCH_ID
+var _respawn_past_delay_seconds := EchoTimeline.DEFAULT_PAST_DELAY
+var _respawn_delay_switch_id := EchoTimeline.DEFAULT_DELAY_SWITCH_ID
 var _reset_in_progress := false
 var _entry_intro_active := false
 var _entry_tween: Tween
 
 
-# 校验全部 authored 引用，并接通存档、失败和暂停信号。
+# 收集当前场景实际摆放的机关，并接通存档、失败和暂停信号。
 func _ready() -> void:
-	assert(not checkpoint_scene_path.is_empty(), "EchoChaseStart requires checkpoint_scene_path")
-	assert(not menu_scene_path.is_empty(), "EchoChaseStart requires menu_scene_path")
-	assert(player != null, "EchoChaseStart requires an authored EchoPlayer reference")
-	assert(timeline != null, "EchoChaseStart requires an authored EchoTimelineController reference")
-	assert(gameplay_world != null, "EchoChaseStart requires an authored gameplay world reference")
-	assert(spawn_point != null, "EchoChaseStart requires an authored SpawnPoint reference")
-	assert(fall_reset_area != null, "EchoChaseStart requires an authored FallResetArea reference")
-	assert(pause_screen != null, "EchoChaseStart requires an authored PauseScreen reference")
-	assert(setting_screen != null, "EchoChaseStart requires an authored SettingScreen reference")
-	assert(reset_audio != null, "EchoChaseStart requires an authored reset audio reference")
-	assert(present_entry_transition != null, "EchoChaseStart requires an authored present entry transition")
-	assert(past_entry_transition != null, "EchoChaseStart requires an authored past entry transition")
+	EchoTimeline.set_gameplay_active(false)
 	_resolve_checkpoints()
 	_resolve_delay_switches()
 	_connect_gameplay_signals()
@@ -86,42 +72,27 @@ func skip_entry_intro() -> void:
 		_finish_entry_intro()
 
 
-# 将 Inspector 中的存档点路径解析为固定实例并拒绝空或重复 ID。
+# 收集当前玩法世界内实际摆放的存档点，不依赖固定层级或数量。
 func _resolve_checkpoints() -> void:
-	assert(not checkpoint_paths.is_empty(), "EchoChaseStart requires at least one authored checkpoint")
-	var checkpoint_ids := {}
-	for checkpoint_path in checkpoint_paths:
-		var checkpoint := get_node(checkpoint_path) as EchoCheckpoint
-		assert(checkpoint != null, "EchoChaseStart checkpoint path must reference EchoCheckpoint")
-		var checkpoint_id := String(checkpoint.get_checkpoint_id())
-		assert(not checkpoint_id.is_empty(), "EchoChaseStart checkpoint id cannot be empty")
-		assert(not checkpoint_ids.has(checkpoint_id), "EchoChaseStart checkpoint ids must be unique")
-		checkpoint_ids[checkpoint_id] = true
-		_checkpoints.append(checkpoint)
+	_checkpoints.clear()
+	for node in gameplay_world.find_children("*", "EchoCheckpoint", true, false):
+		_checkpoints.append(node as EchoCheckpoint)
 
 
-# 解析延迟台并拒绝重复 ID 或缺失的唯一3秒默认台。
+# 收集当前玩法世界内实际摆放的延迟台；未摆默认台时仍从标准三秒开始。
 func _resolve_delay_switches() -> void:
-	assert(not delay_switch_paths.is_empty(), "EchoChaseStart requires authored delay switches")
-	var switch_ids := {}
-	for switch_path in delay_switch_paths:
-		var delay_switch := get_node(switch_path) as DelayPickup
-		assert(delay_switch != null, "EchoChaseStart delay switch path must reference DelayPickup")
-		var switch_id := String(delay_switch.get_delay_switch_id())
-		assert(not switch_id.is_empty(), "EchoChaseStart delay switch id cannot be empty")
-		assert(not switch_ids.has(switch_id), "EchoChaseStart delay switch ids must be unique")
-		switch_ids[switch_id] = true
+	_delay_switches.clear()
+	_default_delay_switch = null
+	for node in gameplay_world.find_children("*", "DelayPickup", true, false):
+		var delay_switch := node as DelayPickup
 		_delay_switches.append(delay_switch)
-		if delay_switch.default_active:
-			assert(_default_delay_switch == null, "EchoChaseStart requires exactly one default delay switch")
+		if delay_switch.default_active and _default_delay_switch == null:
 			_default_delay_switch = delay_switch
-	assert(_default_delay_switch != null, "EchoChaseStart requires one default delay switch")
-	assert(_default_delay_switch.delay_seconds == 3, "EchoChaseStart default delay switch must be 3 seconds")
 
 
 # 连接场景内唯一的玩家失败、出界和 checkpoint 请求。
 func _connect_gameplay_signals() -> void:
-	timeline.player_caught.connect(_on_player_caught)
+	EchoTimeline.player_caught.connect(_on_player_caught)
 	player.failure_requested.connect(_on_player_failure_requested)
 	fall_reset_area.body_entered.connect(_on_fall_reset_body_entered)
 	for checkpoint in _checkpoints:
@@ -142,19 +113,22 @@ func _configure_ui() -> void:
 # 新游戏使用默认3秒台；Continue 恢复坐标、延迟台和干净时间线。
 func _restore_entry_position() -> void:
 	_respawn_position = spawn_point.global_position
-	_respawn_past_delay_seconds = float(_default_delay_switch.delay_seconds)
-	_respawn_delay_switch_id = _default_delay_switch.get_delay_switch_id()
+	_respawn_past_delay_seconds = EchoTimeline.DEFAULT_PAST_DELAY
+	_respawn_delay_switch_id = EchoTimeline.DEFAULT_DELAY_SWITCH_ID
+	if _default_delay_switch != null:
+		_respawn_past_delay_seconds = float(_default_delay_switch.delay_seconds)
+		_respawn_delay_switch_id = _default_delay_switch.get_delay_switch_id()
 	var checkpoint := LevelModule.instance.get_checkpoint() if LevelModule.instance != null else {}
 	if checkpoint.is_empty() or checkpoint.get("scene_path", "") != checkpoint_scene_path:
 		player.reset_player(_respawn_position)
-		timeline.reset_timeline(_respawn_past_delay_seconds, _respawn_delay_switch_id)
+		EchoTimeline.reset_timeline(_respawn_past_delay_seconds, _respawn_delay_switch_id)
 		return
 	var checkpoint_id := String(checkpoint.get("checkpoint_id", ""))
 	var active_checkpoint := _get_checkpoint(checkpoint_id)
 	if active_checkpoint == null:
 		push_error("EchoChaseStart cannot restore unknown checkpoint '%s'" % checkpoint_id)
 		player.reset_player(_respawn_position)
-		timeline.reset_timeline(_respawn_past_delay_seconds, _respawn_delay_switch_id)
+		EchoTimeline.reset_timeline(_respawn_past_delay_seconds, _respawn_delay_switch_id)
 		return
 	var saved_switch_id := StringName(str(checkpoint.get("delay_switch_id", "")))
 	var saved_delay := float(checkpoint.get("past_delay_seconds", 0.0))
@@ -163,14 +137,14 @@ func _restore_entry_position() -> void:
 		push_error("EchoChaseStart cannot restore invalid delay switch '%s'" % saved_switch_id)
 		LevelModule.instance.clear_checkpoint()
 		player.reset_player(_respawn_position)
-		timeline.reset_timeline(_respawn_past_delay_seconds, _respawn_delay_switch_id)
+		EchoTimeline.reset_timeline(_respawn_past_delay_seconds, _respawn_delay_switch_id)
 		return
 	_respawn_position = checkpoint.get("position", active_checkpoint.get_respawn_position()) as Vector2
 	_respawn_past_delay_seconds = saved_delay
 	_respawn_delay_switch_id = saved_switch_id
 	active_checkpoint.set_active(true, false)
 	player.reset_player(_respawn_position)
-	timeline.reset_timeline(_respawn_past_delay_seconds, _respawn_delay_switch_id)
+	EchoTimeline.reset_timeline(_respawn_past_delay_seconds, _respawn_delay_switch_id)
 
 
 # 复用菜单满屏时态色淡入，并冻结整个 authored 玩法世界。
@@ -197,6 +171,7 @@ func _finish_entry_intro() -> void:
 	_entry_tween = null
 	SceneManager.transition_clear()
 	gameplay_world.process_mode = Node.PROCESS_MODE_PAUSABLE
+	EchoTimeline.set_gameplay_active(true)
 	_entry_intro_active = false
 
 
@@ -229,13 +204,13 @@ func _get_delay_switch(switch_id: StringName) -> DelayPickup:
 
 # 激活最新复活点并写入槽位，不改动当前时间线。
 func _on_checkpoint_activation_requested(checkpoint: EchoCheckpoint) -> void:
-	if timeline.is_future_recording():
+	if EchoTimeline.is_future_recording():
 		return
 	for authored_checkpoint in _checkpoints:
 		authored_checkpoint.set_active(authored_checkpoint == checkpoint, authored_checkpoint == checkpoint)
 	_respawn_position = checkpoint.get_respawn_position()
-	_respawn_past_delay_seconds = timeline.get_selected_past_delay_seconds()
-	_respawn_delay_switch_id = timeline.get_selected_delay_switch_id()
+	_respawn_past_delay_seconds = EchoTimeline.get_selected_past_delay_seconds()
+	_respawn_delay_switch_id = EchoTimeline.get_selected_delay_switch_id()
 	LevelModule.instance.set_checkpoint(
 		checkpoint_scene_path,
 		String(checkpoint.get_checkpoint_id()),
@@ -268,11 +243,13 @@ func _begin_failure_reset(animation_name: StringName) -> void:
 	if _reset_in_progress:
 		return
 	_reset_in_progress = true
+	EchoTimeline.set_gameplay_active(false)
 	player.prepare_for_reset(animation_name)
 	reset_audio.play()
 	await get_tree().create_timer(RESET_DELAY_SECONDS).timeout
 	player.reset_player(_respawn_position)
-	timeline.reset_timeline(_respawn_past_delay_seconds, _respawn_delay_switch_id)
+	EchoTimeline.reset_timeline(_respawn_past_delay_seconds, _respawn_delay_switch_id)
+	EchoTimeline.set_gameplay_active(true)
 	_reset_in_progress = false
 	reset_completed.emit(_respawn_position)
 
@@ -299,7 +276,8 @@ func _restart_from_pause() -> void:
 		await tween.finished
 	get_tree().paused = false
 	player.reset_player(_respawn_position)
-	timeline.reset_timeline(_respawn_past_delay_seconds, _respawn_delay_switch_id)
+	EchoTimeline.reset_timeline(_respawn_past_delay_seconds, _respawn_delay_switch_id)
+	EchoTimeline.set_gameplay_active(true)
 
 
 # 从暂停页进入设置页，整个往返过程保持游戏暂停。
@@ -321,4 +299,5 @@ func _on_settings_return_completed() -> void:
 # 退出玩法前解除暂停并返回 authored 主菜单场景。
 func _return_to_menu() -> void:
 	get_tree().paused = false
+	EchoTimeline.set_gameplay_active(false)
 	SceneManager.change_scene_to_file(menu_scene_path)

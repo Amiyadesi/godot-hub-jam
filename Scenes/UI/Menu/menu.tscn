@@ -1101,6 +1101,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+theme = ExtResource("7_theme")
 
 [node name="TitleReveal" type="Control" parent="MenuUi/ButtonLayer" unique_id=1129034817]
 clip_contents = true
@@ -1124,7 +1125,7 @@ theme_override_colors/font_color = Color(0.98, 0.98, 0.94, 1)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_constants/outline_size = 4
 theme_override_font_sizes/font_size = 74
-text = "延迟追迹 / DELAY TRACE"
+text = "GAME_TITLE"
 vertical_alignment = 1
 
 [node name="TitleLine" type="ColorRect" parent="MenuUi/ButtonLayer" unique_id=1523276786]
@@ -1217,35 +1218,35 @@ unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 56)
 layout_mode = 2
 theme_override_font_sizes/font_size = 30
-text = "开始游戏"
+text = "MENU_START"
 
 [node name="ContinueButton" parent="MenuUi/ButtonLayer/RouteNav/MenuButtons" unique_id=388408218 instance=ExtResource("2_button")]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 56)
 layout_mode = 2
 theme_override_font_sizes/font_size = 30
-text = "继续游戏"
+text = "MENU_CONTINUE"
 
 [node name="SettingButton" parent="MenuUi/ButtonLayer/RouteNav/MenuButtons" unique_id=1950896670 instance=ExtResource("2_button")]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 56)
 layout_mode = 2
 theme_override_font_sizes/font_size = 30
-text = "设置"
+text = "MENU_SETTINGS"
 
 [node name="ThanksButton" parent="MenuUi/ButtonLayer/RouteNav/MenuButtons" unique_id=2124940100 instance=ExtResource("2_button")]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 56)
 layout_mode = 2
 theme_override_font_sizes/font_size = 30
-text = "感谢"
+text = "MENU_CREDITS"
 
 [node name="ExitButton" parent="MenuUi/ButtonLayer/RouteNav/MenuButtons" unique_id=983195807 instance=ExtResource("2_button")]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 56)
 layout_mode = 2
 theme_override_font_sizes/font_size = 30
-text = "退出"
+text = "MENU_QUIT"
 
 [node name="StatusLabel" type="Label" parent="MenuUi/ButtonLayer/RouteNav" unique_id=910815655]
 unique_name_in_owner = true

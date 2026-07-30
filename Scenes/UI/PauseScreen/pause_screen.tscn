@@ -52,7 +52,7 @@ anchor_bottom = 0.2
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_font_sizes/font_size = 50
-text = "暂停"
+text = "PAUSE_TITLE"
 vertical_alignment = 1
 
 [node name="RouteLine" type="ColorRect" parent="PanelRoot"]
@@ -81,14 +81,14 @@ unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 56)
 layout_mode = 2
 theme_override_font_sizes/font_size = 28
-text = "继续游戏"
+text = "PAUSE_CONTINUE"
 
 [node name="RestartButton" parent="PanelRoot/ButtonBox" instance=ExtResource("2_button")]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 56)
 layout_mode = 2
 theme_override_font_sizes/font_size = 28
-text = "重开本关"
+text = "PAUSE_RESTART"
 
 [node name="HintButton" parent="PanelRoot/ButtonBox" instance=ExtResource("2_button")]
 unique_name_in_owner = true
@@ -96,18 +96,18 @@ visible = false
 custom_minimum_size = Vector2(0, 56)
 layout_mode = 2
 theme_override_font_sizes/font_size = 28
-text = "查看提示"
+text = "PAUSE_HINT"
 
 [node name="SettingButton" parent="PanelRoot/ButtonBox" instance=ExtResource("2_button")]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 56)
 layout_mode = 2
 theme_override_font_sizes/font_size = 28
-text = "设置"
+text = "MENU_SETTINGS"
 
 [node name="QuitButton" parent="PanelRoot/ButtonBox" instance=ExtResource("2_button")]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 56)
 layout_mode = 2
 theme_override_font_sizes/font_size = 28
-text = "返回主菜单"
+text = "PAUSE_MAIN_MENU"

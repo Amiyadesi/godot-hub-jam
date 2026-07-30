@@ -16,7 +16,6 @@ var _active := false
 
 # 校验 authored ID，并监听玩家触碰。
 func _ready() -> void:
-	assert(not checkpoint_id.is_empty(), "EchoCheckpoint requires a non-empty authored checkpoint_id")
 	body_entered.connect(_on_body_entered)
 	if SettingsModule.instance != null:
 		SettingsModule.instance.settings_changed.connect(_on_setting_changed)

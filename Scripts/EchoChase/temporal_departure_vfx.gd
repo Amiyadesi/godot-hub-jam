@@ -36,7 +36,6 @@ func play_from_sprite(source: AnimatedSprite2D, velocity: Vector2) -> void:
 
 # 同时复制 Core 与 Outline，让退场仍保留完整角色轮廓和内部像素。
 func play_from_sprites(core: AnimatedSprite2D, outline: AnimatedSprite2D, velocity: Vector2) -> void:
-	assert(core != null, "TemporalDepartureVfx requires an AnimatedSprite2D core")
 	global_position = core.global_position
 	global_rotation = core.global_rotation
 	_copy_sprite_frame(core_snapshot, core)
@@ -107,9 +106,7 @@ func _on_setting_changed(key: String, _value: Variant) -> void:
 # 将 AnimatedSprite2D 当前帧复制到独立快照节点。
 func _copy_sprite_frame(target: Sprite2D, source: AnimatedSprite2D) -> void:
 	var frames := source.sprite_frames
-	assert(frames != null, "TemporalDepartureVfx source requires SpriteFrames")
 	var frame_texture := frames.get_frame_texture(source.animation, source.frame)
-	assert(frame_texture != null, "TemporalDepartureVfx source frame requires a texture")
 	target.texture = frame_texture
 	target.material = source.material
 	target.flip_h = source.flip_h

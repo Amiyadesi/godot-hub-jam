@@ -3,14 +3,14 @@ extends VBoxContainer
 ## 由全局输入存档模块驱动的固定 authored 键位行。
 
 const ACTION_LABELS := {
-	&"echo_move_left": "向左",
-	&"echo_move_right": "向右",
-	&"echo_move_up": "向上",
-	&"echo_move_down": "向下",
-	&"echo_dash": "冲刺",
-	&"echo_jump": "跳跃",
-	&"echo_recall": "结束录制 / 回传",
-	&"pause": "暂停",
+	&"echo_move_left": "INPUT_MOVE_LEFT",
+	&"echo_move_right": "INPUT_MOVE_RIGHT",
+	&"echo_move_up": "INPUT_MOVE_UP",
+	&"echo_move_down": "INPUT_MOVE_DOWN",
+	&"echo_dash": "INPUT_DASH",
+	&"echo_jump": "INPUT_JUMP",
+	&"echo_recall": "INPUT_RECALL",
+	&"pause": "INPUT_PAUSE",
 }
 
 @onready var move_left_button: Button = %MoveLeftButton
@@ -41,6 +41,8 @@ func _ready() -> void:
 	capture_dialog.capture_cancelled.connect(_on_capture_cancelled)
 	if KeybindingModule.instance != null:
 		KeybindingModule.instance.bindings_changed.connect(refresh_all)
+	if SettingsModule.instance != null:
+		SettingsModule.instance.settings_changed.connect(_on_setting_changed)
 	refresh_all()
 
 
@@ -70,7 +72,7 @@ func _connect_binding_button(button: Button, action: StringName) -> void:
 func _open_capture(action: StringName, button: Button) -> void:
 	_capture_action = action
 	_capture_button = button
-	capture_dialog.open_for(String(action), String(ACTION_LABELS[action]), false)
+	capture_dialog.open_for(String(action), tr(ACTION_LABELS[action]), false)
 
 
 # 捕获成功后替换主事件并持久化。
@@ -91,12 +93,18 @@ func _on_capture_cancelled(_action: String) -> void:
 
 # 为固定 authored 行格式化当前主绑定。
 func _refresh_button(button: Button, action: StringName) -> void:
-	var binding_text := "未绑定"
+	var binding_text := tr("INPUT_UNBOUND")
 	if KeybindingModule.instance != null:
 		var events := KeybindingModule.instance.get_action_events(String(action))
 		if not events.is_empty():
 			binding_text = ResourceSerializer.event_to_display_string(events[0])
 	button.text = binding_text
+
+
+# 语言切换后刷新动态按键名和捕获弹窗的动作文字。
+func _on_setting_changed(key: String, _value: Variant) -> void:
+	if key == "language":
+		refresh_all()
 
 
 # 捕获关闭后将 GUI 焦点还给原动作行。

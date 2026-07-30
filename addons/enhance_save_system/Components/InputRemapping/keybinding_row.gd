@@ -72,7 +72,7 @@ func _refresh_bound_events() -> void:
 
 # Adds the visible placeholder button when an action has no bindings.
 func _refresh_empty_binding() -> void:
-	_add_binding_button("未绑定", -1)
+	_add_binding_button(tr("INPUT_UNBOUND"), -1)
 
 
 # Instantiates, attaches, and tracks one authored binding button.

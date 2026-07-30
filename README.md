@@ -55,7 +55,7 @@
 
 ```powershell
 godot --headless --editor --path . --quit
-godot --headless --path . --script res://Tests/EchoChase/run_tests.gd
+godot --headless --path . --scene res://Tests/EchoChase/run_tests.tscn
 godot --headless --path . --scene res://Scenes/EchoChase/echo_chase_start.tscn --quit-after 5
 ```
 

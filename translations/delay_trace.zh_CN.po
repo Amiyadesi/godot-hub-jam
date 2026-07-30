@@ -1,0 +1,199 @@
+msgid ""
+msgstr ""
+"Language: zh_CN\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+
+msgid "GAME_TITLE"
+msgstr "延迟追迹"
+
+msgid "MENU_START"
+msgstr "开始游戏"
+
+msgid "MENU_CONTINUE"
+msgstr "继续游戏"
+
+msgid "MENU_SETTINGS"
+msgstr "设置"
+
+msgid "MENU_CREDITS"
+msgstr "感谢"
+
+msgid "MENU_QUIT"
+msgstr "退出"
+
+msgid "MENU_MISSING_ENTRY"
+msgstr "缺少起始场景"
+
+msgid "MENU_RESTART_TITLE"
+msgstr "重新开始"
+
+msgid "MENU_RESTART_BODY"
+msgstr "开始新游戏会覆盖当前复活点。确定重新开始吗？"
+
+msgid "MENU_RESTART_CONFIRM"
+msgstr "重新开始"
+
+msgid "MENU_QUIT_TITLE"
+msgstr "退出游戏"
+
+msgid "MENU_QUIT_BODY"
+msgstr "确定要退出《延迟追迹》吗？"
+
+msgid "COMMON_BACK"
+msgstr "返回"
+
+msgid "COMMON_CONFIRM"
+msgstr "确认"
+
+msgid "COMMON_CANCEL"
+msgstr "取消"
+
+msgid "COMMON_NOTICE"
+msgstr "提示"
+
+msgid "SETTINGS_TITLE"
+msgstr "设置"
+
+msgid "SETTINGS_GENERAL"
+msgstr "通用设置"
+
+msgid "SETTINGS_CONTROLS"
+msgstr "按键设置"
+
+msgid "SETTINGS_DISPLAY"
+msgstr "显示"
+
+msgid "SETTINGS_DISPLAY_MODE"
+msgstr "显示模式"
+
+msgid "SETTINGS_FULLSCREEN"
+msgstr "全屏"
+
+msgid "SETTINGS_LANGUAGE"
+msgstr "语言"
+
+msgid "SETTINGS_LANGUAGE_ZH"
+msgstr "简体中文"
+
+msgid "SETTINGS_LANGUAGE_EN"
+msgstr "English"
+
+msgid "SETTINGS_VSYNC"
+msgstr "垂直同步"
+
+msgid "SETTINGS_AUDIO"
+msgstr "声音"
+
+msgid "SETTINGS_MASTER_VOLUME"
+msgstr "主音量"
+
+msgid "SETTINGS_MUSIC_VOLUME"
+msgstr "音乐音量"
+
+msgid "SETTINGS_SFX_VOLUME"
+msgstr "音效音量"
+
+msgid "SETTINGS_UI_VOLUME"
+msgstr "界面音量"
+
+msgid "SETTINGS_AMBIENT_VOLUME"
+msgstr "环境音量"
+
+msgid "SETTINGS_ASSIST"
+msgstr "辅助"
+
+msgid "SETTINGS_SCREEN_SHAKE"
+msgstr "屏幕震动"
+
+msgid "SETTINGS_LOW_FLASH"
+msgstr "低闪烁模式"
+
+msgid "SETTINGS_RESET_DEFAULTS"
+msgstr "恢复默认"
+
+msgid "SETTINGS_ON"
+msgstr "ON"
+
+msgid "SETTINGS_OFF"
+msgstr "OFF"
+
+msgid "PAUSE_TITLE"
+msgstr "暂停"
+
+msgid "PAUSE_CONTINUE"
+msgstr "继续游戏"
+
+msgid "PAUSE_RESTART"
+msgstr "重开本关"
+
+msgid "PAUSE_HINT"
+msgstr "查看提示"
+
+msgid "PAUSE_MAIN_MENU"
+msgstr "返回主菜单"
+
+msgid "THANK_TITLE"
+msgstr "感谢"
+
+msgid "THANK_CREDITS_BODY"
+msgstr "[font_size=28][b]制作[/b][/font_size]\n[url=https://sayori.org]Amiya_desi[/url] · Codex · Claude Code\n\n[font_size=28][b]角色[/b][/font_size]\n[url=https://pixelgearz.itch.io/pixel-art-platformer-character]pixelgearz · Pixel Art Platformer Character · CC0[/url]\n\n[font_size=28][b]地图与音效[/b][/font_size]\n[url=https://kenney.nl/assets/1-bit-platformer-pack]Kenney · 1-Bit Platformer Pack · CC0[/url]\n[url=https://kenney.nl/assets/digital-audio]Kenney · Digital Audio · CC0[/url]\n[url=https://kenney.nl/assets/impact-sounds]Kenney · Impact Sounds · CC0[/url]\n\n[font_size=28][b]字体[/b][/font_size]\n[url=https://github.com/TakWolf/fusion-pixel-font]TakWolf · Fusion Pixel Font · SIL OFL 1.1[/url]\n\n[font_size=28][b]音乐[/b][/font_size]\n[url=https://opengameart.org/content/mysterious-futuristic-8-bit-music-loop]Frenchyboy · Mysterious, Futuristic 8-bit Music Loop · CC0[/url]\n\n[font_size=28][b]工具[/b][/font_size]\n[url=https://godotengine.org/]Godot Engine[/url]\n[url=https://github.com/nathanhoad/godot_dialogue_manager]Dialogue Manager[/url]"
+
+msgid "INPUT_MOVE_LEFT"
+msgstr "向左"
+
+msgid "INPUT_MOVE_RIGHT"
+msgstr "向右"
+
+msgid "INPUT_MOVE_UP"
+msgstr "向上"
+
+msgid "INPUT_MOVE_DOWN"
+msgstr "向下"
+
+msgid "INPUT_DASH"
+msgstr "冲刺"
+
+msgid "INPUT_JUMP"
+msgstr "跳跃"
+
+msgid "INPUT_RECALL"
+msgstr "结束录制 / 回传"
+
+msgid "INPUT_PAUSE"
+msgstr "暂停"
+
+msgid "INPUT_UNBOUND"
+msgstr "未绑定"
+
+msgid "INPUT_MOUSE_LEFT"
+msgstr "鼠标左键"
+
+msgid "INPUT_MOUSE_RIGHT"
+msgstr "鼠标右键"
+
+msgid "INPUT_MOUSE_MIDDLE"
+msgstr "鼠标中键"
+
+msgid "INPUT_MOUSE_BUTTON"
+msgstr "鼠标键 {index}"
+
+msgid "INPUT_GAMEPAD_BUTTON"
+msgstr "手柄键 {index}"
+
+msgid "INPUT_GAMEPAD_AXIS"
+msgstr "摇杆轴 {axis} ({value})"
+
+msgid "INPUT_KEY"
+msgstr "按键 ({keycode})"
+
+msgid "KEY_CAPTURE_TITLE"
+msgstr "按键设置"
+
+msgid "KEY_CAPTURE_PROMPT"
+msgstr "{action}\n按下新的 {inputs} 输入"
+
+msgid "KEY_CAPTURE_INPUTS_ALL"
+msgstr "键盘、鼠标或手柄"
+
+msgid "KEY_CAPTURE_INPUTS_NO_MOUSE"
+msgstr "键盘或手柄"

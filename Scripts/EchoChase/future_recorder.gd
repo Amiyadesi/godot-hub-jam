@@ -13,8 +13,6 @@ enum State {
 	WAITING_EXIT,
 }
 
-@export var timeline: EchoTimelineController
-
 @onready var state_animation_player: AnimationPlayer = %StateAnimationPlayer
 
 var _requires_exit_before_restart := false
@@ -22,18 +20,34 @@ var _player_inside := false
 var _state := State.READY
 
 
-# 要求直接绑定时间线，并连接 authored 进入触发。
+# 连接 authored 触发器，并向全局时间线注册自己。
 func _ready() -> void:
-	assert(timeline != null, "FutureRecorder requires an authored EchoTimelineController reference")
+	var future_echo := get_future_echo()
+	if future_echo == null:
+		return
 	body_entered.connect(_on_body_entered)
 	body_exited.connect(_on_body_exited)
-	get_future_echo().slot_released.connect(_on_future_slot_released)
+	future_echo.slot_released.connect(_on_future_slot_released)
+	future_echo.tree_exited.connect(_on_future_echo_tree_exited, CONNECT_ONE_SHOT)
+	EchoTimeline.register_recorder(self)
 	refresh_future_state()
+
+
+# 场景或 prefab 被删除时，注销全局时间线中的当前记录器。
+func _exit_tree() -> void:
+	EchoTimeline.unregister_recorder(self)
 
 
 # 返回这台记录器独占的 authored 未来体。
 func get_future_echo() -> FutureEcho:
-	return %FutureEcho
+	return get_node_or_null("FutureEcho") as FutureEcho
+
+
+# 未来体被单独删除时让这台记录器退出全局注册，不留下失效槽位。
+func _on_future_echo_tree_exited() -> void:
+	body_entered.disconnect(_on_body_entered)
+	body_exited.disconnect(_on_body_exited)
+	EchoTimeline.unregister_recorder(self)
 
 
 # 控制器占用未来槽后，将记录器标记为录制中。
@@ -88,18 +102,18 @@ func get_state_name() -> StringName:
 
 # 只有绑定玩家重新进入时才开始录像。
 func _on_body_entered(body: Node2D) -> void:
-	if body != timeline.player:
+	if body != EchoTimeline.player:
 		return
 	_player_inside = true
 	if _requires_exit_before_restart:
 		return
-	if not timeline.start_future_recording(self):
+	if not EchoTimeline.start_future_recording(self):
 		recording_rejected()
 
 
 # 回传后必须先离开区域，记录器才能再次开始。
 func _on_body_exited(body: Node2D) -> void:
-	if body != timeline.player:
+	if body != EchoTimeline.player:
 		return
 	_player_inside = false
 	_requires_exit_before_restart = false

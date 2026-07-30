@@ -8,10 +8,9 @@ enum State {
 	ACTIVE,
 }
 
-@export_enum("1", "3", "5") var delay_seconds := 3
+@export_enum("1:1", "3:3", "5:5") var delay_seconds := 3
 @export var delay_switch_id: StringName = &"delay_3s"
 @export var default_active := false
-@export var timeline: EchoTimelineController
 
 @onready var delay_label: Label = %DelayLabel
 @onready var state_animation_player: AnimationPlayer = %StateAnimationPlayer
@@ -19,14 +18,12 @@ enum State {
 var _state := State.INACTIVE
 
 
-# 校验 authored 合同，并监听时间线的选择状态。
+# 监听全局时间线的选择状态。
 func _ready() -> void:
-	assert(timeline != null, "DelayPickup requires an authored EchoTimelineController reference")
-	assert(not delay_switch_id.is_empty(), "DelayPickup requires a delay_switch_id")
 	delay_label.text = "%d" % delay_seconds
 	body_entered.connect(_on_body_entered)
-	timeline.past_delay_switch_started.connect(_on_past_delay_switch_started)
-	timeline.past_delay_changed.connect(_on_past_delay_changed)
+	EchoTimeline.past_delay_switch_started.connect(_on_past_delay_switch_started)
+	EchoTimeline.past_delay_changed.connect(_on_past_delay_changed)
 	if SettingsModule.instance != null:
 		SettingsModule.instance.settings_changed.connect(_on_setting_changed)
 	_set_state(State.ACTIVE if default_active else State.INACTIVE)
@@ -34,9 +31,9 @@ func _ready() -> void:
 
 # 玩家触碰时请求切档，节点始终留在场景中。
 func _on_body_entered(body: Node2D) -> void:
-	if body != timeline.player:
+	if body != EchoTimeline.player:
 		return
-	timeline.request_past_delay(float(delay_seconds), delay_switch_id)
+	EchoTimeline.request_past_delay(float(delay_seconds), delay_switch_id)
 
 
 # 新选择出现时只让目标延迟台显示预警环。

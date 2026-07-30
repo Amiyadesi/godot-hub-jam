@@ -6,6 +6,7 @@ signal thanks_requested
 signal return_completed
 
 const WINDOW_RESOLUTIONS := [Vector2i(1280, 720), Vector2i(1600, 900), Vector2i(1920, 1080)]
+const LANGUAGE_CODES: Array[String] = ["zh_CN", "en"]
 const GENERAL_KEYS := [
 	"display_mode", "borderless_enabled", "window_width", "window_height", "vsync_enabled",
 	"master_volume", "music_volume", "sfx_volume", "ui_volume", "ambient_volume", "screen_shake",
@@ -36,6 +37,7 @@ var is_in_menu_flag: bool
 @onready var thanks_button: Button = %ThanksButton
 @onready var display_mode_row: VBoxContainer = %DisplayModeRow
 @onready var display_mode_option: OptionButton = %DisplayModeOption
+@onready var language_option: OptionButton = %LanguageOption
 @onready var vsync_row: VBoxContainer = %VSyncRow
 @onready var vsync_toggle: Button = %VSyncToggle
 @onready var master_row: VBoxContainer = %MasterRow
@@ -72,6 +74,7 @@ func _ready() -> void:
 	if Engine.is_editor_hint():
 		return
 	_configure_display_options()
+	_configure_language_options()
 	_register_general_rows()
 	_connect_signals()
 	_configure_button_audio()
@@ -90,6 +93,7 @@ func refresh_from_settings() -> void:
 		slider.value = _get_setting_value(key)
 		_update_value_label(value_label, slider.value)
 	_sync_display_controls()
+	_sync_language_option()
 	low_flash_toggle.button_pressed = bool(SettingsModule.instance.get_value("low_flash_mode", false))
 	_sync_toggle_labels()
 	_ignore_ui_changes = false
@@ -116,10 +120,12 @@ func _connect_signals() -> void:
 	general_tab.mouse_entered.connect(general_tab.grab_focus)
 	controls_tab.mouse_entered.connect(controls_tab.grab_focus)
 	display_mode_option.item_selected.connect(_on_display_mode_selected)
+	language_option.item_selected.connect(_on_language_selected)
 	vsync_toggle.toggled.connect(_on_vsync_toggled)
 	low_flash_toggle.toggled.connect(_on_low_flash_toggled)
 	visibility_changed.connect(_on_visibility_changed)
 	close_modal_requested.connect(_on_return_pressed)
+	SettingsModule.instance.settings_changed.connect(_on_setting_changed)
 	for item in _setting_rows:
 		var key := String(item["key"])
 		var slider := item["slider"] as HSlider
@@ -129,9 +135,22 @@ func _connect_signals() -> void:
 # Adds the fixed display choices exposed by the general settings page.
 func _configure_display_options() -> void:
 	display_mode_option.clear()
-	display_mode_option.add_item("全屏")
+	display_mode_option.add_item(tr("SETTINGS_FULLSCREEN"))
 	for resolution in WINDOW_RESOLUTIONS:
 		display_mode_option.add_item("%d x %d" % [resolution.x, resolution.y])
+
+
+# 重建两项语言选择，使 OptionButton 在切换后立即显示当前语言文字。
+func _configure_language_options() -> void:
+	language_option.clear()
+	language_option.add_item(tr("SETTINGS_LANGUAGE_ZH"))
+	language_option.add_item(tr("SETTINGS_LANGUAGE_EN"))
+
+
+# 让语言选择始终反映已规范化的全局 locale。
+func _sync_language_option() -> void:
+	var language_code := str(SettingsModule.instance.get_value("language", "zh_CN"))
+	language_option.select(LANGUAGE_CODES.find(language_code))
 
 
 # Registers authored slider rows with their matching saved fields.
@@ -167,8 +186,8 @@ func _sync_display_controls() -> void:
 
 # 将二元设置显示为简洁的文本状态。
 func _sync_toggle_labels() -> void:
-	vsync_toggle.text = "[ ON ]" if vsync_toggle.button_pressed else "[ OFF ]"
-	low_flash_toggle.text = "[ ON ]" if low_flash_toggle.button_pressed else "[ OFF ]"
+	vsync_toggle.text = "[ %s ]" % tr("SETTINGS_ON" if vsync_toggle.button_pressed else "SETTINGS_OFF")
+	low_flash_toggle.text = "[ %s ]" % tr("SETTINGS_ON" if low_flash_toggle.button_pressed else "SETTINGS_OFF")
 
 
 # Switches between general settings and keybinding pages.
@@ -205,6 +224,26 @@ func _on_display_mode_selected(index: int) -> void:
 		return
 	var resolution: Vector2i = WINDOW_RESOLUTIONS[index - 1]
 	_apply_window_resolution(resolution)
+
+
+# 保存语言后由 SettingsModule 切换 TranslationServer，并刷新动态文本。
+func _on_language_selected(index: int) -> void:
+	if _ignore_ui_changes:
+		return
+	SettingsModule.instance.set_value("language", LANGUAGE_CODES[index])
+
+
+# 语言改变时重建不会自动翻译的选项和按键显示。
+func _on_setting_changed(key: String, _value: Variant) -> void:
+	if key != "language":
+		return
+	_ignore_ui_changes = true
+	_configure_display_options()
+	_configure_language_options()
+	_sync_display_controls()
+	_sync_language_option()
+	_ignore_ui_changes = false
+	keybinding_ui.refresh_all()
 
 
 # Writes an explicit window size and disables borderless presentation.
@@ -315,6 +354,7 @@ func _configure_button_audio() -> void:
 	GameAudio.setup_plain_button(general_tab)
 	GameAudio.setup_plain_button(controls_tab)
 	GameAudio.setup_plain_button(display_mode_option)
+	GameAudio.setup_plain_button(language_option)
 	GameAudio.setup_plain_button(vsync_toggle)
 	GameAudio.setup_plain_button(low_flash_toggle)
 

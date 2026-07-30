@@ -5,11 +5,11 @@
 
 [node name="KeyCaptureDialog" type="AcceptDialog"]
 theme = ExtResource("2_theme")
-title = "按键设置"
+title = "KEY_CAPTURE_TITLE"
 exclusive = true
 unresizable = true
 min_size = Vector2i(460, 160)
-ok_button_text = "取消"
+ok_button_text = "COMMON_CANCEL"
 script = ExtResource("1_script")
 
 [node name="PromptLabel" type="Label" parent="."]

@@ -3,7 +3,6 @@ extends Control
 ## 未来录像的 authored HUD：只显示进度、回传键和金色时间反馈。
 
 @export var player: EchoPlayer
-@export var timeline: EchoTimelineController
 
 @onready var screen_edge: ColorRect = %ScreenEdge
 @onready var progress_bar: ProgressBar = %ProgressBar
@@ -11,13 +10,11 @@ extends Control
 @onready var animation_player: AnimationPlayer = %AnimationPlayer
 
 
-# 校验 authored 引用并监听录像、按键与低闪烁设置。
+# 监听全局录像状态、按键与低闪烁设置。
 func _ready() -> void:
-	assert(player != null, "TemporalRecordingHUD requires an authored EchoPlayer reference")
-	assert(timeline != null, "TemporalRecordingHUD requires an authored EchoTimelineController reference")
-	timeline.future_recording_started.connect(_on_recording_started)
-	timeline.future_recording_progress.connect(_on_recording_progress)
-	timeline.future_recording_finished.connect(_on_recording_finished)
+	EchoTimeline.future_recording_started.connect(_on_recording_started)
+	EchoTimeline.future_recording_progress.connect(_on_recording_progress)
+	EchoTimeline.future_recording_finished.connect(_on_recording_finished)
 	if KeybindingModule.instance != null:
 		KeybindingModule.instance.bindings_changed.connect(refresh_recall_binding)
 	if SettingsModule.instance != null:
@@ -32,7 +29,7 @@ func refresh_recall_binding() -> void:
 		recall_key_label.text = KeybindingModule.instance.get_primary_display_string("echo_recall")
 		return
 	var events := InputMap.action_get_events(&"echo_recall")
-	recall_key_label.text = ResourceSerializer.event_to_display_string(events[0]) if not events.is_empty() else "（未绑定）"
+	recall_key_label.text = ResourceSerializer.event_to_display_string(events[0]) if not events.is_empty() else tr("INPUT_UNBOUND")
 
 
 # 返回 HUD 是否正在显示录像状态，供场景验证使用。

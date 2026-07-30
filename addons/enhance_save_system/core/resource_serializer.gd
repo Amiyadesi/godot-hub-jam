@@ -179,15 +179,15 @@ static func deserialize_event(data: Dictionary) -> InputEvent:
 ## 将 InputEvent 转为人类可读字符串（用于按键 Button 显示）
 static func event_to_display_string(event: InputEvent) -> String:
 	if event == null:
-		return "（未绑定）"
+		return TranslationServer.translate(&"INPUT_UNBOUND")
 	if event is InputEventKey:
 		return _key_event_to_display_string(event)
 	elif event is InputEventMouseButton:
 		return _mouse_button_event_to_display_string(event)
 	elif event is InputEventJoypadButton:
-		return "手柄键%d" % event.button_index
+		return TranslationServer.translate(&"INPUT_GAMEPAD_BUTTON").format({"index": event.button_index})
 	elif event is InputEventJoypadMotion:
-		return "摇杆轴%d(%.1f)" % [event.axis, event.axis_value]
+		return TranslationServer.translate(&"INPUT_GAMEPAD_AXIS").format({"axis": event.axis, "value": event.axis_value})
 	return event.as_text()
 
 ## Serializes keyboard events including modifier state.
@@ -274,14 +274,17 @@ static func _key_event_to_display_string(event: InputEventKey) -> String:
 	var kname := OS.get_keycode_string(event.keycode)
 	if kname.is_empty():
 		kname = OS.get_keycode_string(event.physical_keycode)
-	parts.append(kname if not kname.is_empty() else "Key(%d)" % event.keycode)
+	parts.append(kname if not kname.is_empty() else TranslationServer.translate(&"INPUT_KEY").format({"keycode": event.keycode}))
 	return "+".join(parts)
 
 ## Formats common mouse buttons with localized names.
 static func _mouse_button_event_to_display_string(event: InputEventMouseButton) -> String:
-	const BTN_NAMES := {
-		MOUSE_BUTTON_LEFT  : "鼠标左键",
-		MOUSE_BUTTON_RIGHT : "鼠标右键",
-		MOUSE_BUTTON_MIDDLE: "鼠标中键",
-	}
-	return BTN_NAMES.get(event.button_index, "鼠标键%d" % event.button_index)
+	match event.button_index:
+		MOUSE_BUTTON_LEFT:
+			return TranslationServer.translate(&"INPUT_MOUSE_LEFT")
+		MOUSE_BUTTON_RIGHT:
+			return TranslationServer.translate(&"INPUT_MOUSE_RIGHT")
+		MOUSE_BUTTON_MIDDLE:
+			return TranslationServer.translate(&"INPUT_MOUSE_MIDDLE")
+		_:
+			return TranslationServer.translate(&"INPUT_MOUSE_BUTTON").format({"index": event.button_index})

@@ -30,12 +30,11 @@ func _ready() -> void:
 
 # 在输入响应帧播放启动爆点，并准备方向拖尾。
 func begin(source: AnimatedSprite2D, direction: Vector2) -> void:
-	assert(source != null, "EchoDashVfx requires an authored AnimatedSprite2D source")
 	_active = true
 	_sample_elapsed = AFTERIMAGE_INTERVAL
 	_suppress_particles_for_current_dash = _uses_low_flash_mode()
-	start_ring.position = source.global_position
-	start_burst.position = source.global_position
+	start_ring.global_position = source.global_position
+	start_burst.global_position = source.global_position
 	_set_direction(direction)
 	start_burst.restart()
 	start_burst.emitting = not _suppress_particles_for_current_dash
@@ -53,7 +52,7 @@ func update_dash(source: AnimatedSprite2D, delta: float, direction: Vector2) -> 
 	if not _active:
 		return
 	_set_direction(direction)
-	direction_particles.position = source.global_position
+	direction_particles.global_position = source.global_position
 	if not _suppress_particles_for_current_dash and not direction_particles.emitting:
 		direction_particles.restart()
 		direction_particles.emitting = true
@@ -69,8 +68,8 @@ func finish(end_position: Vector2, direction: Vector2) -> void:
 		return
 	_active = false
 	direction_particles.emitting = false
-	end_ring.position = end_position
-	end_burst.position = end_position
+	end_ring.global_position = end_position
+	end_burst.global_position = end_position
 	end_burst.rotation = direction.angle()
 	end_burst.restart()
 	end_burst.emitting = not _suppress_particles_for_current_dash
@@ -110,7 +109,7 @@ func _copy_afterimage(target: Sprite2D, source: Sprite2D, alpha: float) -> void:
 	if source.texture == null:
 		return
 	target.texture = source.texture
-	target.position = source.position
+	target.global_position = source.global_position
 	target.scale = source.scale
 	target.flip_h = source.flip_h
 	target.flip_v = source.flip_v
@@ -121,11 +120,9 @@ func _copy_afterimage(target: Sprite2D, source: Sprite2D, alpha: float) -> void:
 # 从玩家当前动画复制一个不影响主体的残影帧。
 func _copy_source_frame(target: Sprite2D, source: AnimatedSprite2D, alpha: float) -> void:
 	var frames := source.sprite_frames
-	assert(frames != null, "EchoDashVfx source requires SpriteFrames")
 	var frame_texture := frames.get_frame_texture(source.animation, source.frame)
-	assert(frame_texture != null, "EchoDashVfx source frame requires a texture")
 	target.texture = frame_texture
-	target.position = source.global_position
+	target.global_position = source.global_position
 	target.scale = source.global_scale
 	target.flip_h = source.flip_h
 	target.flip_v = source.flip_v

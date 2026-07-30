@@ -53,7 +53,7 @@ anchor_bottom = 0.19
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_font_sizes/font_size = 50
-text = "感谢"
+text = "THANK_TITLE"
 vertical_alignment = 1
 
 [node name="CreditsText" type="RichTextLabel" parent="PanelRoot"]
@@ -70,26 +70,7 @@ theme_override_colors/font_meta_color = Color(0.98, 0.98, 0.94, 1)
 theme_override_colors/font_meta_hover_color = Color(0.64, 0.64, 0.61, 1)
 theme_override_font_sizes/normal_font_size = 22
 bbcode_enabled = true
-text = "[font_size=28][b]制作[/b][/font_size]
-[url=https://sayori.org]Amiya_desi[/url] · Codex · Claude Code
-
-[font_size=28][b]角色[/b][/font_size]
-[url=https://pixelgearz.itch.io/pixel-art-platformer-character]pixelgearz · Pixel Art Platformer Character · CC0[/url]
-
-[font_size=28][b]地图与音效[/b][/font_size]
-[url=https://kenney.nl/assets/1-bit-platformer-pack]Kenney · 1-Bit Platformer Pack · CC0[/url]
-[url=https://kenney.nl/assets/digital-audio]Kenney · Digital Audio · CC0[/url]
-[url=https://kenney.nl/assets/impact-sounds]Kenney · Impact Sounds · CC0[/url]
-
-[font_size=28][b]字体[/b][/font_size]
-[url=https://github.com/TakWolf/fusion-pixel-font]TakWolf · Fusion Pixel Font · SIL OFL 1.1[/url]
-
-[font_size=28][b]音乐[/b][/font_size]
-[url=https://opengameart.org/content/mysterious-futuristic-8-bit-music-loop]Frenchyboy · Mysterious, Futuristic 8-bit Music Loop · CC0[/url]
-
-[font_size=28][b]工具[/b][/font_size]
-[url=https://godotengine.org/]Godot Engine[/url]
-[url=https://github.com/nathanhoad/godot_dialogue_manager]Dialogue Manager[/url]"
+text = "THANK_CREDITS_BODY"
 scroll_active = true
 meta_underlined = true
 
@@ -103,4 +84,4 @@ anchor_bottom = 0.86
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_font_sizes/font_size = 27
-text = "返回"
+text = "COMMON_BACK"

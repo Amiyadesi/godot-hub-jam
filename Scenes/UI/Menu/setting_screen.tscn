@@ -64,7 +64,7 @@ offset_bottom = 82.0
 grow_horizontal = 2
 theme_override_colors/font_color = Color(0.98, 0.98, 0.94, 1)
 theme_override_font_sizes/font_size = 50
-text = "设置"
+text = "SETTINGS_TITLE"
 vertical_alignment = 1
 
 [node name="RailLine" type="ColorRect" parent="PanelRoot/SideRail"]
@@ -93,7 +93,7 @@ layout_mode = 2
 toggle_mode = true
 button_group = SubResource("ButtonGroup_tabs")
 theme_override_font_sizes/font_size = 28
-text = "通用设置"
+text = "SETTINGS_GENERAL"
 alignment = 0
 
 [node name="ControlsTab" type="Button" parent="PanelRoot/SideRail/Tabs"]
@@ -103,7 +103,7 @@ layout_mode = 2
 toggle_mode = true
 button_group = SubResource("ButtonGroup_tabs")
 theme_override_font_sizes/font_size = 28
-text = "按键设置"
+text = "SETTINGS_CONTROLS"
 alignment = 0
 
 [node name="ReturnButton" parent="PanelRoot/SideRail" instance=ExtResource("3_button")]
@@ -117,7 +117,7 @@ offset_right = 190.0
 offset_bottom = -66.0
 grow_vertical = 0
 theme_override_font_sizes/font_size = 26
-text = "返回"
+text = "COMMON_BACK"
 
 [node name="ThanksButton" parent="PanelRoot/SideRail" instance=ExtResource("3_button")]
 unique_name_in_owner = true
@@ -130,7 +130,7 @@ offset_right = 190.0
 offset_bottom = -4.0
 grow_vertical = 0
 theme_override_font_sizes/font_size = 26
-text = "感谢"
+text = "MENU_CREDITS"
 
 [node name="Content" type="Control" parent="PanelRoot"]
 layout_mode = 1
@@ -169,7 +169,7 @@ theme_override_constants/separation = 14
 layout_mode = 2
 theme_override_colors/font_color = Color(0.7, 0.7, 0.67, 1)
 theme_override_font_sizes/font_size = 24
-text = "显示"
+text = "SETTINGS_DISPLAY"
 
 [node name="DisplayModeRow" type="VBoxContainer" parent="PanelRoot/Content/Pages/AudioPage/GeneralVBox"]
 unique_name_in_owner = true
@@ -184,7 +184,7 @@ theme_override_constants/separation = 24
 [node name="Title" type="Label" parent="PanelRoot/Content/Pages/AudioPage/GeneralVBox/DisplayModeRow/RowContent"]
 custom_minimum_size = Vector2(230, 0)
 layout_mode = 2
-text = "显示模式"
+text = "SETTINGS_DISPLAY_MODE"
 vertical_alignment = 1
 
 [node name="Spacer" type="Control" parent="PanelRoot/Content/Pages/AudioPage/GeneralVBox/DisplayModeRow/RowContent"]
@@ -200,6 +200,35 @@ theme_override_font_sizes/font_size = 22
 [node name="Line" type="HSeparator" parent="PanelRoot/Content/Pages/AudioPage/GeneralVBox/DisplayModeRow"]
 layout_mode = 2
 
+[node name="LanguageRow" type="VBoxContainer" parent="PanelRoot/Content/Pages/AudioPage/GeneralVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 5
+
+[node name="RowContent" type="HBoxContainer" parent="PanelRoot/Content/Pages/AudioPage/GeneralVBox/LanguageRow"]
+custom_minimum_size = Vector2(0, 52)
+layout_mode = 2
+theme_override_constants/separation = 24
+
+[node name="Title" type="Label" parent="PanelRoot/Content/Pages/AudioPage/GeneralVBox/LanguageRow/RowContent"]
+custom_minimum_size = Vector2(230, 0)
+layout_mode = 2
+text = "SETTINGS_LANGUAGE"
+vertical_alignment = 1
+
+[node name="Spacer" type="Control" parent="PanelRoot/Content/Pages/AudioPage/GeneralVBox/LanguageRow/RowContent"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="LanguageOption" type="OptionButton" parent="PanelRoot/Content/Pages/AudioPage/GeneralVBox/LanguageRow/RowContent"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(280, 46)
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+
+[node name="Line" type="HSeparator" parent="PanelRoot/Content/Pages/AudioPage/GeneralVBox/LanguageRow"]
+layout_mode = 2
+
 [node name="VSyncRow" type="VBoxContainer" parent="PanelRoot/Content/Pages/AudioPage/GeneralVBox"]
 unique_name_in_owner = true
 layout_mode = 2
@@ -212,7 +241,7 @@ layout_mode = 2
 [node name="Title" type="Label" parent="PanelRoot/Content/Pages/AudioPage/GeneralVBox/VSyncRow/RowContent"]
 custom_minimum_size = Vector2(230, 0)
 layout_mode = 2
-text = "垂直同步"
+text = "SETTINGS_VSYNC"
 vertical_alignment = 1
 
 [node name="Spacer" type="Control" parent="PanelRoot/Content/Pages/AudioPage/GeneralVBox/VSyncRow/RowContent"]
@@ -236,7 +265,7 @@ layout_mode = 2
 layout_mode = 2
 theme_override_colors/font_color = Color(0.7, 0.7, 0.67, 1)
 theme_override_font_sizes/font_size = 24
-text = "声音"
+text = "SETTINGS_AUDIO"
 
 [node name="MasterRow" type="VBoxContainer" parent="PanelRoot/Content/Pages/AudioPage/GeneralVBox"]
 unique_name_in_owner = true
@@ -251,7 +280,7 @@ theme_override_constants/separation = 18
 [node name="Title" type="Label" parent="PanelRoot/Content/Pages/AudioPage/GeneralVBox/MasterRow/RowContent"]
 custom_minimum_size = Vector2(230, 0)
 layout_mode = 2
-text = "主音量"
+text = "SETTINGS_MASTER_VOLUME"
 vertical_alignment = 1
 
 [node name="MasterSlider" type="HSlider" parent="PanelRoot/Content/Pages/AudioPage/GeneralVBox/MasterRow/RowContent"]
@@ -285,7 +314,7 @@ theme_override_constants/separation = 18
 [node name="Title" type="Label" parent="PanelRoot/Content/Pages/AudioPage/GeneralVBox/MusicRow/RowContent"]
 custom_minimum_size = Vector2(230, 0)
 layout_mode = 2
-text = "音乐音量"
+text = "SETTINGS_MUSIC_VOLUME"
 vertical_alignment = 1
 
 [node name="MusicSlider" type="HSlider" parent="PanelRoot/Content/Pages/AudioPage/GeneralVBox/MusicRow/RowContent"]
@@ -319,7 +348,7 @@ theme_override_constants/separation = 18
 [node name="Title" type="Label" parent="PanelRoot/Content/Pages/AudioPage/GeneralVBox/SfxRow/RowContent"]
 custom_minimum_size = Vector2(230, 0)
 layout_mode = 2
-text = "音效音量"
+text = "SETTINGS_SFX_VOLUME"
 vertical_alignment = 1
 
 [node name="SfxSlider" type="HSlider" parent="PanelRoot/Content/Pages/AudioPage/GeneralVBox/SfxRow/RowContent"]
@@ -353,7 +382,7 @@ theme_override_constants/separation = 18
 [node name="Title" type="Label" parent="PanelRoot/Content/Pages/AudioPage/GeneralVBox/UIRow/RowContent"]
 custom_minimum_size = Vector2(230, 0)
 layout_mode = 2
-text = "界面音量"
+text = "SETTINGS_UI_VOLUME"
 vertical_alignment = 1
 
 [node name="UISlider" type="HSlider" parent="PanelRoot/Content/Pages/AudioPage/GeneralVBox/UIRow/RowContent"]
@@ -387,7 +416,7 @@ theme_override_constants/separation = 18
 [node name="Title" type="Label" parent="PanelRoot/Content/Pages/AudioPage/GeneralVBox/AmbientRow/RowContent"]
 custom_minimum_size = Vector2(230, 0)
 layout_mode = 2
-text = "环境音量"
+text = "SETTINGS_AMBIENT_VOLUME"
 vertical_alignment = 1
 
 [node name="AmbientSlider" type="HSlider" parent="PanelRoot/Content/Pages/AudioPage/GeneralVBox/AmbientRow/RowContent"]
@@ -412,7 +441,7 @@ layout_mode = 2
 layout_mode = 2
 theme_override_colors/font_color = Color(0.7, 0.7, 0.67, 1)
 theme_override_font_sizes/font_size = 24
-text = "辅助"
+text = "SETTINGS_ASSIST"
 
 [node name="ScreenShakeRow" type="VBoxContainer" parent="PanelRoot/Content/Pages/AudioPage/GeneralVBox"]
 unique_name_in_owner = true
@@ -427,7 +456,7 @@ theme_override_constants/separation = 18
 [node name="Title" type="Label" parent="PanelRoot/Content/Pages/AudioPage/GeneralVBox/ScreenShakeRow/RowContent"]
 custom_minimum_size = Vector2(230, 0)
 layout_mode = 2
-text = "屏幕震动"
+text = "SETTINGS_SCREEN_SHAKE"
 vertical_alignment = 1
 
 [node name="ScreenShakeSlider" type="HSlider" parent="PanelRoot/Content/Pages/AudioPage/GeneralVBox/ScreenShakeRow/RowContent"]
@@ -460,7 +489,7 @@ layout_mode = 2
 [node name="Title" type="Label" parent="PanelRoot/Content/Pages/AudioPage/GeneralVBox/LowFlashRow/RowContent"]
 custom_minimum_size = Vector2(230, 0)
 layout_mode = 2
-text = "低闪烁模式"
+text = "SETTINGS_LOW_FLASH"
 vertical_alignment = 1
 
 [node name="Spacer" type="Control" parent="PanelRoot/Content/Pages/AudioPage/GeneralVBox/LowFlashRow/RowContent"]
@@ -486,7 +515,7 @@ custom_minimum_size = Vector2(220, 52)
 layout_mode = 2
 size_flags_horizontal = 0
 theme_override_font_sizes/font_size = 24
-text = "恢复默认"
+text = "SETTINGS_RESET_DEFAULTS"
 
 [node name="ControlsPage" type="ScrollContainer" parent="PanelRoot/Content/Pages"]
 unique_name_in_owner = true

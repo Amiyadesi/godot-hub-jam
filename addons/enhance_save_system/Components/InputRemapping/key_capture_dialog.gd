@@ -43,8 +43,12 @@ func open_for(action: String, display_name: String = "", allow_mouse_buttons: bo
 	_current_display_name = display_name if not display_name.is_empty() else action
 	_allow_mouse_buttons = allow_mouse_buttons
 	_waiting = true
-	var accepted_inputs := "键盘、鼠标或手柄" if _allow_mouse_buttons else "键盘或手柄"
-	_label.text = "%s\n按下新的%s输入" % [_current_display_name, accepted_inputs]
+	title = tr("KEY_CAPTURE_TITLE")
+	ok_button_text = tr("COMMON_CANCEL")
+	_label.text = tr("KEY_CAPTURE_PROMPT").format({
+		"action": _current_display_name,
+		"inputs": tr("KEY_CAPTURE_INPUTS_ALL" if _allow_mouse_buttons else "KEY_CAPTURE_INPUTS_NO_MOUSE"),
+	})
 	popup_centered()
 
 # ──────────────────────────────────────────────

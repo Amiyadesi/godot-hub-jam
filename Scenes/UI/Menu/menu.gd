@@ -55,10 +55,6 @@ var _transition_active := false
 
 # 初始化存档、音频、固定信号和 authored 菜单入场。
 func _ready() -> void:
-	assert(start_transition != null, "Menu requires an authored start transition")
-	assert(start_transition_reduced != null, "Menu requires an authored reduced start transition")
-	assert(continue_transition != null, "Menu requires an authored continue transition")
-	assert(continue_transition_reduced != null, "Menu requires an authored reduced continue transition")
 	setting_screen.is_in_menu_flag = true
 	_load_slot_progress()
 	_configure_audio()
@@ -119,7 +115,7 @@ func refresh_progress_controls() -> void:
 		or not ResourceLoader.exists(LevelModule.instance.get_continue_scene_path())
 	)
 	status_label.visible = not entry_ready
-	status_label.text = "等待灰盒入口场景。" if not entry_ready else ""
+	status_label.text = tr("MENU_MISSING_ENTRY") if not entry_ready else ""
 
 
 # 确认覆盖存档后，以现在体转场建立新时间线。
@@ -129,10 +125,10 @@ func _on_start_pressed() -> void:
 		return
 	if LevelModule.instance != null and LevelModule.instance.has_continue_point():
 		var restart_confirmed := await FeedbackOverlay.ask(
-			"重新开始",
-			"开始新游戏会覆盖当前复活点。确定重新开始吗？",
-			"重新开始",
-			"取消"
+			tr("MENU_RESTART_TITLE"),
+			tr("MENU_RESTART_BODY"),
+			tr("MENU_RESTART_CONFIRM"),
+			tr("COMMON_CANCEL")
 		)
 		if not restart_confirmed:
 			start_button.grab_focus()
@@ -192,7 +188,12 @@ func _get_exit_transition(temporal_state: StringName, reduced: bool) -> SceneTra
 
 # 退出桌面进程前保留一次明确确认。
 func _on_exit_pressed() -> void:
-	if await FeedbackOverlay.ask("退出游戏", "确定要退出当前游戏吗？", "退出", "取消"):
+	if await FeedbackOverlay.ask(
+		tr("MENU_QUIT_TITLE"),
+		tr("MENU_QUIT_BODY"),
+		tr("MENU_QUIT"),
+		tr("COMMON_CANCEL")
+	):
 		get_tree().quit()
 
 
@@ -261,6 +262,9 @@ func _start_menu_phase_cycle() -> void:
 
 # 低闪切换时同步入场和边框动画，不改变菜单流程。
 func _on_setting_changed(key: String, _value: Variant) -> void:
+	if key == "language":
+		refresh_progress_controls()
+		return
 	if key != "low_flash_mode":
 		return
 	if _intro_active:

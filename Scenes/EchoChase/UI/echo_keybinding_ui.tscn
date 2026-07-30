@@ -25,7 +25,7 @@ layout_mode = 2
 [node name="Label" type="Label" parent="Rows/MoveLeftRow/RowContent"]
 custom_minimum_size = Vector2(230, 50)
 layout_mode = 2
-text = "向左"
+text = "INPUT_MOVE_LEFT"
 vertical_alignment = 1
 
 [node name="Spacer" type="Control" parent="Rows/MoveLeftRow/RowContent"]
@@ -52,7 +52,7 @@ layout_mode = 2
 [node name="Label" type="Label" parent="Rows/MoveRightRow/RowContent"]
 custom_minimum_size = Vector2(230, 50)
 layout_mode = 2
-text = "向右"
+text = "INPUT_MOVE_RIGHT"
 vertical_alignment = 1
 
 [node name="Spacer" type="Control" parent="Rows/MoveRightRow/RowContent"]
@@ -79,7 +79,7 @@ layout_mode = 2
 [node name="Label" type="Label" parent="Rows/MoveUpRow/RowContent"]
 custom_minimum_size = Vector2(230, 50)
 layout_mode = 2
-text = "向上"
+text = "INPUT_MOVE_UP"
 vertical_alignment = 1
 
 [node name="Spacer" type="Control" parent="Rows/MoveUpRow/RowContent"]
@@ -106,7 +106,7 @@ layout_mode = 2
 [node name="Label" type="Label" parent="Rows/MoveDownRow/RowContent"]
 custom_minimum_size = Vector2(230, 50)
 layout_mode = 2
-text = "向下"
+text = "INPUT_MOVE_DOWN"
 vertical_alignment = 1
 
 [node name="Spacer" type="Control" parent="Rows/MoveDownRow/RowContent"]
@@ -133,7 +133,7 @@ layout_mode = 2
 [node name="Label" type="Label" parent="Rows/DashRow/RowContent"]
 custom_minimum_size = Vector2(230, 50)
 layout_mode = 2
-text = "冲刺"
+text = "INPUT_DASH"
 vertical_alignment = 1
 
 [node name="Spacer" type="Control" parent="Rows/DashRow/RowContent"]
@@ -160,7 +160,7 @@ layout_mode = 2
 [node name="Label" type="Label" parent="Rows/JumpRow/RowContent"]
 custom_minimum_size = Vector2(230, 50)
 layout_mode = 2
-text = "跳跃"
+text = "INPUT_JUMP"
 vertical_alignment = 1
 
 [node name="Spacer" type="Control" parent="Rows/JumpRow/RowContent"]
@@ -187,7 +187,7 @@ layout_mode = 2
 [node name="Label" type="Label" parent="Rows/RecallRow/RowContent"]
 custom_minimum_size = Vector2(230, 50)
 layout_mode = 2
-text = "结束录制 / 回传"
+text = "INPUT_RECALL"
 vertical_alignment = 1
 
 [node name="Spacer" type="Control" parent="Rows/RecallRow/RowContent"]
@@ -214,7 +214,7 @@ layout_mode = 2
 [node name="Label" type="Label" parent="Rows/PauseRow/RowContent"]
 custom_minimum_size = Vector2(230, 50)
 layout_mode = 2
-text = "暂停"
+text = "INPUT_PAUSE"
 vertical_alignment = 1
 
 [node name="Spacer" type="Control" parent="Rows/PauseRow/RowContent"]

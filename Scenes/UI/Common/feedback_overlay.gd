@@ -42,12 +42,12 @@ func toast(seconds: float, title: String, text: String) -> void:
 
 # Opens a blocking single-confirmation dialog for dialogue and scripted flows.
 func popup_confirm(title: String, text: String) -> void:
-	_open_dialog(title, text, "确认", "", false)
+	_open_dialog(title, text, tr("COMMON_CONFIRM"), "", false)
 	await result_selected
 
 
 # Opens a blocking confirmation dialog and returns the selected result.
-func ask(title: String, text: String, confirm_text := "确认", cancel_text := "取消") -> bool:
+func ask(title: String, text: String, confirm_text := tr("COMMON_CONFIRM"), cancel_text := tr("COMMON_CANCEL")) -> bool:
 	_open_dialog(title, text, confirm_text, cancel_text, true)
 	return await result_selected
 

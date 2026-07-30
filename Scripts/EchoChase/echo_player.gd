@@ -19,9 +19,6 @@ enum State {
 	DISABLED,
 }
 
-@export_group("References")
-@export var timeline: EchoTimelineController
-
 @export_group("Run")
 @export var run_speed := 250.0
 @export var run_acceleration := 4096.0
@@ -82,9 +79,9 @@ var _recall_requested := false
 var _was_on_floor := false
 
 
-# 玩家运行前必须绑定 authored 时间线。
+# 初始化 authored 角色节点，并向全局时间线注册当前玩家。
 func _ready() -> void:
-	assert(timeline != null, "EchoPlayer requires an authored EchoTimelineController reference")
+	EchoTimeline.register_player(self)
 	_change_state(State.IDLE)
 	visual.play(&"idle")
 	temporal_outline.play(&"idle")
@@ -93,6 +90,11 @@ func _ready() -> void:
 	hurtbox.area_entered.connect(_on_hurtbox_area_entered)
 	hurtbox.body_entered.connect(_on_hurtbox_body_entered)
 	_was_on_floor = is_on_floor()
+
+
+# 场景卸载时注销当前玩家，避免全局时间线保留失效引用。
+func _exit_tree() -> void:
+	EchoTimeline.unregister_player(self)
 
 
 # 更新移动，并在位移结算后记录一帧权威路径。
@@ -112,10 +114,10 @@ func _physics_process(delta: float) -> void:
 			_update_standard_movement(delta)
 	_update_animation()
 	_update_landing_audio()
-	timeline.record_player_frame(build_temporal_frame(timeline.get_timeline_seconds()))
+	EchoTimeline.record_player_frame(build_temporal_frame(EchoTimeline.get_timeline_seconds()))
 	if _recall_requested or Input.is_action_just_pressed("echo_recall"):
 		_recall_requested = false
-		timeline.commit_future_recording()
+		EchoTimeline.commit_future_recording()
 
 
 # 锁存冲刺、跳跃与回传输入，避免 authored 输入事件在下个物理帧前丢失。
@@ -347,11 +349,22 @@ func _update_dash(delta: float) -> void:
 # 处理重力、跳跃缓冲、墙面移动和普通加速。
 func _update_standard_movement(delta: float) -> void:
 	_jump_buffer_remaining = maxf(_jump_buffer_remaining - delta, 0.0)
+	var started_jump := false
 	if _jump_buffer_remaining > 0.0:
 		if _wall_coyote_remaining > 0.0 and not is_on_floor():
 			_perform_wall_jump()
+			started_jump = true
 		elif _coyote_remaining > 0.0:
 			_perform_standard_jump()
+			started_jump = true
+	var dash_recovering := _dash_recovery_remaining > 0.0
+	if dash_recovering and not started_jump:
+		# 冲刺后短暂沿整条速度向量减速，保证八方向位移一致。
+		_dash_recovery_remaining = maxf(_dash_recovery_remaining - delta, 0.0)
+		velocity = velocity.move_toward(Vector2.ZERO, run_acceleration * delta)
+		move_and_slide()
+		_resolve_standard_state()
+		return
 	velocity.y += gravity * delta
 	if is_on_wall_only() and velocity.y > 0.0:
 		velocity.y = minf(velocity.y, wall_slide_speed)
@@ -360,11 +373,8 @@ func _update_standard_movement(delta: float) -> void:
 	_resolve_standard_state()
 
 
-# 除冲刺恢复锁定外，根据水平输入加速。
+# 根据水平输入加速，并保留冲刺恢复期的统一减速在上层处理。
 func _apply_horizontal_motion(delta: float) -> void:
-	if _dash_recovery_remaining > 0.0:
-		_dash_recovery_remaining = maxf(_dash_recovery_remaining - delta, 0.0)
-		return
 	var input_x := _read_move_input().x
 	if not is_zero_approx(input_x):
 		facing = signf(input_x)

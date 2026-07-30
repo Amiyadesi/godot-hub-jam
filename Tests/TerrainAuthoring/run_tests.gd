@@ -316,9 +316,10 @@ func _test_project_tileset_contract_and_terrain_shapes() -> void:
 	_expect(tile_set != null, "Project Terrain TileSet reloads from disk")
 	if tile_set == null:
 		return
-	_expect(tile_set.get_physics_layers_count() == 2, "Project TileSet keeps World and Trap physics layers")
+	_expect(tile_set.get_physics_layers_count() == 3, "Project TileSet keeps World, Trap, and one-way physics layers")
 	_expect(tile_set.get_physics_layer_collision_layer(0) == 1, "Project World layer keeps collision bit 1")
 	_expect(tile_set.get_physics_layer_collision_layer(1) == 32, "Project Trap layer keeps collision bit 32")
+	_expect(tile_set.get_physics_layer_collision_layer(2) == 1, "Project one-way layer keeps World collision bit 1")
 	_expect(tile_set.has_source(0), "Project TileSet keeps source 0")
 	_expect(tile_set.has_source(1), "Project TileSet contains managed source 1")
 	var source_zero := tile_set.get_source(0) as TileSetAtlasSource

@@ -3,7 +3,7 @@
 [ext_resource type="Script" path="res://Scripts/EchoChase/echo_timeline_controller.gd" id="1_script"]
 [ext_resource type="PackedScene" path="res://Scenes/EchoChase/Prefabs/past_echo.tscn" id="2_past"]
 
-[node name="EchoTimelineController" type="Node"]
+[node name="EchoTimeline" type="Node"]
 process_priority = -100
 script = ExtResource("1_script")
 

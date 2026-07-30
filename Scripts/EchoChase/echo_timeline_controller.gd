@@ -1,4 +1,3 @@
-class_name EchoTimelineController
 extends Node
 ## 持有一条实时路径、一个过去体和 authored 记录器各自的未来体。
 
@@ -19,11 +18,10 @@ const FUTURE_MINIMUM_SECONDS := 1.0
 const FUTURE_MAXIMUM_SECONDS := 5.0
 const TEMPORAL_PHASE_SECONDS := 0.35
 
-@export var player: EchoPlayer
-@export var recorders: Array[FutureRecorder] = []
-
 @onready var past_echo: PastEcho = %PastEcho
 
+var player: EchoPlayer
+var recorders: Array[FutureRecorder] = []
 var _timeline_seconds := 0.0
 var _past_delay_seconds := DEFAULT_PAST_DELAY
 var _pending_past_delay_seconds := DEFAULT_PAST_DELAY
@@ -34,40 +32,75 @@ var _run_track := TemporalTrack.new()
 var _recording_track: TemporalTrack
 var _recording_recorder: FutureRecorder
 var _recording_future_echo: FutureEcho
-var _recording_future_states: Array[Dictionary] = []
+var _recording_future_states: Dictionary = {}
 var _recording_started_at := 0.0
 var _recording_anchor: Dictionary = {}
 var _future_slots_used := 0
-var _initialized := false
-var _timeline_was_reset := false
+var _gameplay_active := false
 
-
-# 等全部 sibling 记录器 ready 后再连接 authored 时态实体。
+# 初始化全局过去体；玩家与记录器由各自 prefab 进入场景时注册。
 func _ready() -> void:
-	assert(player != null, "EchoTimelineController requires an authored EchoPlayer reference")
-	assert(not recorders.is_empty(), "EchoTimelineController requires authored FutureRecorder references")
-	call_deferred("_initialize_timeline")
-
-
-# 校验记录器唯一性，连接各自未来体并建立干净时间线。
-func _initialize_timeline() -> void:
-	var seen_futures := {}
 	past_echo.caught_player.connect(_on_past_echo_caught_player)
-	for recorder in recorders:
-		assert(recorder != null, "EchoTimelineController recorders cannot contain null")
-		assert(recorder.timeline == self, "FutureRecorder must reference its authored EchoTimelineController")
-		var future_echo := recorder.get_future_echo()
-		assert(not seen_futures.has(future_echo), "Each FutureRecorder requires a unique FutureEcho")
-		seen_futures[future_echo] = true
+	reset_timeline()
+
+
+# 注册当前场景的唯一玩家，并为新场景建立干净时间线。
+func register_player(value: EchoPlayer) -> void:
+	if player == value:
+		return
+	player = value
+	_gameplay_active = true
+	set_physics_process(true)
+	reset_timeline()
+
+
+# 场景卸载时清除已释放玩家留下的时态状态。
+func unregister_player(value: EchoPlayer) -> void:
+	if player != value:
+		return
+	player = null
+	_gameplay_active = false
+	reset_timeline()
+
+
+# 注册一台带有自身 FutureEcho 的记录器，不要求固定数量或固定路径。
+func register_recorder(recorder: FutureRecorder) -> void:
+	if recorder == null or recorders.has(recorder):
+		return
+	var future_echo := recorder.get_future_echo()
+	if future_echo == null:
+		return
+	recorders.append(recorder)
+	if not future_echo.slot_released.is_connected(_on_future_slot_released):
 		future_echo.slot_released.connect(_on_future_slot_released)
-	_initialized = true
-	if not _timeline_was_reset:
-		reset_timeline()
+	future_echo.reset_echo()
+	recorder.refresh_future_state()
+	_sync_future_slot_count()
+
+
+# 注销被用户删除的记录器，避免全局时间线留下失效引用。
+func unregister_recorder(recorder: FutureRecorder) -> void:
+	if not recorders.has(recorder):
+		return
+	recorders.erase(recorder)
+	if recorder == _recording_recorder:
+		_recording_track = null
+		_recording_recorder = null
+		_recording_future_echo = null
+		_recording_future_states.clear()
+		_recording_anchor = {}
+		future_recording_finished.emit()
+	_sync_future_slot_count()
+
+
+# 由玩法场景控制全局时间线是否随世界推进。
+func set_gameplay_active(value: bool) -> void:
+	_gameplay_active = value
 
 
 # 只在玩法未暂停时推进确定性回放时间。
 func _physics_process(delta: float) -> void:
-	if not _initialized or get_tree().paused:
+	if not _gameplay_active or player == null or get_tree().paused:
 		return
 	_timeline_seconds += delta
 	_advance_past_delay_shift(delta)
@@ -94,8 +127,7 @@ func get_timeline_seconds() -> float:
 
 # 开始一次未来录像并立即占用可能性槽。
 func start_future_recording(recorder: FutureRecorder) -> bool:
-	if not recorders.has(recorder):
-		push_error("EchoTimelineController can only record from an authored FutureRecorder")
+	if player == null or not recorders.has(recorder):
 		future_recording_rejected.emit()
 		return false
 	if _recording_track != null:
@@ -110,7 +142,7 @@ func start_future_recording(recorder: FutureRecorder) -> bool:
 	_recording_future_echo = reserved_future
 	_recording_future_states.clear()
 	for authored_recorder in recorders:
-		_recording_future_states.append(authored_recorder.get_future_echo().capture_playback_state())
+		_recording_future_states[authored_recorder.get_instance_id()] = authored_recorder.get_future_echo().capture_playback_state()
 	_recording_started_at = _timeline_seconds
 	_recording_anchor = player.capture_temporal_anchor(_timeline_seconds)
 	_recording_anchor["past_delay_seconds"] = _past_delay_seconds
@@ -137,7 +169,7 @@ func commit_future_recording() -> bool:
 	var duration := _timeline_seconds - _recording_started_at
 	var future_echo := _recording_future_echo
 	if future_echo == null:
-		push_error("EchoTimelineController lost its reserved FutureEcho slot")
+		push_error("EchoTimeline lost its reserved FutureEcho slot")
 		return false
 	var finished_track := _recording_track
 	var finished_recorder := _recording_recorder
@@ -154,9 +186,11 @@ func commit_future_recording() -> bool:
 	_run_track.trim_after(_timeline_seconds)
 	player.apply_temporal_recall(finished_anchor, TEMPORAL_PHASE_SECONDS)
 	_restore_past_anchor(finished_anchor)
-	for index in recorders.size():
-		recorders[index].get_future_echo().restore_playback_state(finished_future_states[index])
-		recorders[index].refresh_future_state()
+	for recorder in recorders:
+		var playback_state: Dictionary = finished_future_states.get(recorder.get_instance_id(), {})
+		if not playback_state.is_empty():
+			recorder.get_future_echo().restore_playback_state(playback_state)
+		recorder.refresh_future_state()
 	future_echo.start_playback(finished_track, playback_duration, TEMPORAL_PHASE_SECONDS)
 	finished_recorder.recording_finished()
 	_sync_future_slot_count()
@@ -167,10 +201,10 @@ func commit_future_recording() -> bool:
 # 请求切换过去延迟；连续请求只覆盖目标，不重置既有预警。
 func request_past_delay(seconds: float, switch_id: StringName) -> bool:
 	if not DELAY_OPTIONS.has(seconds):
-		push_error("EchoTimelineController.request_past_delay only accepts 1, 3, or 5 seconds")
+		push_error("EchoTimeline.request_past_delay only accepts 1, 3, or 5 seconds")
 		return false
 	if switch_id.is_empty():
-		push_error("EchoTimelineController.request_past_delay requires a delay switch id")
+		push_error("EchoTimeline.request_past_delay requires a delay switch id")
 		return false
 	if (
 		is_equal_approx(seconds, _pending_past_delay_seconds)
@@ -199,12 +233,11 @@ func reset_timeline(
 	initial_switch_id := DEFAULT_DELAY_SWITCH_ID
 ) -> void:
 	if not DELAY_OPTIONS.has(initial_delay_seconds):
-		push_error("EchoTimelineController.reset_timeline only accepts 1, 3, or 5 second past delays")
+		push_error("EchoTimeline.reset_timeline only accepts 1, 3, or 5 second past delays")
 		return
 	if initial_switch_id.is_empty():
-		push_error("EchoTimelineController.reset_timeline requires a delay switch id")
+		push_error("EchoTimeline.reset_timeline requires a delay switch id")
 		return
-	_timeline_was_reset = true
 	var cancelled_recorder := _recording_recorder
 	_timeline_seconds = 0.0
 	_past_delay_seconds = initial_delay_seconds
@@ -220,7 +253,9 @@ func reset_timeline(
 	_recording_anchor = {}
 	past_echo.reset_echo()
 	for recorder in recorders:
-		recorder.get_future_echo().reset_echo()
+		var future_echo: FutureEcho = recorder.get_future_echo()
+		if future_echo != null:
+			future_echo.reset_echo()
 	if cancelled_recorder != null:
 		cancelled_recorder.recording_cancelled()
 	for recorder in recorders:
@@ -299,15 +334,15 @@ func _advance_future_recording() -> void:
 func _sync_future_slot_count() -> void:
 	var active_slots := 0
 	for recorder in recorders:
-		active_slots += int(not recorder.get_future_echo().is_available())
-	if _recording_track != null and _recording_future_echo.is_available():
+		var future_echo: FutureEcho = recorder.get_future_echo()
+		if future_echo != null:
+			active_slots += int(not future_echo.is_available())
+	if _recording_track != null and _recording_future_echo != null and _recording_future_echo.is_available():
 		active_slots += 1
 	if active_slots == _future_slots_used:
 		return
 	_future_slots_used = active_slots
 	future_slots_changed.emit(_future_slots_used, recorders.size())
-
-
 # 未来体停止影响玩法时只释放一个可能性槽。
 func _on_future_slot_released(_future_echo: FutureEcho) -> void:
 	_sync_future_slot_count()
