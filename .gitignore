@@ -21,5 +21,6 @@ screenshots/
 
 # Local Codex state and non-shipping asset research cache
 .omx/
+.tmp/
 downloads/.cache/
 downloads/echo_chase_candidates/

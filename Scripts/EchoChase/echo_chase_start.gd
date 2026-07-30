@@ -229,6 +229,8 @@ func _get_delay_switch(switch_id: StringName) -> DelayPickup:
 
 # 激活最新复活点并写入槽位，不改动当前时间线。
 func _on_checkpoint_activation_requested(checkpoint: EchoCheckpoint) -> void:
+	if timeline.is_future_recording():
+		return
 	for authored_checkpoint in _checkpoints:
 		authored_checkpoint.set_active(authored_checkpoint == checkpoint, authored_checkpoint == checkpoint)
 	_respawn_position = checkpoint.get_respawn_position()

@@ -14,12 +14,15 @@ const ENTRY_STATE_PAST := &"past"
 const MENU_INTRO := &"menu_enter"
 const MENU_INTRO_REDUCED := &"menu_enter_reduced"
 const MENU_IDLE := &"menu_idle"
+const WORLD_INTRO := &"world_enter"
+const WORLD_INTRO_REDUCED := &"world_enter_reduced"
+const WORLD_IDLE := &"world_idle"
 const FRAME_STANDARD := &"frame_standard"
 const FRAME_REDUCED := &"frame_reduced"
 const PULSE_PRESENT := &"pulse_present"
 const PULSE_PAST := &"pulse_past"
-const BACKGROUND_ORIGIN := Vector2(-32.0, -32.0)
-const BACKGROUND_PARALLAX := Vector2(16.0, 10.0)
+const BACKGROUND_ORIGIN := Vector2.ZERO
+const BACKGROUND_PARALLAX := Vector2(4.0, 2.5)
 const BACKGROUND_FOLLOW_SPEED := 7.0
 
 @export_file("*.tscn") var echo_chase_entry_scene_path := ""
@@ -41,7 +44,8 @@ const BACKGROUND_FOLLOW_SPEED := 7.0
 @onready var phase_cycle_animation_player: AnimationPlayer = %PhaseCycleAnimationPlayer
 @onready var frame_animation_player: AnimationPlayer = %FrameAnimationPlayer
 @onready var transition_animation_player: AnimationPlayer = %TransitionAnimationPlayer
-@onready var background: Control = %Background
+@onready var world_parallax: Node2D = $MenuWorld/WorldParallax
+@onready var world_animation_player: AnimationPlayer = $MenuWorld/WorldAnimationPlayer
 
 var _credits_origin: CreditsOrigin = CreditsOrigin.MAIN_MENU
 var _settings_tab_before_credits := 0
@@ -67,7 +71,7 @@ func _ready() -> void:
 		GameAudio.play_music("menu", menu_music, 0.4)
 
 
-# 只让地图背景跟随鼠标，三时态角色保持严格三等分构图。
+# 让 authored 世界层随鼠标轻移，CanvasLayer 菜单保持固定。
 func _process(delta: float) -> void:
 	var viewport_size := get_viewport_rect().size
 	if viewport_size.x <= 0.0 or viewport_size.y <= 0.0:
@@ -76,7 +80,7 @@ func _process(delta: float) -> void:
 	var centered_pointer := (pointer_ratio - Vector2(0.5, 0.5)) * 2.0
 	var target := BACKGROUND_ORIGIN - centered_pointer * BACKGROUND_PARALLAX
 	var follow := 1.0 - exp(-BACKGROUND_FOLLOW_SPEED * delta)
-	background.position = background.position.lerp(target, follow)
+	world_parallax.position = world_parallax.position.lerp(target, follow)
 
 
 # 连接五个主菜单命令与设置、感谢页返回路由。
@@ -157,8 +161,8 @@ func _transition_to_game(scene_path: String, temporal_state: StringName) -> bool
 	_set_main_menu_input_enabled(false)
 	var reduced := _uses_reduced_intro()
 	if not reduced:
-		transition_animation_player.play(PULSE_PRESENT if temporal_state == ENTRY_STATE_PRESENT else PULSE_PAST)
-		await transition_animation_player.animation_finished
+		world_animation_player.play(PULSE_PRESENT if temporal_state == ENTRY_STATE_PRESENT else PULSE_PAST)
+		await world_animation_player.animation_finished
 	var transition := _get_exit_transition(temporal_state, reduced)
 	SceneManager.set_meta(ENTRY_STATE_META, temporal_state)
 	var tween := SceneManager.transition_start(transition)
@@ -226,6 +230,8 @@ func _play_menu_intro() -> void:
 	_set_main_menu_input_enabled(false)
 	menu_animation_player.play(MENU_INTRO_REDUCED if _uses_reduced_intro() else MENU_INTRO)
 	menu_animation_player.seek(0.0, true)
+	world_animation_player.play(WORLD_INTRO_REDUCED if _uses_reduced_intro() else WORLD_INTRO)
+	world_animation_player.seek(0.0, true)
 
 
 # 标准或低闪烁入场自然结束后统一开放输入。
@@ -248,9 +254,9 @@ func _finish_menu_intro() -> void:
 	_start_menu_phase_cycle()
 
 
-# 开始三个固定剪影的错相位漂浮循环。
+# 开始三个世界剪影的错相位漂浮循环。
 func _start_menu_phase_cycle() -> void:
-	phase_cycle_animation_player.play(MENU_IDLE)
+	world_animation_player.play(WORLD_IDLE)
 
 
 # 低闪切换时同步入场和边框动画，不改变菜单流程。
@@ -261,6 +267,10 @@ func _on_setting_changed(key: String, _value: Variant) -> void:
 		_switch_animation_preserving_progress(
 			menu_animation_player,
 			MENU_INTRO_REDUCED if _uses_reduced_intro() else MENU_INTRO
+		)
+		_switch_animation_preserving_progress(
+			world_animation_player,
+			WORLD_INTRO_REDUCED if _uses_reduced_intro() else WORLD_INTRO
 		)
 	_play_frame_animation(true)
 
@@ -287,6 +297,8 @@ func _switch_animation_preserving_progress(animation_player: AnimationPlayer, an
 func _skip_menu_intro() -> void:
 	menu_animation_player.seek(menu_animation_player.current_animation_length, true)
 	menu_animation_player.stop()
+	world_animation_player.seek(world_animation_player.current_animation_length, true)
+	world_animation_player.stop()
 	_finish_menu_intro()
 
 

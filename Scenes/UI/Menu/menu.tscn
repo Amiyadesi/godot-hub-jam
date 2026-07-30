@@ -17,6 +17,7 @@
 [ext_resource type="Resource" path="res://resources/scene_transitions/echo_continue_past_radial.tres" id="15_continue_transition"]
 [ext_resource type="Resource" path="res://resources/scene_transitions/echo_continue_past_radial_reduced.tres" id="16_continue_transition_reduced"]
 [ext_resource type="Shader" path="res://assets/echo_chase/vfx/menu_edge_glow.gdshader" id="17_edge_glow"]
+[ext_resource type="PackedScene" path="res://Scenes/UI/Menu/menu_world.tscn" id="18_world"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_grid"]
 shader = ExtResource("8_grid")
@@ -716,8 +717,14 @@ start_transition_reduced = ExtResource("14_start_transition_reduced")
 continue_transition = ExtResource("15_continue_transition")
 continue_transition_reduced = ExtResource("16_continue_transition_reduced")
 
-[node name="Background" type="Control" parent="." unique_id=451704620]
+[node name="MenuWorld" parent="." unique_id=191223000 instance=ExtResource("18_world")]
+z_index = -10
+
+[node name="MenuUi" type="CanvasLayer" parent="." unique_id=191223060]
+
+[node name="Background" type="Control" parent="MenuUi" unique_id=451704620]
 unique_name_in_owner = true
+visible = false
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -730,7 +737,7 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 
-[node name="Grid" type="ColorRect" parent="Background"]
+[node name="Grid" type="ColorRect" parent="MenuUi/Background"]
 material = SubResource("ShaderMaterial_grid")
 layout_mode = 1
 anchors_preset = 15
@@ -741,14 +748,14 @@ grow_vertical = 2
 mouse_filter = 2
 color = Color(1, 1, 1, 1)
 
-[node name="Road" type="TileMapLayer" parent="Background"]
+[node name="Road" type="TileMapLayer" parent="MenuUi/Background"]
 texture_filter = 1
 scale = Vector2(4, 4)
 tile_map_data = PackedByteArray("AAAAABEAAAAAAAgAAAABABEAAAABAAgAAAACABEAAAABAAgAAAADABEAAAABAAgAAAAEABEAAAABAAgAAAAFABEAAAABAAgAAAAGABEAAAABAAgAAAAHABEAAAABAAgAAAAIABEAAAABAAgAAAAJABEAAAABAAgAAAAKABEAAAABAAgAAAALABEAAAABAAgAAAAMABEAAAABAAgAAAANABEAAAABAAgAAAAOABEAAAABAAgAAAAPABEAAAABAAgAAAAQABEAAAABAAgAAAARABEAAAABAAgAAAASABEAAAABAAgAAAATABEAAAABAAgAAAAUABEAAAABAAgAAAAVABEAAAABAAgAAAAWABEAAAABAAgAAAAXABEAAAABAAgAAAAYABEAAAABAAgAAAAZABEAAAABAAgAAAAaABEAAAABAAgAAAAbABEAAAABAAgAAAAcABEAAAABAAgAAAAdABEAAAABAAgAAAAeABEAAAACAAgAAAA=")
 tile_set = ExtResource("6_tile_set")
 collision_enabled = false
 
-[node name="MapTint" type="ColorRect" parent="." unique_id=267666307]
+[node name="MapTint" type="ColorRect" parent="MenuUi" unique_id=267666307]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -758,8 +765,9 @@ grow_vertical = 2
 mouse_filter = 2
 color = Color(0, 0, 0, 0.22)
 
-[node name="TemporalCharacterLayer" type="Control" parent="." unique_id=782596653]
+[node name="TemporalCharacterLayer" type="Control" parent="MenuUi" unique_id=782596653]
 unique_name_in_owner = true
+visible = false
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -768,7 +776,7 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 
-[node name="PastRegion" type="Control" parent="TemporalCharacterLayer" unique_id=550900941]
+[node name="PastRegion" type="Control" parent="MenuUi/TemporalCharacterLayer" unique_id=550900941]
 layout_mode = 1
 anchor_right = 0.333333
 anchor_bottom = 1.0
@@ -776,7 +784,7 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 
-[node name="Figure" type="Control" parent="TemporalCharacterLayer/PastRegion" unique_id=1338637992]
+[node name="Figure" type="Control" parent="MenuUi/TemporalCharacterLayer/PastRegion" unique_id=1338637992]
 layout_mode = 1
 anchor_left = 0.5
 anchor_top = 0.54
@@ -786,15 +794,15 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 
-[node name="Float" type="Node2D" parent="TemporalCharacterLayer/PastRegion/Figure" unique_id=81224803]
+[node name="Float" type="Node2D" parent="MenuUi/TemporalCharacterLayer/PastRegion/Figure" unique_id=81224803]
 
-[node name="TransitionHalo" type="Sprite2D" parent="TemporalCharacterLayer/PastRegion/Figure/Float" unique_id=855571523]
+[node name="TransitionHalo" type="Sprite2D" parent="MenuUi/TemporalCharacterLayer/PastRegion/Figure/Float" unique_id=855571523]
 visible = false
 modulate = Color(1, 0.24, 0.82, 0)
 texture_filter = 1
 texture = ExtResource("12_transition_ring")
 
-[node name="HistoryGhost" type="AnimatedSprite2D" parent="TemporalCharacterLayer/PastRegion/Figure/Float"]
+[node name="HistoryGhost" type="AnimatedSprite2D" parent="MenuUi/TemporalCharacterLayer/PastRegion/Figure/Float"]
 position = Vector2(-8, 1)
 self_modulate = Color(1, 0.14, 0.7, 0.28)
 texture_filter = 1
@@ -803,7 +811,7 @@ sprite_frames = ExtResource("9_character_frames")
 animation = &"idle"
 autoplay = "idle"
 
-[node name="HistoryGhostFar" type="AnimatedSprite2D" parent="TemporalCharacterLayer/PastRegion/Figure/Float"]
+[node name="HistoryGhostFar" type="AnimatedSprite2D" parent="MenuUi/TemporalCharacterLayer/PastRegion/Figure/Float"]
 position = Vector2(-14, 2)
 self_modulate = Color(1, 0.08, 0.62, 0.14)
 texture_filter = 1
@@ -812,7 +820,7 @@ sprite_frames = ExtResource("9_character_frames")
 animation = &"idle"
 autoplay = "idle"
 
-[node name="Core" type="AnimatedSprite2D" parent="TemporalCharacterLayer/PastRegion/Figure/Float" unique_id=1246121387]
+[node name="Core" type="AnimatedSprite2D" parent="MenuUi/TemporalCharacterLayer/PastRegion/Figure/Float" unique_id=1246121387]
 self_modulate = Color(1, 0.34, 0.72, 0.84)
 texture_filter = 1
 scale = Vector2(4, 4)
@@ -820,7 +828,7 @@ sprite_frames = ExtResource("9_character_frames")
 animation = &"idle"
 autoplay = "idle"
 
-[node name="Outline" type="AnimatedSprite2D" parent="TemporalCharacterLayer/PastRegion/Figure/Float" unique_id=903952759]
+[node name="Outline" type="AnimatedSprite2D" parent="MenuUi/TemporalCharacterLayer/PastRegion/Figure/Float" unique_id=903952759]
 texture_filter = 1
 material = SubResource("Material_past_outline")
 scale = Vector2(4, 4)
@@ -828,7 +836,7 @@ sprite_frames = ExtResource("10_outline_frames")
 animation = &"idle"
 autoplay = "idle"
 
-[node name="PresentRegion" type="Control" parent="TemporalCharacterLayer" unique_id=19502046]
+[node name="PresentRegion" type="Control" parent="MenuUi/TemporalCharacterLayer" unique_id=19502046]
 layout_mode = 1
 anchor_left = 0.333333
 anchor_right = 0.666667
@@ -837,7 +845,7 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 
-[node name="Figure" type="Control" parent="TemporalCharacterLayer/PresentRegion" unique_id=1080281947]
+[node name="Figure" type="Control" parent="MenuUi/TemporalCharacterLayer/PresentRegion" unique_id=1080281947]
 layout_mode = 1
 anchor_left = 0.5
 anchor_top = 0.54
@@ -847,22 +855,22 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 
-[node name="Float" type="Node2D" parent="TemporalCharacterLayer/PresentRegion/Figure" unique_id=393736091]
+[node name="Float" type="Node2D" parent="MenuUi/TemporalCharacterLayer/PresentRegion/Figure" unique_id=393736091]
 
-[node name="TransitionHalo" type="Sprite2D" parent="TemporalCharacterLayer/PresentRegion/Figure/Float" unique_id=1653900612]
+[node name="TransitionHalo" type="Sprite2D" parent="MenuUi/TemporalCharacterLayer/PresentRegion/Figure/Float" unique_id=1653900612]
 visible = false
 modulate = Color(0.7, 1, 1, 0)
 texture_filter = 1
 texture = ExtResource("12_transition_ring")
 
-[node name="Core" type="AnimatedSprite2D" parent="TemporalCharacterLayer/PresentRegion/Figure/Float" unique_id=1511568470]
+[node name="Core" type="AnimatedSprite2D" parent="MenuUi/TemporalCharacterLayer/PresentRegion/Figure/Float" unique_id=1511568470]
 texture_filter = 1
 scale = Vector2(4, 4)
 sprite_frames = ExtResource("9_character_frames")
 animation = &"idle"
 autoplay = "idle"
 
-[node name="Outline" type="AnimatedSprite2D" parent="TemporalCharacterLayer/PresentRegion/Figure/Float" unique_id=458720556]
+[node name="Outline" type="AnimatedSprite2D" parent="MenuUi/TemporalCharacterLayer/PresentRegion/Figure/Float" unique_id=458720556]
 texture_filter = 1
 material = SubResource("Material_present_outline")
 scale = Vector2(4, 4)
@@ -870,7 +878,7 @@ sprite_frames = ExtResource("10_outline_frames")
 animation = &"idle"
 autoplay = "idle"
 
-[node name="FutureRegion" type="Control" parent="TemporalCharacterLayer" unique_id=1202038038]
+[node name="FutureRegion" type="Control" parent="MenuUi/TemporalCharacterLayer" unique_id=1202038038]
 layout_mode = 1
 anchor_left = 0.666667
 anchor_right = 1.0
@@ -879,7 +887,7 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 
-[node name="Figure" type="Control" parent="TemporalCharacterLayer/FutureRegion" unique_id=1485604567]
+[node name="Figure" type="Control" parent="MenuUi/TemporalCharacterLayer/FutureRegion" unique_id=1485604567]
 layout_mode = 1
 anchor_left = 0.5
 anchor_top = 0.54
@@ -889,15 +897,15 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 
-[node name="Float" type="Node2D" parent="TemporalCharacterLayer/FutureRegion/Figure" unique_id=1175819475]
+[node name="Float" type="Node2D" parent="MenuUi/TemporalCharacterLayer/FutureRegion/Figure" unique_id=1175819475]
 
-[node name="TransitionHalo" type="Sprite2D" parent="TemporalCharacterLayer/FutureRegion/Figure/Float" unique_id=1718986606]
+[node name="TransitionHalo" type="Sprite2D" parent="MenuUi/TemporalCharacterLayer/FutureRegion/Figure/Float" unique_id=1718986606]
 visible = false
 modulate = Color(1, 0.7, 0.2, 0)
 texture_filter = 1
 texture = ExtResource("12_transition_ring")
 
-[node name="PredictionGhost" type="AnimatedSprite2D" parent="TemporalCharacterLayer/FutureRegion/Figure/Float"]
+[node name="PredictionGhost" type="AnimatedSprite2D" parent="MenuUi/TemporalCharacterLayer/FutureRegion/Figure/Float"]
 position = Vector2(8, 0)
 self_modulate = Color(1, 0.64, 0.1, 0.3)
 texture_filter = 1
@@ -906,7 +914,7 @@ sprite_frames = ExtResource("9_character_frames")
 animation = &"idle"
 autoplay = "idle"
 
-[node name="Core" type="AnimatedSprite2D" parent="TemporalCharacterLayer/FutureRegion/Figure/Float" unique_id=412221389]
+[node name="Core" type="AnimatedSprite2D" parent="MenuUi/TemporalCharacterLayer/FutureRegion/Figure/Float" unique_id=412221389]
 self_modulate = Color(1, 0.74, 0.24, 0.86)
 texture_filter = 1
 scale = Vector2(4, 4)
@@ -914,7 +922,7 @@ sprite_frames = ExtResource("9_character_frames")
 animation = &"idle"
 autoplay = "idle"
 
-[node name="Outline" type="AnimatedSprite2D" parent="TemporalCharacterLayer/FutureRegion/Figure/Float" unique_id=170034899]
+[node name="Outline" type="AnimatedSprite2D" parent="MenuUi/TemporalCharacterLayer/FutureRegion/Figure/Float" unique_id=170034899]
 texture_filter = 1
 material = SubResource("Material_future_outline")
 scale = Vector2(4, 4)
@@ -922,7 +930,7 @@ sprite_frames = ExtResource("10_outline_frames")
 animation = &"idle"
 autoplay = "idle"
 
-[node name="OuterOutline" type="AnimatedSprite2D" parent="TemporalCharacterLayer/FutureRegion/Figure/Float"]
+[node name="OuterOutline" type="AnimatedSprite2D" parent="MenuUi/TemporalCharacterLayer/FutureRegion/Figure/Float"]
 texture_filter = 1
 material = SubResource("Material_future_outer_outline")
 scale = Vector2(4.55, 4.55)
@@ -930,7 +938,7 @@ sprite_frames = ExtResource("10_outline_frames")
 animation = &"idle"
 autoplay = "idle"
 
-[node name="TemporalFrame" type="Control" parent="."]
+[node name="TemporalFrame" type="Control" parent="MenuUi"]
 unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 15
@@ -940,7 +948,7 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 
-[node name="Glow" type="Control" parent="TemporalFrame"]
+[node name="Glow" type="Control" parent="MenuUi/TemporalFrame"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -949,7 +957,7 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 
-[node name="TopPast" type="ColorRect" parent="TemporalFrame/Glow"]
+[node name="TopPast" type="ColorRect" parent="MenuUi/TemporalFrame/Glow"]
 material = SubResource("Material_menu_top_glow")
 layout_mode = 1
 anchor_right = 0.333333
@@ -958,7 +966,7 @@ grow_horizontal = 2
 mouse_filter = 2
 color = Color(1, 0.24, 0.82, 0.48)
 
-[node name="TopPresent" type="ColorRect" parent="TemporalFrame/Glow"]
+[node name="TopPresent" type="ColorRect" parent="MenuUi/TemporalFrame/Glow"]
 material = SubResource("Material_menu_top_glow")
 layout_mode = 1
 anchor_left = 0.333333
@@ -968,7 +976,7 @@ grow_horizontal = 2
 mouse_filter = 2
 color = Color(0.7, 1, 1, 0.48)
 
-[node name="TopFuture" type="ColorRect" parent="TemporalFrame/Glow"]
+[node name="TopFuture" type="ColorRect" parent="MenuUi/TemporalFrame/Glow"]
 material = SubResource("Material_menu_top_glow")
 layout_mode = 1
 anchor_left = 0.666667
@@ -978,7 +986,7 @@ grow_horizontal = 2
 mouse_filter = 2
 color = Color(1, 0.7, 0.2, 0.48)
 
-[node name="BottomPast" type="ColorRect" parent="TemporalFrame/Glow"]
+[node name="BottomPast" type="ColorRect" parent="MenuUi/TemporalFrame/Glow"]
 material = SubResource("Material_menu_bottom_glow")
 layout_mode = 1
 anchor_top = 1.0
@@ -990,7 +998,7 @@ grow_vertical = 0
 mouse_filter = 2
 color = Color(1, 0.24, 0.82, 0.48)
 
-[node name="BottomPresent" type="ColorRect" parent="TemporalFrame/Glow"]
+[node name="BottomPresent" type="ColorRect" parent="MenuUi/TemporalFrame/Glow"]
 material = SubResource("Material_menu_bottom_glow")
 layout_mode = 1
 anchor_left = 0.333333
@@ -1003,7 +1011,7 @@ grow_vertical = 0
 mouse_filter = 2
 color = Color(0.7, 1, 1, 0.48)
 
-[node name="BottomFuture" type="ColorRect" parent="TemporalFrame/Glow"]
+[node name="BottomFuture" type="ColorRect" parent="MenuUi/TemporalFrame/Glow"]
 material = SubResource("Material_menu_bottom_glow")
 layout_mode = 1
 anchor_left = 0.666667
@@ -1016,7 +1024,7 @@ grow_vertical = 0
 mouse_filter = 2
 color = Color(1, 0.7, 0.2, 0.48)
 
-[node name="Lines" type="Control" parent="TemporalFrame"]
+[node name="Lines" type="Control" parent="MenuUi/TemporalFrame"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -1025,7 +1033,7 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 
-[node name="TopPast" type="ColorRect" parent="TemporalFrame/Lines"]
+[node name="TopPast" type="ColorRect" parent="MenuUi/TemporalFrame/Lines"]
 layout_mode = 1
 anchor_right = 0.333333
 offset_bottom = 2.0
@@ -1033,7 +1041,7 @@ grow_horizontal = 2
 mouse_filter = 2
 color = Color(1, 0.24, 0.82, 0.96)
 
-[node name="TopPresent" type="ColorRect" parent="TemporalFrame/Lines"]
+[node name="TopPresent" type="ColorRect" parent="MenuUi/TemporalFrame/Lines"]
 layout_mode = 1
 anchor_left = 0.333333
 anchor_right = 0.666667
@@ -1042,7 +1050,7 @@ grow_horizontal = 2
 mouse_filter = 2
 color = Color(0.7, 1, 1, 0.96)
 
-[node name="TopFuture" type="ColorRect" parent="TemporalFrame/Lines"]
+[node name="TopFuture" type="ColorRect" parent="MenuUi/TemporalFrame/Lines"]
 layout_mode = 1
 anchor_left = 0.666667
 anchor_right = 1.0
@@ -1051,7 +1059,7 @@ grow_horizontal = 2
 mouse_filter = 2
 color = Color(1, 0.7, 0.2, 0.96)
 
-[node name="BottomPast" type="ColorRect" parent="TemporalFrame/Lines"]
+[node name="BottomPast" type="ColorRect" parent="MenuUi/TemporalFrame/Lines"]
 layout_mode = 1
 anchor_top = 1.0
 anchor_right = 0.333333
@@ -1062,7 +1070,7 @@ grow_vertical = 0
 mouse_filter = 2
 color = Color(1, 0.24, 0.82, 0.96)
 
-[node name="BottomPresent" type="ColorRect" parent="TemporalFrame/Lines"]
+[node name="BottomPresent" type="ColorRect" parent="MenuUi/TemporalFrame/Lines"]
 layout_mode = 1
 anchor_left = 0.333333
 anchor_top = 1.0
@@ -1074,7 +1082,7 @@ grow_vertical = 0
 mouse_filter = 2
 color = Color(0.7, 1, 1, 0.96)
 
-[node name="BottomFuture" type="ColorRect" parent="TemporalFrame/Lines"]
+[node name="BottomFuture" type="ColorRect" parent="MenuUi/TemporalFrame/Lines"]
 layout_mode = 1
 anchor_left = 0.666667
 anchor_top = 1.0
@@ -1086,7 +1094,7 @@ grow_vertical = 0
 mouse_filter = 2
 color = Color(1, 0.7, 0.2, 0.96)
 
-[node name="ButtonLayer" type="Control" parent="." unique_id=2020807709]
+[node name="ButtonLayer" type="Control" parent="MenuUi" unique_id=2020807709]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -1094,7 +1102,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="TitleReveal" type="Control" parent="ButtonLayer" unique_id=1129034817]
+[node name="TitleReveal" type="Control" parent="MenuUi/ButtonLayer" unique_id=1129034817]
 clip_contents = true
 layout_mode = 1
 anchor_left = 0.065
@@ -1105,7 +1113,7 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 
-[node name="Title" type="Label" parent="ButtonLayer/TitleReveal" unique_id=2035159257]
+[node name="Title" type="Label" parent="MenuUi/ButtonLayer/TitleReveal" unique_id=2035159257]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -1119,7 +1127,7 @@ theme_override_font_sizes/font_size = 74
 text = "延迟追迹 / DELAY TRACE"
 vertical_alignment = 1
 
-[node name="TitleLine" type="ColorRect" parent="ButtonLayer" unique_id=1523276786]
+[node name="TitleLine" type="ColorRect" parent="MenuUi/ButtonLayer" unique_id=1523276786]
 layout_mode = 1
 anchors_preset = -1
 anchor_left = 0.068
@@ -1131,7 +1139,7 @@ grow_vertical = 2
 mouse_filter = 2
 color = Color(0.96, 0.96, 0.92, 0.86)
 
-[node name="RouteNav" type="Control" parent="ButtonLayer" unique_id=19100841]
+[node name="RouteNav" type="Control" parent="MenuUi/ButtonLayer" unique_id=19100841]
 layout_mode = 1
 anchor_left = 0.7
 anchor_top = 0.58
@@ -1140,7 +1148,7 @@ anchor_bottom = 0.94
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="RouteLine" type="ColorRect" parent="ButtonLayer/RouteNav" unique_id=1412426438]
+[node name="RouteLine" type="ColorRect" parent="MenuUi/ButtonLayer/RouteNav" unique_id=1412426438]
 layout_mode = 0
 offset_left = 9.0
 offset_top = 28.0
@@ -1149,7 +1157,7 @@ offset_bottom = 284.0
 mouse_filter = 2
 color = Color(0.86, 0.86, 0.82, 0.74)
 
-[node name="Marker1" type="ColorRect" parent="ButtonLayer/RouteNav" unique_id=479634922]
+[node name="Marker1" type="ColorRect" parent="MenuUi/ButtonLayer/RouteNav" unique_id=479634922]
 layout_mode = 0
 offset_left = 6.0
 offset_top = 24.0
@@ -1158,7 +1166,7 @@ offset_bottom = 32.0
 mouse_filter = 2
 color = Color(0.96, 0.96, 0.92, 1)
 
-[node name="Marker2" type="ColorRect" parent="ButtonLayer/RouteNav" unique_id=983503419]
+[node name="Marker2" type="ColorRect" parent="MenuUi/ButtonLayer/RouteNav" unique_id=983503419]
 layout_mode = 0
 offset_left = 6.0
 offset_top = 88.0
@@ -1167,7 +1175,7 @@ offset_bottom = 96.0
 mouse_filter = 2
 color = Color(0.96, 0.96, 0.92, 1)
 
-[node name="Marker3" type="ColorRect" parent="ButtonLayer/RouteNav" unique_id=1884627264]
+[node name="Marker3" type="ColorRect" parent="MenuUi/ButtonLayer/RouteNav" unique_id=1884627264]
 layout_mode = 0
 offset_left = 6.0
 offset_top = 152.0
@@ -1176,7 +1184,7 @@ offset_bottom = 160.0
 mouse_filter = 2
 color = Color(0.96, 0.96, 0.92, 1)
 
-[node name="Marker4" type="ColorRect" parent="ButtonLayer/RouteNav" unique_id=1988022431]
+[node name="Marker4" type="ColorRect" parent="MenuUi/ButtonLayer/RouteNav" unique_id=1988022431]
 layout_mode = 0
 offset_left = 6.0
 offset_top = 216.0
@@ -1185,7 +1193,7 @@ offset_bottom = 224.0
 mouse_filter = 2
 color = Color(0.96, 0.96, 0.92, 1)
 
-[node name="Marker5" type="ColorRect" parent="ButtonLayer/RouteNav" unique_id=1370142364]
+[node name="Marker5" type="ColorRect" parent="MenuUi/ButtonLayer/RouteNav" unique_id=1370142364]
 layout_mode = 0
 offset_left = 6.0
 offset_top = 280.0
@@ -1194,7 +1202,7 @@ offset_bottom = 288.0
 mouse_filter = 2
 color = Color(0.96, 0.96, 0.92, 1)
 
-[node name="MenuButtons" type="VBoxContainer" parent="ButtonLayer/RouteNav" unique_id=246253960]
+[node name="MenuButtons" type="VBoxContainer" parent="MenuUi/ButtonLayer/RouteNav" unique_id=246253960]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -1204,42 +1212,42 @@ grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/separation = 8
 
-[node name="StartButton" parent="ButtonLayer/RouteNav/MenuButtons" unique_id=1396341183 instance=ExtResource("2_button")]
+[node name="StartButton" parent="MenuUi/ButtonLayer/RouteNav/MenuButtons" unique_id=1396341183 instance=ExtResource("2_button")]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 56)
 layout_mode = 2
 theme_override_font_sizes/font_size = 30
 text = "开始游戏"
 
-[node name="ContinueButton" parent="ButtonLayer/RouteNav/MenuButtons" unique_id=388408218 instance=ExtResource("2_button")]
+[node name="ContinueButton" parent="MenuUi/ButtonLayer/RouteNav/MenuButtons" unique_id=388408218 instance=ExtResource("2_button")]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 56)
 layout_mode = 2
 theme_override_font_sizes/font_size = 30
 text = "继续游戏"
 
-[node name="SettingButton" parent="ButtonLayer/RouteNav/MenuButtons" unique_id=1950896670 instance=ExtResource("2_button")]
+[node name="SettingButton" parent="MenuUi/ButtonLayer/RouteNav/MenuButtons" unique_id=1950896670 instance=ExtResource("2_button")]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 56)
 layout_mode = 2
 theme_override_font_sizes/font_size = 30
 text = "设置"
 
-[node name="ThanksButton" parent="ButtonLayer/RouteNav/MenuButtons" unique_id=2124940100 instance=ExtResource("2_button")]
+[node name="ThanksButton" parent="MenuUi/ButtonLayer/RouteNav/MenuButtons" unique_id=2124940100 instance=ExtResource("2_button")]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 56)
 layout_mode = 2
 theme_override_font_sizes/font_size = 30
 text = "感谢"
 
-[node name="ExitButton" parent="ButtonLayer/RouteNav/MenuButtons" unique_id=983195807 instance=ExtResource("2_button")]
+[node name="ExitButton" parent="MenuUi/ButtonLayer/RouteNav/MenuButtons" unique_id=983195807 instance=ExtResource("2_button")]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 56)
 layout_mode = 2
 theme_override_font_sizes/font_size = 30
 text = "退出"
 
-[node name="StatusLabel" type="Label" parent="ButtonLayer/RouteNav" unique_id=910815655]
+[node name="StatusLabel" type="Label" parent="MenuUi/ButtonLayer/RouteNav" unique_id=910815655]
 unique_name_in_owner = true
 visible = false
 layout_mode = 1
@@ -1255,29 +1263,29 @@ grow_vertical = 0
 theme_override_colors/font_color = Color(0.72, 0.72, 0.69, 1)
 theme_override_font_sizes/font_size = 18
 
-[node name="MenuAnimationPlayer" type="AnimationPlayer" parent="." unique_id=476074295]
+[node name="MenuAnimationPlayer" type="AnimationPlayer" parent="MenuUi" unique_id=476074295]
 unique_name_in_owner = true
 libraries/ = SubResource("AnimationLibrary_menu")
 
-[node name="PhaseCycleAnimationPlayer" type="AnimationPlayer" parent="." unique_id=1966694006]
+[node name="PhaseCycleAnimationPlayer" type="AnimationPlayer" parent="MenuUi" unique_id=1966694006]
 unique_name_in_owner = true
 libraries/ = SubResource("AnimationLibrary_idle")
 
-[node name="FrameAnimationPlayer" type="AnimationPlayer" parent="."]
+[node name="FrameAnimationPlayer" type="AnimationPlayer" parent="MenuUi"]
 unique_name_in_owner = true
 libraries/ = SubResource("AnimationLibrary_frame")
 
-[node name="TransitionAnimationPlayer" type="AnimationPlayer" parent="." unique_id=217908985]
+[node name="TransitionAnimationPlayer" type="AnimationPlayer" parent="MenuUi" unique_id=217908985]
 unique_name_in_owner = true
 libraries/ = SubResource("AnimationLibrary_transition")
 
-[node name="SettingScreen" parent="." unique_id=1801975981 instance=ExtResource("3_settings")]
+[node name="SettingScreen" parent="MenuUi" unique_id=1801975981 instance=ExtResource("3_settings")]
 unique_name_in_owner = true
 visible = false
 layout_mode = 1
 color = Color(0, 0, 0, 0)
 
-[node name="ThankScreen" parent="." unique_id=685006015 instance=ExtResource("4_thanks")]
+[node name="ThankScreen" parent="MenuUi" unique_id=685006015 instance=ExtResource("4_thanks")]
 unique_name_in_owner = true
 visible = false
 layout_mode = 1

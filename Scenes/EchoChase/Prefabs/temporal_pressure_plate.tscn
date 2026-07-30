@@ -1,53 +1,37 @@
-[gd_scene load_steps=6 format=3]
+[gd_scene format=3 uid="uid://bsobfsoalx0im"]
 
-[ext_resource type="Script" path="res://Scripts/EchoChase/temporal_pressure_plate.gd" id="1_script"]
-[ext_resource type="Texture2D" path="res://assets/echo_chase/tilemap/monochrome_tilemap_transparent_packed.png" id="2_tilemap"]
+[ext_resource type="Script" uid="uid://dbwbd4hkpquou" path="res://Scripts/EchoChase/temporal_pressure_plate.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://bgrnghgd1ccr6" path="res://assets/echo_chase/tilemap/monochrome_tilemap_transparent_packed.png" id="2_tilemap"]
 
 [sub_resource type="RectangleShape2D" id="Shape_plate"]
-size = Vector2(64, 16)
+size = Vector2(28, 16)
 
 [sub_resource type="AtlasTexture" id="Atlas_plate_left"]
 atlas = ExtResource("2_tilemap")
-region = Rect2(0, 128, 16, 16)
-
-[sub_resource type="AtlasTexture" id="Atlas_plate_middle"]
-atlas = ExtResource("2_tilemap")
-region = Rect2(16, 128, 16, 16)
+region = Rect2(48, 128, 16, 16)
 
 [sub_resource type="AtlasTexture" id="Atlas_plate_right"]
 atlas = ExtResource("2_tilemap")
-region = Rect2(32, 128, 16, 16)
+region = Rect2(48, 128, 16, 16)
 
-[node name="TemporalPressurePlate" type="Area2D"]
+[node name="TemporalPressurePlate" type="Area2D" unique_id=1863426400]
 collision_layer = 16
 collision_mask = 14
-monitoring = true
-monitorable = true
 script = ExtResource("1_script")
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=2052131603]
 shape = SubResource("Shape_plate")
 
-[node name="Visual" type="Node2D" parent="."]
+[node name="Visual" type="Node2D" parent="." unique_id=1343611338]
 unique_name_in_owner = true
 modulate = Color(0.96, 0.62, 0.28, 1)
 
-[node name="Left" type="Sprite2D" parent="Visual"]
+[node name="Left" type="Sprite2D" parent="Visual" unique_id=1170388355]
 texture_filter = 1
-position = Vector2(-24, 0)
+position = Vector2(-7, 0)
 texture = SubResource("Atlas_plate_left")
 
-[node name="MiddleA" type="Sprite2D" parent="Visual"]
+[node name="Right" type="Sprite2D" parent="Visual" unique_id=1255697105]
 texture_filter = 1
-position = Vector2(-8, 0)
-texture = SubResource("Atlas_plate_middle")
-
-[node name="MiddleB" type="Sprite2D" parent="Visual"]
-texture_filter = 1
-position = Vector2(8, 0)
-texture = SubResource("Atlas_plate_middle")
-
-[node name="Right" type="Sprite2D" parent="Visual"]
-texture_filter = 1
-position = Vector2(24, 0)
+position = Vector2(7, 0)
 texture = SubResource("Atlas_plate_right")

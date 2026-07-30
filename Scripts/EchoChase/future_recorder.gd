@@ -9,8 +9,8 @@ signal recording_rejected_here
 enum State {
 	READY,
 	RECORDING,
+	OCCUPIED,
 	WAITING_EXIT,
-	NO_SLOT,
 }
 
 @export var timeline: EchoTimelineController
@@ -27,7 +27,13 @@ func _ready() -> void:
 	assert(timeline != null, "FutureRecorder requires an authored EchoTimelineController reference")
 	body_entered.connect(_on_body_entered)
 	body_exited.connect(_on_body_exited)
-	_set_state(State.READY)
+	get_future_echo().slot_released.connect(_on_future_slot_released)
+	refresh_future_state()
+
+
+# 返回这台记录器独占的 authored 未来体。
+func get_future_echo() -> FutureEcho:
+	return %FutureEcho
 
 
 # 控制器占用未来槽后，将记录器标记为录制中。
@@ -37,16 +43,16 @@ func recording_started() -> void:
 	recording_started_here.emit()
 
 
-# 玩家回到录制起点后，将记录器标记为未录制。
+# 玩家回到录制起点后，记录器保持占用直到自身未来体结束。
 func recording_finished() -> void:
-	_set_state(State.WAITING_EXIT)
+	_set_state(State.OCCUPIED)
 	recording_finished_here.emit()
 
 
-# 两个未来槽已占满时，为 authored 表现提供拒绝反馈入口。
+# 自身被占用或其他机器正在录制时，提供明确拒绝反馈。
 func recording_rejected() -> void:
 	_requires_exit_before_restart = true
-	_set_state(State.NO_SLOT)
+	_set_state(State.OCCUPIED if not get_future_echo().is_available() else State.WAITING_EXIT)
 	recording_rejected_here.emit()
 
 
@@ -56,15 +62,26 @@ func recording_cancelled() -> void:
 	_set_state(State.WAITING_EXIT if _player_inside else State.READY)
 
 
+# 世界回退后按自身未来体和玩家位置恢复稳定状态。
+func refresh_future_state() -> void:
+	if _state == State.RECORDING:
+		return
+	if not get_future_echo().is_available():
+		_set_state(State.OCCUPIED)
+		return
+	_requires_exit_before_restart = _player_inside
+	_set_state(State.WAITING_EXIT if _player_inside else State.READY)
+
+
 # 返回稳定状态名，供 authored 表现和回归测试读取。
 func get_state_name() -> StringName:
 	match _state:
 		State.RECORDING:
 			return &"recording"
+		State.OCCUPIED:
+			return &"occupied"
 		State.WAITING_EXIT:
 			return &"waiting_exit"
-		State.NO_SLOT:
-			return &"no_slot"
 		_:
 			return &"ready"
 
@@ -85,10 +102,14 @@ func _on_body_exited(body: Node2D) -> void:
 	if body != timeline.player:
 		return
 	_player_inside = false
-	if timeline.is_future_recording():
-		return
 	_requires_exit_before_restart = false
-	_set_state(State.READY)
+	_set_state(State.OCCUPIED if not get_future_echo().is_available() else State.READY)
+
+
+# 自身未来体释放后，只有仍站在台内时要求先离开。
+func _on_future_slot_released(_future_echo: FutureEcho) -> void:
+	_requires_exit_before_restart = _player_inside
+	_set_state(State.WAITING_EXIT if _player_inside else State.READY)
 
 
 # 只驱动 authored 状态动画，不在脚本中拼装视觉节点。

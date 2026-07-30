@@ -36,8 +36,8 @@ Delay Trace 已接入 CC0 占位角色、施工平台、菜单地图、机关图
 
 | 当前用途 | 文件 | 来源包与修改 | SHA256 |
 | --- | --- | --- | --- |
-| 96 格施工平台、checkpoint 与机关图标 | `assets/echo_chase/tilemap/monochrome_tilemap_transparent_packed.png` | 1-Bit Platformer Pack；未改源像素，只为 `(0,8)/(1,8)/(2,8)` 建碰撞。 | `497C68067960694C11D1D678CF04E0E8A4778CC40BCEFAD822FE398364E0E204` |
-| 主菜单地图背景 | `assets/echo_chase/ui/menu_map_backdrop.png` | 从同一 atlas 与当前角色首帧确定性拼接、换色并 nearest 放大到 `1920x1080`；运行时再由灰阶量化 shader 统一为黑白。 | `C3B11CC3DF111C0D4408F7A4B6B5109CFC768AD6C7B5BC9E62BD4EE302799E2C` |
+| 施工 TileMap、checkpoint 与机关图标 | `assets/echo_chase/tilemap/monochrome_tilemap_transparent_packed.png` | 1-Bit Platformer Pack；未改源像素，碰撞与 Terrain 数据保存在项目 TileSet。 | `497C68067960694C11D1D678CF04E0E8A4778CC40BCEFAD822FE398364E0E204` |
+| 仓库保留、当前运行时未引用 | `assets/echo_chase/ui/menu_map_backdrop.png` | 旧主菜单合成图；现菜单改用 authored `MenuWorld` TileMap 与网格。 | `C3B11CC3DF111C0D4408F7A4B6B5109CFC768AD6C7B5BC9E62BD4EE302799E2C` |
 | 冲刺 | `assets/echo_chase/audio/phaseJump2.ogg` | Digital Audio；原文件直接接入。 | `5D85717CFCA231F7DA7887CEF5F44B2131BBE3308EB0C1FEE0B4F9E61D59B571` |
 | 过去体出现 | `assets/echo_chase/audio/phaserUp4.ogg` | Digital Audio；原文件直接接入。 | `A64A69368AF9D85DFCE8DD38432FD6C9935A7766621782193102C9CB276571FC` |
 | 失败/复位 | `assets/echo_chase/audio/phaserDown2.ogg` | Digital Audio；原文件直接接入。 | `0EAADBBC5C259CC89A1DFBB0C99B61CA07E08710D035CC9BFC805B68CB0BDC9E` |

@@ -9,14 +9,23 @@
 
 [node name="EchoTimelineFixture" type="Node2D"]
 
-[node name="EchoTimelineController" parent="." node_paths=PackedStringArray("player") instance=ExtResource("1_timeline")]
+[node name="EchoTimelineController" parent="." node_paths=PackedStringArray("player", "recorders") instance=ExtResource("1_timeline")]
 player = NodePath("../EchoPlayer")
+recorders = Array[NodePath]([NodePath("../FutureRecorder"), NodePath("../FutureRecorderB"), NodePath("../FutureRecorderC")])
 
 [node name="EchoPlayer" parent="." node_paths=PackedStringArray("timeline") instance=ExtResource("2_player")]
 timeline = NodePath("../EchoTimelineController")
 
 [node name="FutureRecorder" parent="." node_paths=PackedStringArray("timeline") instance=ExtResource("3_recorder")]
 position = Vector2(10000, 10000)
+timeline = NodePath("../EchoTimelineController")
+
+[node name="FutureRecorderB" parent="." node_paths=PackedStringArray("timeline") instance=ExtResource("3_recorder")]
+position = Vector2(11000, 10000)
+timeline = NodePath("../EchoTimelineController")
+
+[node name="FutureRecorderC" parent="." node_paths=PackedStringArray("timeline") instance=ExtResource("3_recorder")]
+position = Vector2(12000, 10000)
 timeline = NodePath("../EchoTimelineController")
 
 [node name="DelayPickup" parent="." node_paths=PackedStringArray("timeline") instance=ExtResource("4_pickup")]

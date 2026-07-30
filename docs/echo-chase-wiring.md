@@ -10,11 +10,9 @@
 YourGrayboxRoot (Node2D)
 ├── World (Node2D, PROCESS_MODE_PAUSABLE)
 │   ├── EchoTimelineController   [instance: Prefabs/echo_timeline_controller.tscn]
-│   │   ├── PastEcho
-│   │   ├── FutureEchoA
-│   │   └── FutureEchoB
+│   │   └── PastEcho
 │   ├── EchoPlayer               [instance: Prefabs/echo_player.tscn]
-│   ├── FutureRecorder           [按需 instance]
+│   ├── FutureRecorder           [按需 instance；内部自带一个 FutureEcho]
 │   ├── DelayPickup              [按需 instance；语义为可重复延迟台]
 │   ├── TemporalPressurePlate    [按需 instance]
 │   ├── TemporalDoor             [按需 instance]
@@ -28,7 +26,7 @@ YourGrayboxRoot (Node2D)
 └── SceneController (Node, PROCESS_MODE_ALWAYS)
 ```
 
-`EchoTimelineController` 预制体内部已经带一个过去体和两个未来体。不要在关卡场景中再复制额外的过去体或未来体。
+`EchoTimelineController` 预制体内部只带一个过去体。每台 `FutureRecorder` 内部 authored 一个独占 `FutureEcho`；不要在关卡根节点或时间线下手工复制未来体。
 
 ## Inspector 必填引用
 
@@ -37,6 +35,7 @@ YourGrayboxRoot (Node2D)
 | 节点 | Inspector 字段 | 指向 |
 | --- | --- | --- |
 | `EchoTimelineController` | `player` | 同级 `EchoPlayer` |
+| `EchoTimelineController` | `recorders` | 本场景全部 `FutureRecorder`，顺序稳定且不可重复 |
 | `EchoPlayer` | `timeline` | 同级 `EchoTimelineController` |
 | `FutureRecorder` | `timeline` | 同级 `EchoTimelineController` |
 | `DelayPickup` | `timeline` | 同级 `EchoTimelineController` |
@@ -55,11 +54,12 @@ YourGrayboxRoot (Node2D)
 
 | 层 | 名称 | 用途 |
 | --- | --- | --- |
-| 1 | `Player` | `EchoPlayer` |
-| 2 | `Past Echo` | `PastEcho` |
-| 3 | `Future Echo` | `FutureEcho` |
-| 4 | `World` | 地面、墙、门、普通地形 |
+| 1 | `World` | 地面、墙、门、普通地形 |
+| 2 | `Player` | `EchoPlayer` |
+| 3 | `Past Echo` | `PastEcho` |
+| 4 | `Future Echo` | `FutureEcho` |
 | 5 | `Temporal Trigger` | 记录器、延迟台、压力板 |
+| 6 | `Trap` | 只被玩家 Hurtbox 检测的致死区域 |
 
 不要修改 prefab 内已有的过去/未来层与 mask，除非同时更新自动碰撞矩阵测试。灰盒地形应在 `World` 层；记录器、拾取物、压力板使用 `Temporal Trigger`。
 
@@ -67,9 +67,11 @@ YourGrayboxRoot (Node2D)
 
 ### 记录器
 
-实例化 `future_recorder.tscn`，摆在作者选择的录制起点，填入 `timeline`。玩家进入时自动开始录像。录制中按 `L` 或达到 5 秒后提交；玩家回到该记录器起点，未来体从那条路线开始播放。
+实例化 `future_recorder.tscn`，摆在作者选择的录制起点，填入 `timeline`，并把它加入 `EchoTimelineController.recorders`。玩家进入空闲记录器时自动开始录像。录制中按 `L` 或达到 5 秒后提交；系统先恢复开始录像时的时间锚点，再从该记录器的独占未来体播放新轨迹。
 
-记录器不需要额外脚本来开始或结束录像。玩家回传后必须先离开区域才能再次触发同一个记录器，这是为了避免起点内循环录制。
+全局同时只能录一条。记录器自己的未来体存在时保持 `OCCUPIED`；未来体释放且玩家离开后回到 `READY`。其他空闲记录器仍可继续制造各自的未来体，容量等于 authored 记录器数量。
+
+时间锚点只恢复现有时态玩法状态：现在体运动、过去体、延迟选择、所有已有未来体的轨迹与精确播放进度。压力板和门由恢复后的实体碰撞重新计算。不要把它扩展成通用世界序列化器。
 
 ### 过去延迟台
 
@@ -107,28 +109,36 @@ timeline.reset_timeline(saved_past_delay_seconds, saved_delay_switch_id)
 
 `Scenes/EchoChase/echo_chase_start.tscn` 已完成机制展台接线：
 
-- 一个 `EchoPlayer`、一个 `EchoTimelineController`、一个 `PastEcho`、两个隐藏 `FutureEcho`。
-- 一个 96 格、16px tile 的直平台，仅三种平台 tile 带碰撞。
+- 一个 `EchoPlayer`、一个 `EchoTimelineController` 和一个 `PastEcho`。
+- 两台 `FutureRecorder`，每台内部自带一个隐藏 `FutureEcho`。
+- 用户 authored 的 16px TileMap 测试骨架，横向划分四个 `480×270` 房间。
 - 一个 `EchoCheckpoint`、一个 `SpawnPoint`、一个 `FallResetArea`。
-- 一个挂在玩家下、zoom 为 `4×` 的 `Camera2D`，只用于当前横向测试走廊。
+- 一个 `Camera2D + PhantomCameraHost`，四台固定 `PhantomCamera2D`，`zoom=4`，共用 `0.35s QUAD/EASE_IN_OUT` tween。
+- 四个 authored `Area2D` 房间触发器，直接使用 Phantom Camera 官方 `2d_trigger_area.gd` 示例脚本；镜头选择、中断和补间全部由 Phantom Camera 插件负责。
 - `1s/3s/5s` 三个可重复 `DelayPickup` 延迟台、两个 `FutureRecorder`。
 - 一个显式连接 `TemporalDoor` 的 `TemporalPressurePlate`。
-- 一个固定屏幕的低对比地图背景。
 - 一个 `TemporalRecordingHUD`：玩家金色轮廓、屏幕金边、无数字进度条和实时回传键。
 - 两套 authored 入场淡出资源：新游戏使用青白，Continue 使用洋红；淡出期间冻结 World，不再摆三人 Overlay。
 - `PauseScreen` 与 `SettingScreen`；Hint 永久禁用。
-- 没有 Phantom Camera、敌人、正式背景、正式路线或玩法音乐。
+- 没有敌人、正式背景、正式路线或玩法音乐。
 
-用户可以在 Godot Editor 直接编辑这棵树。临时相机和机关位置都可直接替换；继续使用 Inspector 显式绑定，不要把 `echo_chase_start.gd` 改成自动搜索或自动生成内容。
+用户可以在 Godot Editor 直接编辑这棵树。房间边界、PCam 位置和机关位置都可直接替换；继续使用 Inspector 显式绑定，不要把 `echo_chase_start.gd` 改成自动搜索或自动生成内容。
+
+## Phantom Camera 房间接线
+
+每个 `480×270` 房间 authored 一台固定 `PhantomCamera2D` 和一个同尺寸 `Area2D`。Area 直接绑定 `res://addons/phantom_camera/examples/scripts/2D/2d_trigger_area.gd`，PCam 只设置位置、`zoom`、pixel snap、priority、`limit_target` 和共享 tween；不要再写项目级房间切换器、网格坐标计算、Camera2D 插值或切换队列。玩家的 `CameraArea2D` 进入房间时由官方脚本提升对应 PCam priority，离开时释放；进行中的 tween 由 `PhantomCameraHost` 直接中断并转向新 PCam。
+
+当前插件版本为 `0.11.0.3`。场景中的 `Camera2D` 必须保留 `PhantomCameraHost` 子节点，项目必须启用 `addons/phantom_camera/plugin.cfg` 和 `PhantomCameraManager` autoload。缺少任一项应直接报错，不增加备用 Camera 路径。
 
 `PastEcho` 与每个 `FutureEcho` 内部都已 authored 一个 `TemporalDepartureVfx`。不要把退场动画重新绑回主体的 `VfxAnimationPlayer`：旧位置快照和新位置实体化必须并行，未来槽也必须在尾效结束前可复用。
 
 ## 调试顺序
 
 1. 先只实例化 Timeline 和 Player，确认过去体会在默认 3 秒后沿历史路径出现。
-2. 加一个记录器，确认 `L` 回传和一条未来体回放。
-3. 加一个压力板与门，确认未来体结束后门立即关闭。
-4. 最后才加 `1/3/5s` 延迟台和两个未来槽的组合。
+2. 加一台记录器，确认 `L` 后世界回到锚点且新未来体回放。
+3. 加第二台记录器，确认旧未来体恢复锚点进度且两台独立释放。
+4. 加一个压力板与门，确认未来体结束后门立即关闭。
+5. 最后才加 `1/3/5s` 延迟台组合。
 
 在每一步都从干净检查点重试。若路径回放不对，先检查 Timeline/Player 的 Inspector 引用和关卡的 `World` 碰撞层，不要通过修改路径算法或动态复制节点掩盖场景错误。
 

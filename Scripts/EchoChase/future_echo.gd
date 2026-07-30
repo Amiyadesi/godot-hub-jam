@@ -98,6 +98,44 @@ func is_temporally_phased() -> bool:
 	return _phase_remaining > 0.0
 
 
+# 捕获录制起点时的精确回放状态，供世界回退恢复。
+func capture_playback_state() -> Dictionary:
+	return {
+		"active": _active,
+		"track": _track,
+		"duration": _duration,
+		"playback_seconds": _playback_seconds,
+		"phase_remaining": _phase_remaining,
+		"last_velocity": _last_velocity,
+	}
+
+
+# 恢复锚点中的未来体进度，不重播出现音效或首帧动画。
+func restore_playback_state(state: Dictionary) -> void:
+	if not bool(state.get("active", false)):
+		reset_echo()
+		return
+	_track = state["track"] as TemporalTrack
+	_duration = float(state["duration"])
+	_playback_seconds = float(state["playback_seconds"])
+	_phase_remaining = float(state["phase_remaining"])
+	_last_velocity = state["last_velocity"] as Vector2
+	_active = true
+	visible = true
+	visual.visible = true
+	outline_visual.visible = true
+	outer_outline_visual.visible = true
+	prediction_visual.visible = true
+	pixel_burst.emitting = false
+	departure_vfx.reset_vfx()
+	vfx_animation_player.play(&"solid")
+	collision_shape.set_deferred("disabled", false)
+	var frame: TemporalFrame = _track.sample_at(_playback_seconds)
+	if frame != null:
+		global_position = frame.position
+		_apply_frame_visual(frame)
+
+
 # 干净时间线重置时清除全部实时回放状态。
 func reset_echo() -> void:
 	_track = null

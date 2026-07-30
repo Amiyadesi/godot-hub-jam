@@ -8,6 +8,11 @@ const START_SCENE_PATH := "res://Scenes/EchoChase/echo_chase_start.tscn"
 var _failures: Array[String] = []
 
 
+# 返回时间线中指定 authored 记录器独占的未来体。
+func _future_echo(timeline: EchoTimelineController, index := 0) -> FutureEcho:
+	return timeline.recorders[index].get_future_echo()
+
+
 # Runs the current focused Echo Chase behavior checks in headless Godot.
 func _init() -> void:
 	call_deferred("_run")
@@ -26,6 +31,7 @@ func _run() -> void:
 	await _test_checkpoint_activation_contract()
 	await _test_active_devices_follow_low_flash_mode()
 	await _test_start_scene_contract()
+	await _test_room_camera_switching()
 	await _test_gameplay_entry_intro()
 	await _test_start_scene_checkpoint_and_reset()
 	await _test_continue_restores_checkpoint_delay_station()
@@ -45,9 +51,10 @@ func _run() -> void:
 	await _test_past_echo_previews_each_clean_timeline()
 	await _test_future_echo_releases_a_pressure_plate()
 	await _test_future_echoes_use_independent_durations()
+	await _test_future_echo_restores_playback_snapshot()
 	await _test_future_recording_rewinds_temporal_anchor()
 	await _test_future_recording_rewinds_derived_world_state()
-	await _test_future_commit_restarts_existing_possibilities()
+	await _test_future_commit_restores_existing_possibilities()
 	await _test_future_commit_restores_an_expired_existing_possibility()
 	await _test_future_commit_restores_pending_delay_shift()
 	await _test_past_dissipates_overlapping_futures_together()
@@ -56,7 +63,7 @@ func _run() -> void:
 	await _test_first_frame_recording_and_past_contact_commit()
 	await _test_delay_pickup_values_apply_after_a_phase_warning()
 	await _test_delay_station_reuses_authored_node()
-	await _test_two_future_slots_reject_a_third_recording()
+	await _test_recorder_scoped_future_capacity()
 	await _test_temporal_collision_matrix()
 	await _test_timeline_reset_clears_transient_time_state()
 	_finish()
@@ -170,7 +177,7 @@ func _test_temporal_prefab_visual_contract() -> void:
 	if player != null and timeline != null:
 		var player_visual := player.get_node("Visual") as AnimatedSprite2D
 		var past_visual := timeline.past_echo.get_node("Visual") as AnimatedSprite2D
-		var future_visual := timeline.future_echo_a.get_node("Visual") as AnimatedSprite2D
+		var future_visual := _future_echo(timeline).get_node("Visual") as AnimatedSprite2D
 		_expect(player_visual != null, "EchoPlayer uses an authored AnimatedSprite2D")
 		_expect(past_visual != null, "PastEcho uses an authored AnimatedSprite2D")
 		_expect(future_visual != null, "FutureEcho uses an authored AnimatedSprite2D")
@@ -191,12 +198,12 @@ func _test_temporal_prefab_visual_contract() -> void:
 		_expect(timeline.past_echo.has_node("PixelBurst"), "PastEcho authors its phase particles")
 		_expect(timeline.past_echo.has_node("VfxAnimationPlayer"), "PastEcho authors its VFX animation player")
 		_expect(timeline.past_echo.has_node("DepartureVfx"), "PastEcho authors an independent departure snapshot")
-		_expect(timeline.future_echo_a.has_node("OutlineVisual"), "FutureEcho authors its materialization outline")
-		_expect(timeline.future_echo_a.has_node("OuterOutlineVisual"), "FutureEcho authors a second outer outline")
-		_expect(timeline.future_echo_a.has_node("PredictionVisual"), "FutureEcho authors a forward prediction ghost")
-		_expect(timeline.future_echo_a.has_node("PixelBurst"), "FutureEcho authors its phase particles")
-		_expect(timeline.future_echo_a.has_node("VfxAnimationPlayer"), "FutureEcho authors its VFX animation player")
-		_expect(timeline.future_echo_a.has_node("DepartureVfx"), "FutureEcho authors an independent departure snapshot")
+		_expect(_future_echo(timeline).has_node("OutlineVisual"), "FutureEcho authors its materialization outline")
+		_expect(_future_echo(timeline).has_node("OuterOutlineVisual"), "FutureEcho authors a second outer outline")
+		_expect(_future_echo(timeline).has_node("PredictionVisual"), "FutureEcho authors a forward prediction ghost")
+		_expect(_future_echo(timeline).has_node("PixelBurst"), "FutureEcho authors its phase particles")
+		_expect(_future_echo(timeline).has_node("VfxAnimationPlayer"), "FutureEcho authors its VFX animation player")
+		_expect(_future_echo(timeline).has_node("DepartureVfx"), "FutureEcho authors an independent departure snapshot")
 		_expect(player_visual.material == null, "EchoPlayer Core preserves original character pixels")
 		var present_outline := player.get_node("TemporalOutline") as AnimatedSprite2D
 		var recording_outline := player.get_node("RecordingOutline") as AnimatedSprite2D
@@ -211,7 +218,7 @@ func _test_temporal_prefab_visual_contract() -> void:
 		_expect(past_visual.material == null, "PastEcho Core preserves original character pixels")
 		_expect(future_visual.material == null, "FutureEcho Core preserves original character pixels")
 		var past_outline := timeline.past_echo.get_node("OutlineVisual") as AnimatedSprite2D
-		var future_outline := timeline.future_echo_a.get_node("OutlineVisual") as AnimatedSprite2D
+		var future_outline := _future_echo(timeline).get_node("OutlineVisual") as AnimatedSprite2D
 		var past_outline_material := past_outline.material as ShaderMaterial
 		_expect(
 			past_outline_material != null and not past_outline_material.shader.code.contains("pattern_mode"),
@@ -242,7 +249,7 @@ func _test_temporal_prefab_visual_contract() -> void:
 		track.append(replay_end)
 		timeline.set_physics_process(false)
 		timeline.past_echo.play_at(track, 0.0)
-		timeline.future_echo_a.start_playback(track, 1.0, 0.0)
+		_future_echo(timeline).start_playback(track, 1.0, 0.0)
 		(timeline.past_echo.get_node("VfxAnimationPlayer") as AnimationPlayer).advance(0.06)
 		if past_visual != null:
 			_expect(past_visual.animation == &"run" and past_visual.flip_h, "PastEcho replays animation and facing")
@@ -267,7 +274,7 @@ func _test_temporal_entities_follow_low_flash_mode() -> void:
 	await physics_frame
 	var timeline := fixture.get_node("EchoTimelineController") as EchoTimelineController
 	var past := timeline.past_echo
-	var future := timeline.future_echo_a
+	var future := _future_echo(timeline)
 	var past_animation := past.get_node("VfxAnimationPlayer") as AnimationPlayer
 	var future_animation := future.get_node("VfxAnimationPlayer") as AnimationPlayer
 	var delayed_track: TemporalTrack = TEMPORAL_TRACK_SCRIPT.new()
@@ -319,7 +326,7 @@ func _test_temporal_departure_snapshots() -> void:
 	await physics_frame
 	var timeline := fixture.get_node("EchoTimelineController") as EchoTimelineController
 	var past := timeline.past_echo
-	var future := timeline.future_echo_a
+	var future := _future_echo(timeline)
 	var past_departure := past.get_node_or_null("DepartureVfx") as TemporalDepartureVfx
 	var future_departure := future.get_node_or_null("DepartureVfx") as TemporalDepartureVfx
 	if past_departure != null and future_departure != null:
@@ -457,17 +464,47 @@ func _test_start_scene_contract() -> void:
 	if not ResourceLoader.exists(START_SCENE_PATH):
 		return
 	var scene := (load(START_SCENE_PATH) as PackedScene).instantiate()
+	var authored_pcams := scene.get_node_or_null("World/RoomCameras")
+	if authored_pcams != null and authored_pcams.get_child_count() == 4:
+		_expect((authored_pcams.get_child(0) as PhantomCamera2D).priority == 10, "First room PCam starts with authored priority 10")
+		for index in range(1, 4):
+			_expect((authored_pcams.get_child(index) as PhantomCamera2D).priority == 0, "Inactive room PCam %d starts at priority 0" % index)
 	root.add_child(scene)
 	await physics_frame
 	var tile_maps := scene.find_children("*", "TileMapLayer", true, false)
 	_expect(tile_maps.size() == 1, "Start scene authors exactly one TileMapLayer")
 	if tile_maps.size() == 1:
 		_expect(not (tile_maps[0] as TileMapLayer).get_used_cells().is_empty(), "Start scene keeps the user-authored playable TileMap")
-	var camera := scene.get_node_or_null("World/EchoPlayer/Camera2D") as Camera2D
-	_expect(camera != null, "Start scene authors one player Camera2D")
+	_expect(not scene.has_node("World/EchoPlayer/Camera2D"), "Start scene removes the retired player Camera2D")
+	var camera := scene.get_node_or_null("World/RoomCamera/Camera2D") as Camera2D
+	_expect(camera != null, "Start scene authors one room Camera2D")
 	if camera != null:
-		_expect(camera.zoom.is_equal_approx(Vector2(4.0, 4.0)), "Start camera uses 4x pixel-art zoom")
-		_expect(camera.limit_right == 1920, "Start camera is limited to the authored test corridor")
+		_expect(camera.get_node_or_null("PhantomCameraHost") is PhantomCameraHost, "Room Camera2D owns a PhantomCameraHost")
+	var room_pcams := scene.get_node_or_null("World/RoomCameras")
+	_expect(room_pcams != null and room_pcams.get_child_count() == 4, "Start scene authors four room PhantomCamera2D nodes")
+	if room_pcams != null and room_pcams.get_child_count() == 4:
+		var expected_centers := [Vector2(240, 775), Vector2(720, 775), Vector2(1200, 775), Vector2(1680, 775)]
+		for index in 4:
+			var pcam := room_pcams.get_child(index) as PhantomCamera2D
+			_expect(pcam != null, "Room camera %d is a PhantomCamera2D" % index)
+			if pcam != null:
+				_expect(pcam.position.is_equal_approx(expected_centers[index]), "Room camera %d uses the authored room center" % index)
+				_expect(pcam.zoom.is_equal_approx(Vector2(4.0, 4.0)), "Room camera %d uses 4x pixel-art zoom" % index)
+				_expect(pcam.snap_to_pixel, "Room camera %d enables pixel snapping" % index)
+	_expect(not scene.has_node("World/PhantomRoomSwitch"), "Start scene removes the retired custom PhantomRoomSwitch")
+	_expect(not scene.has_node("World/RoomCameraController"), "Start scene has no custom room camera controller")
+	var camera_area := scene.get_node_or_null("World/EchoPlayer/CameraArea2D") as Area2D
+	_expect(camera_area != null and camera_area.collision_layer == 2, "Player authors a Player-layer camera trigger Area2D")
+	var room_triggers := scene.get_node_or_null("World/RoomCameraTriggers")
+	_expect(room_triggers != null and room_triggers.get_child_count() == 4, "Start scene authors four room trigger areas")
+	if room_triggers != null:
+		for index in room_triggers.get_child_count():
+			var area := room_triggers.get_child(index) as Area2D
+			var trigger_script := area.get_script() as Script
+			_expect(
+				trigger_script != null and trigger_script.resource_path == "res://addons/phantom_camera/examples/scripts/2D/2d_trigger_area.gd",
+				"Room trigger %d uses the official Phantom Camera Area2D script" % index
+			)
 	_expect(scene.find_children("*", "Camera3D", true, false).is_empty(), "Start scene contains no Camera3D")
 	var delay_pickup_1 := scene.get_node_or_null("World/DelayPickup1s") as DelayPickup
 	var delay_pickup_3 := scene.get_node_or_null("World/DelayPickup3s") as DelayPickup
@@ -500,6 +537,42 @@ func _test_start_scene_contract() -> void:
 	var pause_screen := scene.get_node_or_null("UI/PauseScreen") as PauseScreen
 	if pause_screen != null:
 		_expect(pause_screen.hint_button.disabled, "Start scene disables Hint")
+	scene.queue_free()
+	await process_frame
+
+
+# 验证 Phantom Camera 的 authored Area2D 切换，并允许进行中的转场立即折返。
+func _test_room_camera_switching() -> void:
+	var scene := (load(START_SCENE_PATH) as PackedScene).instantiate()
+	root.add_child(scene)
+	await physics_frame
+	var player := scene.get_node("World/EchoPlayer") as EchoPlayer
+	var room_pcams := scene.get_node("World/RoomCameras")
+	var room_host := scene.get_node_or_null("World/RoomCamera/Camera2D/PhantomCameraHost")
+	var room_triggers := scene.get_node("World/RoomCameraTriggers")
+	_expect(room_host != null, "Start scene uses PhantomCameraHost for room cameras")
+	_expect(not scene.has_node("World/PhantomRoomSwitch"), "Room switching uses no project-authored switch script")
+	_expect(not scene.has_node("World/RoomCameraController"), "Room switching uses no project-authored controller")
+	_expect(room_pcams.get_child_count() == 4, "Start scene authors four Phantom Cameras")
+	var expected_centres := [Vector2(240, 775), Vector2(720, 775), Vector2(1200, 775), Vector2(1680, 775)]
+	for index in expected_centres.size():
+		var pcam := room_pcams.get_child(index) as PhantomCamera2D
+		var area := room_triggers.get_child(index) as Area2D
+		_expect(pcam.global_position.is_equal_approx(expected_centres[index]), "Room PCam keeps its authored 480x270 centre")
+		_expect(pcam.zoom.is_equal_approx(Vector2(4, 4)), "Room PCam keeps the authored 4x zoom")
+		_expect(pcam.tween_resource != null and is_equal_approx(pcam.tween_resource.duration, 0.35), "Room PCam uses the authored Phantom Camera tween")
+		var shape := area.get_node("CollisionShape2D").shape as RectangleShape2D
+		_expect(shape != null and shape.size.is_equal_approx(Vector2(480, 270)), "Room trigger keeps the authored 480x270 bounds")
+		_expect(pcam.limit_target == pcam.get_path_to(area.get_node("CollisionShape2D")), "Room PCam limits itself to its authored trigger bounds")
+	scene.get_node("SceneController").call("skip_entry_intro")
+	player.global_position = Vector2(720, 775)
+	for _frame in 3:
+		await physics_frame
+	_expect((room_pcams.get_child(1) as PhantomCamera2D).priority == 20, "Official room trigger activates the next PCam")
+	player.global_position = Vector2(240, 775)
+	for _frame in 3:
+		await physics_frame
+	_expect((room_pcams.get_child(0) as PhantomCamera2D).priority == 20, "Official room trigger immediately reactivates the previous PCam")
 	scene.queue_free()
 	await process_frame
 
@@ -556,6 +629,7 @@ func _test_start_scene_checkpoint_and_reset() -> void:
 	var player := scene.get_node("World/EchoPlayer") as EchoPlayer
 	var timeline := scene.get_node("World/EchoTimelineController") as EchoTimelineController
 	var checkpoint := scene.get_node("World/EchoCheckpoint") as EchoCheckpoint
+	var recorder := scene.get_node("World/FutureRecorderA") as FutureRecorder
 	var delay_1s := scene.get_node("World/DelayPickup1s") as DelayPickup
 	var delay_5s := scene.get_node("World/DelayPickup5s") as DelayPickup
 	var controller := scene.get_node("SceneController")
@@ -566,6 +640,11 @@ func _test_start_scene_checkpoint_and_reset() -> void:
 	for _frame in 40:
 		await physics_frame
 	var time_before_checkpoint := timeline.get_timeline_seconds()
+	_expect(timeline.start_future_recording(recorder), "Checkpoint test starts a Future recording")
+	checkpoint.body_entered.emit(player)
+	await process_frame
+	_expect(not LevelModule.instance.has_continue_point(), "Checkpoint ignores activation during Future recording")
+	_expect(timeline.commit_future_recording(), "Checkpoint test commits the Future recording")
 	checkpoint.body_entered.emit(player)
 	await process_frame
 	_expect(LevelModule.instance.has_continue_point(), "Checkpoint activation enables Continue data")
@@ -633,7 +712,7 @@ func _test_continue_restores_checkpoint_delay_station() -> void:
 	_expect(continued_delay_5s.is_active(), "Continue restores the saved delay station visual")
 	_expect(is_zero_approx(continued_timeline.get_timeline_seconds()), "Continue starts from a clean timeline")
 	_expect(not continued_timeline.is_future_recording(), "Continue does not restore an in-progress future recording")
-	_expect(continued_timeline.future_echo_a.is_available() and continued_timeline.future_echo_b.is_available(), "Continue starts with both future slots available")
+	_expect(_future_echo(continued_timeline).is_available() and _future_echo(continued_timeline, 1).is_available(), "Continue starts with all authored future slots available")
 	_expect(not continued_timeline.past_echo.is_active(), "Continue waits for the first delayed PastEcho materialization")
 	continued_scene.queue_free()
 	await process_frame
@@ -753,7 +832,7 @@ func _test_temporal_recording_hud() -> void:
 func _test_menu_entry_scene_contract() -> void:
 	var menu := (load("res://Scenes/UI/Menu/menu.tscn") as PackedScene).instantiate()
 	_expect(ProjectSettings.get_setting("application/config/name") == "延迟追迹 Delay Trace", "Project window uses the Delay Trace display name")
-	var title_reveal := menu.get_node("ButtonLayer/TitleReveal") as Control
+	var title_reveal := menu.get_node("MenuUi/ButtonLayer/TitleReveal") as Control
 	var title := title_reveal.get_node("Title") as Label
 	_expect(title.text == "延迟追迹 / DELAY TRACE", "Main menu uses the bilingual Delay Trace title")
 	var title_width := title.get_theme_font(&"font").get_string_size(
@@ -772,7 +851,7 @@ func _test_menu_entry_scene_contract() -> void:
 		menu_music != null and menu_music.resource_path == "res://assets/echo_chase/audio/music/mysterious_futuristic_loop.ogg",
 		"Main menu uses the licensed Echo Chase temporal loop"
 	)
-	var background := menu.get_node_or_null("Background") as Control
+	var background := menu.get_node_or_null("MenuUi/Background") as Control
 	_expect(background != null, "Main menu authors a parallax background container")
 	if background != null:
 		var grid := background.get_node_or_null("Grid") as ColorRect
@@ -792,7 +871,20 @@ func _test_menu_entry_scene_contract() -> void:
 			"Main menu background overscan prevents parallax edge gaps"
 		)
 	_expect(not menu.has_node("PhaseEcho"), "Main menu no longer contains the retired Phase Lag echo overlay")
-	var temporal_layer := menu.get_node_or_null("TemporalCharacterLayer") as Control
+	var menu_world := menu.get_node_or_null("MenuWorld") as Node2D
+	_expect(menu_world != null, "Main menu authors a world-layer map and temporal silhouettes")
+	if menu_world != null:
+		var world_camera := menu_world.get_node_or_null("WorldCamera") as Camera2D
+		var world_parallax := menu_world.get_node_or_null("WorldParallax") as Node2D
+		_expect(world_camera != null and world_camera.zoom.is_equal_approx(Vector2(4, 4)), "Menu world uses a 4x authored Camera2D")
+		_expect(world_camera != null and world_camera.position.is_equal_approx(Vector2(240, 135)), "Menu world camera centers the 480x270 canvas")
+		_expect(world_parallax != null and world_parallax.get_node_or_null("Grid") is ColorRect, "Menu world authors the cross grid")
+		_expect(world_parallax != null and world_parallax.get_node_or_null("Road") is TileMapLayer, "Menu world authors the road TileMapLayer")
+		for entry in [["PastEcho", Vector2(80, 146)], ["PresentEcho", Vector2(240, 146)], ["FutureEcho", Vector2(400, 146)]]:
+			var silhouette := world_parallax.get_node_or_null(entry[0]) as Node2D
+			_expect(silhouette != null and silhouette.position.is_equal_approx(entry[1]), "Menu world places %s at its authored third" % entry[0])
+		_expect(menu_world.get_node_or_null("WorldAnimationPlayer") is AnimationPlayer, "Menu world authors its own temporal animation player")
+	var temporal_layer := menu.get_node_or_null("MenuUi/TemporalCharacterLayer") as Control
 	_expect(temporal_layer != null, "Main menu authors a dedicated temporal character layer")
 	if temporal_layer != null:
 		_expect(temporal_layer.mouse_filter == Control.MOUSE_FILTER_IGNORE, "Menu temporal layer ignores mouse input")
@@ -835,7 +927,7 @@ func _test_menu_entry_scene_contract() -> void:
 			if region_index == 2:
 				_expect(figure.get_node_or_null("Float/PredictionGhost") is AnimatedSprite2D, "Future menu figure uses a forward prediction ghost")
 				_expect(figure.get_node_or_null("Float/OuterOutline") is AnimatedSprite2D, "Future menu figure uses a double outline")
-	var menu_player := menu.get_node("MenuAnimationPlayer") as AnimationPlayer
+	var menu_player := menu.get_node("MenuUi/MenuAnimationPlayer") as AnimationPlayer
 	_expect(is_equal_approx(menu_player.get_animation(&"menu_enter").length, 1.8), "Menu entrance lasts 1.8 seconds")
 	var reduced_intro := menu_player.get_animation(&"menu_enter_reduced")
 	var reduced_button_paths: Array[NodePath] = [
@@ -850,11 +942,11 @@ func _test_menu_entry_scene_contract() -> void:
 			reduced_intro.find_track(button_path, Animation.TYPE_VALUE) >= 0,
 			"Low-flash menu entrance preserves staggered button motion for %s" % button_path
 		)
-	var phase_player := menu.get_node("PhaseCycleAnimationPlayer") as AnimationPlayer
+	var phase_player := menu.get_node("MenuUi/PhaseCycleAnimationPlayer") as AnimationPlayer
 	_expect(phase_player.has_animation(&"menu_idle"), "Menu authors a fixed temporal idle loop")
 	if phase_player.has_animation(&"menu_idle"):
 		_expect(is_equal_approx(phase_player.get_animation(&"menu_idle").length, 2.4), "Menu temporal float loop lasts 2.4 seconds")
-	var temporal_frame := menu.get_node_or_null("TemporalFrame") as Control
+	var temporal_frame := menu.get_node_or_null("MenuUi/TemporalFrame") as Control
 	_expect(temporal_frame != null, "Menu authors a dedicated three-part temporal edge frame")
 	if temporal_frame != null:
 		var line_layer := temporal_frame.get_node_or_null("Lines") as Control
@@ -866,7 +958,7 @@ func _test_menu_entry_scene_contract() -> void:
 			_expect(line_layer.find_children("*Divider*", "Control", true, false).is_empty(), "Temporal frame removes vertical dividers")
 		if glow_layer != null:
 			_expect(glow_layer.find_children("*Divider*", "Control", true, false).is_empty(), "Temporal glow removes vertical dividers")
-	var frame_player := menu.get_node_or_null("FrameAnimationPlayer") as AnimationPlayer
+	var frame_player := menu.get_node_or_null("MenuUi/FrameAnimationPlayer") as AnimationPlayer
 	_expect(
 		frame_player != null and frame_player.has_animation(&"frame_standard") and frame_player.has_animation(&"frame_reduced"),
 		"Menu authors standard and low-flash temporal frame animations"
@@ -883,7 +975,7 @@ func _test_menu_entry_scene_contract() -> void:
 				standard_frame.find_track(NodePath("TemporalFrame/Glow/%s:offset_top" % segment_name), Animation.TYPE_VALUE) >= 0,
 				"Standard temporal glow expands inward on %s" % segment_name
 			)
-	_expect(menu.get_node_or_null("ButtonLayer/TitleReveal") != null, "Menu title uses an authored clipping reveal")
+	_expect(menu.get_node_or_null("MenuUi/ButtonLayer/TitleReveal") != null, "Menu title uses an authored clipping reveal")
 	var start_transition := menu.get("start_transition") as SceneTransition
 	var start_transition_reduced := menu.get("start_transition_reduced") as SceneTransition
 	var continue_transition := menu.get("continue_transition") as SceneTransition
@@ -908,17 +1000,17 @@ func _test_menu_entry_scene_contract() -> void:
 		and continue_transition_reduced != null and is_equal_approx(continue_transition_reduced.duration, 0.9),
 		"Low-flash temporal radial transitions expand over 0.9 seconds"
 	)
-	var transition_player := menu.get_node_or_null("TransitionAnimationPlayer") as AnimationPlayer
+	var transition_player := menu.get_node_or_null("MenuUi/TransitionAnimationPlayer") as AnimationPlayer
 	_expect(
 		transition_player != null
 		and transition_player.has_animation(&"pulse_present")
 		and transition_player.has_animation(&"pulse_past"),
 		"Menu authors separate present and past origin pulses"
 	)
-	var route_nav := menu.get_node("ButtonLayer/RouteNav") as Control
-	var route_line := menu.get_node("ButtonLayer/RouteNav/RouteLine") as ColorRect
-	var first_marker := menu.get_node("ButtonLayer/RouteNav/Marker1") as ColorRect
-	var last_marker := menu.get_node("ButtonLayer/RouteNav/Marker5") as ColorRect
+	var route_nav := menu.get_node("MenuUi/ButtonLayer/RouteNav") as Control
+	var route_line := menu.get_node("MenuUi/ButtonLayer/RouteNav/RouteLine") as ColorRect
+	var first_marker := menu.get_node("MenuUi/ButtonLayer/RouteNav/Marker1") as ColorRect
+	var last_marker := menu.get_node("MenuUi/ButtonLayer/RouteNav/Marker5") as ColorRect
 	_expect(route_nav.anchor_top >= 0.55, "Main menu route sits in the lower-right map area")
 	_expect(route_line.offset_top >= first_marker.offset_top and route_line.offset_bottom <= last_marker.offset_bottom, "Menu route line stops between its first and last nodes")
 	menu.free()
@@ -931,8 +1023,8 @@ func _test_menu_follows_low_flash_mode() -> void:
 	var menu := (load("res://Scenes/UI/Menu/menu.tscn") as PackedScene).instantiate()
 	root.add_child(menu)
 	await process_frame
-	var intro_player := menu.get_node("MenuAnimationPlayer") as AnimationPlayer
-	var frame_player := menu.get_node_or_null("FrameAnimationPlayer") as AnimationPlayer
+	var intro_player := menu.get_node("MenuUi/MenuAnimationPlayer") as AnimationPlayer
+	var frame_player := menu.get_node_or_null("MenuUi/FrameAnimationPlayer") as AnimationPlayer
 	_expect(frame_player != null, "Live menu provides its authored frame animation player")
 	if frame_player == null:
 		menu.queue_free()
@@ -965,8 +1057,8 @@ func _test_menu_follows_low_flash_mode() -> void:
 # 验证黑白地图 UI 不再依赖旧玻璃卡片、装饰小字或每行面板。
 func _test_ui_visual_contract() -> void:
 	var menu := (load("res://Scenes/UI/Menu/menu.tscn") as PackedScene).instantiate()
-	_expect(not menu.has_node("ButtonLayer/Header"), "Main menu has no title card")
-	_expect(not menu.has_node("ButtonLayer/MenuPanel"), "Main menu has no command card")
+	_expect(not menu.has_node("MenuUi/ButtonLayer/Header"), "Main menu has no title card")
+	_expect(not menu.has_node("MenuUi/ButtonLayer/MenuPanel"), "Main menu has no command card")
 	_expect(menu.find_child("TechnicalMark", true, false) == null, "Main menu omits decorative technical copy")
 	_expect(menu.find_child("Subtitle", true, false) == null, "Main menu omits decorative subtitle copy")
 	menu.free()
@@ -1145,7 +1237,6 @@ func _test_player_state_and_tuning_contract() -> void:
 		"wall_jump_speed_x": 250.0,
 		"wall_push_seconds": 0.10,
 		"dash_aim_seconds": 0.10,
-		"dash_speed": 600.0,
 		"dash_seconds": 0.10,
 		"dash_jump_momentum": 0.65,
 		"dash_speed_cap_multiplier": 1.6,
@@ -1159,6 +1250,8 @@ func _test_player_state_and_tuning_contract() -> void:
 		_expect(exported_properties.has(property_name), "EchoPlayer exports %s for Inspector tuning" % property_name)
 		if exported_properties.has(property_name):
 			_expect(is_equal_approx(float(exported_properties[property_name]), expected_defaults[property_name]), "EchoPlayer keeps the default value for %s" % property_name)
+	_expect(exported_properties.has("dash_speed"), "EchoPlayer exports dash_speed for Inspector tuning")
+	_expect(player.dash_speed > 0.0, "Authored dash_speed remains a valid positive tuning value")
 	player.free()
 
 
@@ -1376,11 +1469,11 @@ func _test_future_echo_releases_a_pressure_plate() -> void:
 		var track: TemporalTrack = TEMPORAL_TRACK_SCRIPT.new()
 		track.append(TEMPORAL_FRAME_SCRIPT.new(0.0, plate.global_position))
 		track.append(TEMPORAL_FRAME_SCRIPT.new(10.0, plate.global_position))
-		timeline.future_echo_a.start_playback(track, 10.0, 0.0)
+		_future_echo(timeline).start_playback(track, 10.0, 0.0)
 		await physics_frame
 		_expect(plate.is_pressed(), "FutureEcho presses an authored temporal pressure plate")
 		_expect(door.is_open(), "Temporal pressure plate opens its authored door")
-		timeline.future_echo_a.dissipate()
+		_future_echo(timeline).dissipate()
 		await physics_frame
 		await physics_frame
 		_expect(not plate.is_pressed(), "FutureEcho dissipation releases its temporal pressure plate")
@@ -1401,14 +1494,38 @@ func _test_future_echoes_use_independent_durations() -> void:
 	var long_track: TemporalTrack = TEMPORAL_TRACK_SCRIPT.new()
 	long_track.append(TEMPORAL_FRAME_SCRIPT.new(0.0, Vector2(96.0, 0.0)))
 	long_track.append(TEMPORAL_FRAME_SCRIPT.new(3.0, Vector2(192.0, 0.0)))
-	timeline.future_echo_a.start_playback(short_track, 1.0, 0.0)
-	timeline.future_echo_b.start_playback(long_track, 3.0, 0.0)
-	timeline.future_echo_a.advance(1.1)
-	timeline.future_echo_b.advance(1.1)
-	_expect(timeline.future_echo_a.is_available(), "One-second FutureEcho releases at its own duration")
-	_expect(not timeline.future_echo_b.is_available(), "Longer FutureEcho remains active when the short one ends")
-	timeline.future_echo_b.advance(2.0)
-	_expect(timeline.future_echo_b.is_available(), "Longer FutureEcho releases only after its own duration")
+	_future_echo(timeline).start_playback(short_track, 1.0, 0.0)
+	_future_echo(timeline, 1).start_playback(long_track, 3.0, 0.0)
+	_future_echo(timeline).advance(1.1)
+	_future_echo(timeline, 1).advance(1.1)
+	_expect(_future_echo(timeline).is_available(), "One-second FutureEcho releases at its own duration")
+	_expect(not _future_echo(timeline, 1).is_available(), "Longer FutureEcho remains active when the short one ends")
+	_future_echo(timeline, 1).advance(2.0)
+	_expect(_future_echo(timeline, 1).is_available(), "Longer FutureEcho releases only after its own duration")
+	fixture.queue_free()
+	await process_frame
+
+
+# 验证未来体可恢复录制锚点时的精确播放进度，而不是从首帧重播。
+func _test_future_echo_restores_playback_snapshot() -> void:
+	var fixture := TIMELINE_FIXTURE.instantiate()
+	root.add_child(fixture)
+	await physics_frame
+	var timeline := fixture.get_node("EchoTimelineController") as EchoTimelineController
+	if timeline != null:
+		timeline.set_physics_process(false)
+		var future := _future_echo(timeline)
+		var track: TemporalTrack = TEMPORAL_TRACK_SCRIPT.new()
+		track.append(TEMPORAL_FRAME_SCRIPT.new(0.0, Vector2.ZERO, Vector2(80.0, 0.0), 1.0, &"run"))
+		track.append(TEMPORAL_FRAME_SCRIPT.new(4.0, Vector2(320.0, 0.0), Vector2(80.0, 0.0), 1.0, &"run"))
+		future.start_playback(track, 4.0, 0.0)
+		future.advance(2.0)
+		var snapshot: Dictionary = future.capture_playback_state()
+		future.advance(2.1)
+		_expect(future.is_available(), "Future can expire after its playback snapshot")
+		future.restore_playback_state(snapshot)
+		_expect(not future.is_available(), "Future restores an active playback snapshot")
+		_expect(future.global_position.is_equal_approx(Vector2(160.0, 0.0)), "Future restores the exact anchor playback progress")
 	fixture.queue_free()
 	await process_frame
 
@@ -1445,7 +1562,7 @@ func _test_future_recording_rewinds_temporal_anchor() -> void:
 		_expect(player.velocity.is_equal_approx(Vector2(120.0, -40.0)), "Future commit restores the current player anchor velocity")
 		_expect(is_equal_approx(player.facing, -1.0), "Future commit restores the current player anchor facing")
 		_expect(timeline.past_echo.global_position.is_equal_approx(past_anchor_position), "Future commit rewinds PastEcho to its anchor history position")
-		_expect(not timeline.future_echo_a.is_available(), "Future commit preserves the recorded path as a FutureEcho")
+		_expect(not _future_echo(timeline).is_available(), "Future commit preserves the recorded path as its recorder FutureEcho")
 	fixture.queue_free()
 	await process_frame
 
@@ -1482,32 +1599,45 @@ func _test_future_recording_rewinds_derived_world_state() -> void:
 	await process_frame
 
 
-# 验证每次提交都会让现存与新增未来体从各自首帧同步重播。
-func _test_future_commit_restarts_existing_possibilities() -> void:
+# 验证新提交只恢复旧未来体的锚点进度，新未来体从自身首帧开始。
+func _test_future_commit_restores_existing_possibilities() -> void:
 	var fixture := TIMELINE_FIXTURE.instantiate()
 	root.add_child(fixture)
 	await physics_frame
 	var timeline := fixture.get_node("EchoTimelineController") as EchoTimelineController
 	var player := fixture.get_node("EchoPlayer") as EchoPlayer
-	var recorder := fixture.get_node("FutureRecorder") as FutureRecorder
-	if timeline != null and player != null and recorder != null:
+	var recorder_a := fixture.get_node("FutureRecorder") as FutureRecorder
+	var recorder_b := fixture.get_node("FutureRecorderB") as FutureRecorder
+	if timeline != null and player != null and recorder_a != null and recorder_b != null:
 		timeline.set_physics_process(false)
 		player.set_physics_process(false)
 		player.global_position = Vector2.ZERO
-		_expect(timeline.start_future_recording(recorder), "First possibility recording starts")
+		_expect(timeline.start_future_recording(recorder_a), "First recorder starts its possibility")
 		for position_x in [100.0, 200.0, 300.0]:
 			player.global_position = Vector2(position_x, 0.0)
 			_advance_timeline(timeline, player, 1.0)
 		_expect(timeline.commit_future_recording(), "First possibility recording commits")
+		_advance_timeline(timeline, player, 0.75)
+		var anchor_state := _future_echo(timeline).capture_playback_state()
 		player.global_position = Vector2(200.0, 0.0)
-		_expect(timeline.start_future_recording(recorder), "Second possibility recording starts while the first remains active")
+		_expect(timeline.start_future_recording(recorder_b), "Second recorder starts while the first Future remains active")
 		player.global_position = Vector2(320.0, 0.0)
 		_advance_timeline(timeline, player, 1.0)
-		_expect(not timeline.future_echo_a.global_position.is_equal_approx(Vector2.ZERO), "Existing FutureEcho advances while the second recording runs")
+		_expect(
+			float(_future_echo(timeline).capture_playback_state()["playback_seconds"])
+			> float(anchor_state["playback_seconds"]),
+			"Existing FutureEcho advances while another recorder captures"
+		)
 		_expect(timeline.commit_future_recording(), "Second possibility recording commits")
-		_expect(timeline.future_echo_a.global_position.is_equal_approx(Vector2.ZERO), "Existing FutureEcho restarts from its first frame")
-		_expect(timeline.future_echo_b.global_position.is_equal_approx(Vector2(200.0, 0.0)), "New FutureEcho starts from the second recording anchor")
-		_expect(timeline.future_echo_a.is_temporally_phased() and timeline.future_echo_b.is_temporally_phased(), "All FutureEchoes restart with the same separation phase")
+		_expect(
+			is_equal_approx(
+				float(_future_echo(timeline).capture_playback_state()["playback_seconds"]),
+				float(anchor_state["playback_seconds"])
+			),
+			"Existing FutureEcho restores its exact anchor progress"
+		)
+		_expect(_future_echo(timeline, 1).global_position.is_equal_approx(Vector2(200.0, 0.0)), "New FutureEcho starts from the second recorder anchor")
+		_expect(_future_echo(timeline, 1).is_temporally_phased(), "New FutureEcho receives the separation phase")
 	fixture.queue_free()
 	await process_frame
 
@@ -1519,25 +1649,31 @@ func _test_future_commit_restores_an_expired_existing_possibility() -> void:
 	await physics_frame
 	var timeline := fixture.get_node("EchoTimelineController") as EchoTimelineController
 	var player := fixture.get_node("EchoPlayer") as EchoPlayer
-	var recorder := fixture.get_node("FutureRecorder") as FutureRecorder
-	if timeline != null and player != null and recorder != null:
+	var recorder_a := fixture.get_node("FutureRecorder") as FutureRecorder
+	var recorder_b := fixture.get_node("FutureRecorderB") as FutureRecorder
+	if timeline != null and player != null and recorder_a != null and recorder_b != null:
 		timeline.set_physics_process(false)
 		player.set_physics_process(false)
 		player.global_position = Vector2.ZERO
-		_expect(timeline.start_future_recording(recorder), "Short first possibility recording starts")
+		_expect(timeline.start_future_recording(recorder_a), "Short first possibility recording starts")
 		player.global_position = Vector2(96.0, 0.0)
 		_advance_timeline(timeline, player, 1.0)
 		_expect(timeline.commit_future_recording(), "Short first possibility recording commits")
+		_advance_timeline(timeline, player, 0.8)
+		var anchor_progress := float(_future_echo(timeline).capture_playback_state()["playback_seconds"])
 		player.global_position = Vector2(200.0, 0.0)
-		_expect(timeline.start_future_recording(recorder), "Longer second possibility recording reserves the other slot")
+		_expect(timeline.start_future_recording(recorder_b), "Second recorder captures while the short Future remains active")
 		player.global_position = Vector2(320.0, 0.0)
-		_advance_timeline(timeline, player, 1.2)
-		_expect(timeline.future_echo_a.is_available(), "First FutureEcho can expire during the second recording")
+		_advance_timeline(timeline, player, 0.4)
+		_expect(_future_echo(timeline).is_available(), "First FutureEcho can expire during the second recording")
 		_expect(timeline.commit_future_recording(), "Second possibility commits after the old FutureEcho expires")
-		_expect(not timeline.future_echo_a.is_available(), "Expired existing FutureEcho is restored from the recording anchor")
-		_expect(timeline.future_echo_a.global_position.is_equal_approx(Vector2.ZERO), "Restored existing FutureEcho returns to its own first frame")
-		_expect(not timeline.future_echo_b.is_available(), "Reserved second slot receives the new FutureEcho")
-		_expect(timeline.future_echo_b.global_position.is_equal_approx(Vector2(200.0, 0.0)), "New FutureEcho keeps the second recording anchor")
+		_expect(not _future_echo(timeline).is_available(), "Expired existing FutureEcho is restored from the recording anchor")
+		_expect(
+			is_equal_approx(float(_future_echo(timeline).capture_playback_state()["playback_seconds"]), anchor_progress),
+			"Restored existing FutureEcho returns to its exact anchor progress"
+		)
+		_expect(not _future_echo(timeline, 1).is_available(), "Second recorder receives the new FutureEcho")
+		_expect(_future_echo(timeline, 1).global_position.is_equal_approx(Vector2(200.0, 0.0)), "New FutureEcho keeps the second recording anchor")
 	fixture.queue_free()
 	await process_frame
 
@@ -1582,15 +1718,15 @@ func _test_past_dissipates_overlapping_futures_together() -> void:
 	var shared_track: TemporalTrack = TEMPORAL_TRACK_SCRIPT.new()
 	shared_track.append(TEMPORAL_FRAME_SCRIPT.new(0.0, Vector2.ZERO, Vector2(80.0, 0.0)))
 	shared_track.append(TEMPORAL_FRAME_SCRIPT.new(4.0, Vector2(320.0, 0.0), Vector2(80.0, 0.0)))
-	timeline.future_echo_a.start_playback(shared_track, 4.0, 0.0)
-	timeline.future_echo_b.start_playback(shared_track, 4.0, 0.0)
+	_future_echo(timeline).start_playback(shared_track, 4.0, 0.0)
+	_future_echo(timeline, 1).start_playback(shared_track, 4.0, 0.0)
 	timeline.past_echo.play_at(shared_track, 0.0)
-	timeline.past_echo.area_entered.emit(timeline.future_echo_a)
-	timeline.past_echo.area_entered.emit(timeline.future_echo_b)
-	_expect(timeline.future_echo_a.is_available() and timeline.future_echo_b.is_available(), "PastEcho dissipates every overlapping FutureEcho")
+	timeline.past_echo.area_entered.emit(_future_echo(timeline))
+	timeline.past_echo.area_entered.emit(_future_echo(timeline, 1))
+	_expect(_future_echo(timeline).is_available() and _future_echo(timeline, 1).is_available(), "PastEcho dissipates every overlapping FutureEcho")
 	_expect(
-		(timeline.future_echo_a.get_node("DepartureVfx") as TemporalDepartureVfx).is_playing()
-		and (timeline.future_echo_b.get_node("DepartureVfx") as TemporalDepartureVfx).is_playing(),
+		(_future_echo(timeline).get_node("DepartureVfx") as TemporalDepartureVfx).is_playing()
+		and (_future_echo(timeline, 1).get_node("DepartureVfx") as TemporalDepartureVfx).is_playing(),
 		"Each dissipated FutureEcho keeps an independent amber departure"
 	)
 	fixture.queue_free()
@@ -1621,14 +1757,14 @@ func _test_recorder_commits_a_future_echo_from_recall_input() -> void:
 		player._physics_process(0.0)
 		_send_key_event(KEY_L, false)
 		_expect(not timeline.is_future_recording(), "Recall input commits a recording after its minimum duration")
-		_expect(not timeline.future_echo_a.is_available(), "Committed recording occupies an authored future echo")
+		_expect(not recorder.get_future_echo().is_available(), "Committed recording occupies its recorder FutureEcho")
 		_expect(player.is_temporally_phased(), "Recall grants the current player its authored separation phase")
 		_expect(slot_counts.has(1), "Starting a recording emits one used future slot")
 	fixture.queue_free()
 	await process_frame
 
 
-# 验证记录器明确显示录制、等待离开，并在离开后重新可用。
+# 验证记录器显示录制、占用和等待离开，并只在自身未来结束后复用。
 func _test_recorder_state_feedback_and_reuse() -> void:
 	var fixture := TIMELINE_FIXTURE.instantiate()
 	root.add_child(fixture)
@@ -1643,13 +1779,17 @@ func _test_recorder_state_feedback_and_reuse() -> void:
 		recorder.body_entered.emit(player)
 		_expect(recorder.call("get_state_name") == &"recording", "FutureRecorder shows RECORDING while capturing a possibility")
 		_expect(timeline.commit_future_recording(), "FutureRecorder state test commits the first recording")
-		_expect(recorder.call("get_state_name") == &"waiting_exit", "FutureRecorder shows WAITING_EXIT after recall")
-		recorder.body_entered.emit(player)
-		_expect(not timeline.is_future_recording(), "FutureRecorder cannot retrigger before the player leaves")
+		_expect(recorder.call("get_state_name") == &"occupied", "FutureRecorder shows OCCUPIED while its FutureEcho exists")
 		recorder.body_exited.emit(player)
-		_expect(recorder.call("get_state_name") == &"ready", "FutureRecorder returns to READY after the player leaves")
+		_expect(recorder.call("get_state_name") == &"occupied", "Leaving does not free an occupied FutureRecorder")
 		recorder.body_entered.emit(player)
-		_expect(timeline.is_future_recording(), "The same FutureRecorder starts another recording after re-entry")
+		_expect(not timeline.is_future_recording(), "An occupied FutureRecorder rejects another recording")
+		recorder.get_future_echo().dissipate()
+		_expect(recorder.call("get_state_name") == &"waiting_exit", "Released Future waits for the overlapping player to leave")
+		recorder.body_exited.emit(player)
+		_expect(recorder.call("get_state_name") == &"ready", "FutureRecorder returns to READY after release and exit")
+		recorder.body_entered.emit(player)
+		_expect(timeline.is_future_recording(), "The same FutureRecorder can record again after its Future releases")
 		timeline.reset_timeline()
 		_expect(recorder.call("get_state_name") == &"waiting_exit", "Timeline reset leaves an occupied recorder waiting for a clean exit")
 		recorder.body_exited.emit(player)
@@ -1671,10 +1811,10 @@ func _test_first_frame_recording_and_past_contact_commit() -> void:
 		short_player.set_physics_process(false)
 		_expect(short_timeline.start_future_recording(short_recorder), "Future recording starts for first-frame recall")
 		_expect(short_timeline.commit_future_recording(), "Future recording commits on its first frame")
-		short_timeline.future_echo_a.advance(0.99)
-		_expect(not short_timeline.future_echo_a.is_available(), "Short recording holds its final frame until one second")
-		short_timeline.future_echo_a.advance(0.02)
-		_expect(short_timeline.future_echo_a.is_available(), "Padded short recording releases after one second")
+		short_recorder.get_future_echo().advance(0.99)
+		_expect(not short_recorder.get_future_echo().is_available(), "Short recording holds its final frame until one second")
+		short_recorder.get_future_echo().advance(0.02)
+		_expect(short_recorder.get_future_echo().is_available(), "Padded short recording releases after one second")
 	short_fixture.queue_free()
 	await process_frame
 
@@ -1695,7 +1835,7 @@ func _test_first_frame_recording_and_past_contact_commit() -> void:
 		contact_timeline.past_echo.play_at(past_track, 0.0)
 		contact_timeline.past_echo.body_entered.emit(contact_player)
 		_expect(not contact_timeline.is_future_recording(), "Past contact commits the current recording")
-		_expect(not contact_timeline.future_echo_a.is_available(), "Past contact creates the reserved future echo")
+		_expect(not contact_recorder.get_future_echo().is_available(), "Past contact creates the recorder-owned future echo")
 		_expect(contact_player.is_temporally_phased(), "Past-contact recall grants separation phase")
 		_expect(failures.is_empty(), "Past contact during recording does not trigger checkpoint failure")
 	contact_fixture.queue_free()
@@ -1759,39 +1899,38 @@ func _test_delay_station_reuses_authored_node() -> void:
 	await process_frame
 
 
-# Verifies a full pair of future possibilities blocks a third recording attempt.
-func _test_two_future_slots_reject_a_third_recording() -> void:
+# 验证 Future 容量来自 authored 记录器数量，且一台机器只持有一个未来体。
+func _test_recorder_scoped_future_capacity() -> void:
 	var fixture := TIMELINE_FIXTURE.instantiate()
 	root.add_child(fixture)
 	await physics_frame
 	var timeline := fixture.get_node("EchoTimelineController") as EchoTimelineController
 	var player := fixture.get_node("EchoPlayer") as EchoPlayer
-	var recorder := fixture.get_node("FutureRecorder") as FutureRecorder
-	if timeline != null and player != null and recorder != null:
+	var recorder_a := fixture.get_node("FutureRecorder") as FutureRecorder
+	var recorder_b := fixture.get_node("FutureRecorderB") as FutureRecorder
+	var recorder_c := fixture.get_node("FutureRecorderC") as FutureRecorder
+	if timeline != null and player != null and recorder_a != null and recorder_b != null and recorder_c != null:
 		var slot_counts: Array[int] = []
+		var slot_maximums: Array[int] = []
 		var rejection_events: Array[bool] = []
-		timeline.future_slots_changed.connect(func(used_slots: int, _max_slots: int) -> void: slot_counts.append(used_slots))
+		timeline.future_slots_changed.connect(func(used_slots: int, max_slots: int) -> void:
+			slot_counts.append(used_slots)
+			slot_maximums.append(max_slots)
+		)
 		timeline.future_recording_rejected.connect(func() -> void: rejection_events.append(true))
-		player.global_position = Vector2.ZERO
-		player.velocity = Vector2.ZERO
-		recorder.global_position = Vector2.ZERO
-		await physics_frame
-		await physics_frame
 		timeline.set_physics_process(false)
 		player.set_physics_process(false)
-		_advance_timeline(timeline, player, EchoTimelineController.FUTURE_MAXIMUM_SECONDS)
-		_expect(not timeline.is_future_recording(), "Future recording auto-commits at its five-second maximum")
-		recorder.body_exited.emit(player)
-		recorder.body_entered.emit(player)
-		_expect(timeline.is_future_recording(), "Recorder can begin a second recording after recall and exit")
-		_advance_timeline(timeline, player, 1.1)
-		_expect(timeline.commit_future_recording(), "Second recording commits after its minimum duration")
-		_expect(slot_counts.has(2), "Second recording reserves the second future slot")
-		recorder.body_exited.emit(player)
-		recorder.body_entered.emit(player)
-		_expect(not timeline.is_future_recording(), "Two future possibilities reject a third recording")
-		_expect(not rejection_events.is_empty(), "Rejected third recording emits its public feedback signal")
-		_expect(recorder.call("get_state_name") == &"no_slot", "Rejected third recording shows the NO_SLOT state")
+		_expect(timeline.start_future_recording(recorder_a), "First recorder starts a recording")
+		_expect(not timeline.start_future_recording(recorder_b), "A second recorder cannot start while recording is global")
+		_expect(timeline.commit_future_recording(), "First recorder commits its FutureEcho")
+		_expect(timeline.start_future_recording(recorder_b), "Second recorder starts after the global recording ends")
+		_expect(timeline.commit_future_recording(), "Second recorder commits its own FutureEcho")
+		_expect(timeline.start_future_recording(recorder_c), "Third authored recorder adds a third Future capacity")
+		_expect(timeline.commit_future_recording(), "Third recorder commits its own FutureEcho")
+		_expect(slot_counts.has(3) and slot_maximums.has(3), "Future slot signal uses the authored recorder count")
+		_expect(not timeline.start_future_recording(recorder_a), "An occupied recorder rejects another Future")
+		_expect(not rejection_events.is_empty(), "Rejected recording emits its public feedback signal")
+		_expect(recorder_a.call("get_state_name") == &"occupied", "Rejected occupied recorder keeps the OCCUPIED state")
 	fixture.queue_free()
 	await process_frame
 
@@ -1831,15 +1970,15 @@ func _test_temporal_collision_matrix() -> void:
 		var future_track: TemporalTrack = TEMPORAL_TRACK_SCRIPT.new()
 		future_track.append(TEMPORAL_FRAME_SCRIPT.new(0.0, Vector2.ZERO))
 		future_track.append(TEMPORAL_FRAME_SCRIPT.new(10.0, Vector2.ZERO))
-		past_future_timeline.future_echo_a.start_playback(future_track, 10.0, EchoTimelineController.TEMPORAL_PHASE_SECONDS)
+		_future_echo(past_future_timeline).start_playback(future_track, 10.0, EchoTimelineController.TEMPORAL_PHASE_SECONDS)
 		var past_track: TemporalTrack = TEMPORAL_TRACK_SCRIPT.new()
 		past_track.append(TEMPORAL_FRAME_SCRIPT.new(0.0, Vector2.ZERO))
 		past_future_timeline.past_echo.play_at(past_track, 0.0)
-		past_future_timeline.past_echo.area_entered.emit(past_future_timeline.future_echo_a)
-		_expect(not past_future_timeline.future_echo_a.is_available(), "New FutureEcho ignores PastEcho during separation phase")
-		past_future_timeline.future_echo_a.advance(EchoTimelineController.TEMPORAL_PHASE_SECONDS + 0.01)
-		past_future_timeline.past_echo.area_entered.emit(past_future_timeline.future_echo_a)
-		_expect(past_future_timeline.future_echo_a.is_available(), "PastEcho dissipates a future possibility")
+		past_future_timeline.past_echo.area_entered.emit(_future_echo(past_future_timeline))
+		_expect(not _future_echo(past_future_timeline).is_available(), "New FutureEcho ignores PastEcho during separation phase")
+		_future_echo(past_future_timeline).advance(EchoTimelineController.TEMPORAL_PHASE_SECONDS + 0.01)
+		past_future_timeline.past_echo.area_entered.emit(_future_echo(past_future_timeline))
+		_expect(_future_echo(past_future_timeline).is_available(), "PastEcho dissipates a future possibility")
 	past_future_fixture.queue_free()
 	await process_frame
 
@@ -1855,10 +1994,10 @@ func _test_temporal_collision_matrix() -> void:
 		var future_track: TemporalTrack = TEMPORAL_TRACK_SCRIPT.new()
 		future_track.append(TEMPORAL_FRAME_SCRIPT.new(0.0, Vector2.ZERO))
 		future_track.append(TEMPORAL_FRAME_SCRIPT.new(10.0, Vector2.ZERO))
-		player_future_timeline.future_echo_a.start_playback(future_track, 10.0, 0.0)
+		_future_echo(player_future_timeline).start_playback(future_track, 10.0, 0.0)
 		await physics_frame
 		await physics_frame
-		_expect(player_future_timeline.future_echo_a.is_available(), "Current player dissipates a future possibility")
+		_expect(_future_echo(player_future_timeline).is_available(), "Current player dissipates a future possibility")
 	player_future_fixture.queue_free()
 	await process_frame
 
@@ -1875,12 +2014,12 @@ func _test_temporal_collision_matrix() -> void:
 		var shared_track: TemporalTrack = TEMPORAL_TRACK_SCRIPT.new()
 		shared_track.append(TEMPORAL_FRAME_SCRIPT.new(0.0, Vector2.ZERO))
 		shared_track.append(TEMPORAL_FRAME_SCRIPT.new(10.0, Vector2.ZERO))
-		futures_timeline.future_echo_a.start_playback(shared_track, 10.0, 0.0)
-		futures_timeline.future_echo_b.start_playback(shared_track, 10.0, 0.0)
+		_future_echo(futures_timeline).start_playback(shared_track, 10.0, 0.0)
+		_future_echo(futures_timeline, 1).start_playback(shared_track, 10.0, 0.0)
 		await physics_frame
 		await physics_frame
-		_expect(not futures_timeline.future_echo_a.is_available(), "First future possibility ignores another future possibility")
-		_expect(not futures_timeline.future_echo_b.is_available(), "Second future possibility ignores another future possibility")
+		_expect(not _future_echo(futures_timeline).is_available(), "First future possibility ignores another future possibility")
+		_expect(not _future_echo(futures_timeline, 1).is_available(), "Second future possibility ignores another future possibility")
 	futures_fixture.queue_free()
 	await process_frame
 
@@ -1898,7 +2037,10 @@ func _test_timeline_reset_clears_transient_time_state() -> void:
 		_expect(timeline.start_future_recording(recorder), "Timeline accepts a recording before an explicit reset")
 		timeline.reset_timeline()
 		_expect(not timeline.is_future_recording(), "Timeline reset clears an in-progress recording")
-		_expect(timeline.future_echo_a.is_available() and timeline.future_echo_b.is_available(), "Timeline reset clears both future echo slots")
+		var all_futures_available := true
+		for authored_recorder in timeline.recorders:
+			all_futures_available = all_futures_available and authored_recorder.get_future_echo().is_available()
+		_expect(all_futures_available, "Timeline reset clears every recorder-owned FutureEcho")
 		_expect(not timeline.past_echo.visible, "Timeline reset removes the past echo from the world")
 		_expect(not slot_counts.is_empty() and slot_counts.back() == 0, "Timeline reset publishes zero occupied future slots")
 	fixture.queue_free()
