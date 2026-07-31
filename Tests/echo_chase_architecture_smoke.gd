@@ -7,6 +7,7 @@ var _failures: Array[String] = []
 # Runs public LevelModule behavior checks and exits non-zero on failure.
 func _ready() -> void:
 	var original_level_module := LevelModule.instance
+	_test_dash_afterimages_restart_cleanly()
 	_test_present_room_delay_switch_is_immediate()
 	_test_progression_device_ids_are_unique()
 	_test_progress_round_trip()
@@ -19,6 +20,30 @@ func _ready() -> void:
 	for failure in _failures:
 		push_error(failure)
 	get_tree().quit(1)
+
+# A second dash must not inherit image slots from the first dash's world position.
+func _test_dash_afterimages_restart_cleanly() -> void:
+	var vfx_scene := load("res://Scenes/EchoChase/Prefabs/echo_dash_vfx.tscn") as PackedScene
+	var source := AnimatedSprite2D.new()
+	var frames := SpriteFrames.new()
+	frames.add_animation(&"idle")
+	frames.add_frame(&"idle", GradientTexture2D.new())
+	source.sprite_frames = frames
+	source.animation = &"idle"
+	add_child(source)
+	var vfx := vfx_scene.instantiate() as EchoDashVfx
+	add_child(vfx)
+	source.global_position = Vector2(24.0, 48.0)
+	vfx.begin(source, Vector2.RIGHT)
+	vfx.finish(source.global_position, Vector2.RIGHT)
+	source.global_position = Vector2(144.0, 48.0)
+	vfx.begin(source, Vector2.RIGHT)
+	var afterimage_a := vfx.get_node("Afterimages/AfterimageA") as Sprite2D
+	var afterimage_b := vfx.get_node("Afterimages/AfterimageB") as Sprite2D
+	_expect(afterimage_a.global_position.is_equal_approx(source.global_position), "new dash afterimage should use the new world position")
+	_expect(afterimage_b.texture == null, "new dash should not reuse the previous dash image slot")
+	vfx.free()
+	source.free()
 
 
 # One authored device ID activates once and emits once.
@@ -101,7 +126,7 @@ func _test_present_room_delay_switch_is_immediate() -> void:
 	_expect(not timeline.is_present_room_active(), "leave_present_room should resume a new timeline")
 	timeline.past_delay_switch_started.disconnect(on_switch_started)
 	timeline.past_delay_changed.disconnect(on_delay_changed)
-	timeline.queue_free()
+	timeline.free()
 
 
 # Records one failed behavior without stopping later checks.

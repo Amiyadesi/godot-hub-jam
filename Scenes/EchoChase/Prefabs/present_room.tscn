@@ -60,6 +60,7 @@ shape = SubResource("Shape_room")
 
 [node name="DialogueNpc" parent="." instance=ExtResource("2_npc")]
 unique_name_in_owner = true
+position = Vector2(-176, 80)
 dialogue_resource = ExtResource("3_dialogue")
 
 [node name="Shockwave" type="Sprite2D" parent="."]

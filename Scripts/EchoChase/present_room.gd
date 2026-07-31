@@ -16,15 +16,16 @@ func _ready() -> void:
 	body_entered.connect(_on_body_entered)
 	body_exited.connect(_on_body_exited)
 	dialogue_npc.dialogue_finished.connect(_on_dialogue_finished)
+	if LevelModule.instance != null and LevelModule.instance.is_present_hub_unlocked():
+		dialogue_npc.dialogue_title = "return"
 
 
-# Clears temporal entities immediately on later visits to an unlocked hub.
+# Clears temporal entities whenever the current player enters the authored room.
 func _on_body_entered(body: Node2D) -> void:
 	if body != EchoTimeline.player:
 		return
 	_player_inside = true
-	if LevelModule.instance != null and LevelModule.instance.is_present_hub_unlocked():
-		EchoTimeline.enter_present_room()
+	EchoTimeline.enter_present_room()
 
 
 # Starts a clean timeline from whichever authored exit the player uses.
@@ -43,6 +44,7 @@ func _on_dialogue_finished() -> void:
 	LevelModule.instance.unlock_present_hub()
 	if not SaveSystem.save_slot(1):
 		push_error("PresentRoom failed to save slot 1 after unlocking")
+	dialogue_npc.dialogue_title = "return"
 	_play_shockwave()
 	EchoTimeline.enter_present_room()
 

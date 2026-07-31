@@ -132,7 +132,7 @@ func _input(event: InputEvent) -> void:
 
 # 从玩家当前可观察状态构造可回放快照。
 func build_temporal_frame(time_seconds: float) -> TemporalFrame:
-	var flags := TemporalFrame.Flag.NONE
+	var flags: int = TemporalFrame.Flag.NONE
 	if _state in [State.DASH_AIM, State.DASH]:
 		flags |= TemporalFrame.Flag.DASH
 	if _state == State.JUMP:

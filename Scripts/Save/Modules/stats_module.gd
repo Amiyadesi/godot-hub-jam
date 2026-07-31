@@ -109,7 +109,7 @@ func apply_data(data: Dictionary) -> void:
 func on_new_game() -> void:
 	total_play_count += 1
 	if first_played_at == 0:
-		first_played_at = Time.get_unix_time_from_system()
+		first_played_at = int(Time.get_unix_time_from_system())
 
 # ──────────────────────────────────────────────
 # 公开 API
@@ -124,7 +124,7 @@ func _record_session_start() -> void:
 	# 如果已经记录了本次会话的开始时间，则不重复记录（避免在不同场景间切换时重复计次）
 	if last_session_start != 0 and last_session_end == 0:
 		return
-	var now := Time.get_unix_time_from_system()
+	var now := int(Time.get_unix_time_from_system())
 	if first_played_at == 0:
 		first_played_at = now
 	last_session_start = now
@@ -148,7 +148,7 @@ func on_win_closed() -> void:
 
 ## 记录本次游戏退出（退出前调用一次）
 func _record_session_end() -> void:
-	var now := Time.get_unix_time_from_system()
+	var now := int(Time.get_unix_time_from_system())
 	last_session_end = now
 	if session_history.size() > 0:
 		var idx := session_history.size() - 1

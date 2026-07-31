@@ -1,6 +1,6 @@
 # 当前保留资源归因
 
-Delay Trace 已接入 CC0 占位角色、施工平台、菜单地图、机关图块、五个动作/状态音效、一首菜单循环音乐与一套 OFL 中文像素字体；它们不是正式美术方向。内部路径仍使用 `EchoChase`，部分通用 UI 音频仍临时引用旧目录资源；目录名 `assets/phase_lag` 是历史路径，不代表它们属于当前玩法。
+Delay Trace 已接入 CC0 占位角色、施工平台、菜单地图、机关图块、动作/状态音效、菜单与施工玩法循环音乐，以及一套 OFL 中文像素字体；它们不是正式美术方向。内部路径仍使用 `EchoChase`，部分通用 UI 音频仍临时引用旧目录资源；目录名 `assets/phase_lag` 是历史路径，不代表它们属于当前玩法。
 
 下列条目分别记录可确认的下载日期或“原始日期未保留”，不伪造来源链。SHA256 用于确认当前仓库中实际保留的文件。未来候选素材必须先放入隔离目录，并记录下载日期、修改内容、来源 URL、作者、许可证与 SHA256；正式接入前由项目作者确认。
 
@@ -71,6 +71,22 @@ Delay Trace 已接入 CC0 占位角色、施工平台、菜单地图、机关图
 | --- | --- | --- |
 | 主菜单循环音乐 | `assets/echo_chase/audio/music/mysterious_futuristic_loop.ogg` | `A8CF299AA1F2C703EA5DE249DFA864254DE8AC76571A9DA70F7D33873AD08CCB` |
 | 来源与许可记录 | `assets/echo_chase/licenses/frenchyboy_mysterious_futuristic_cc0.txt` | 见仓库文件 |
+
+## SRG774: Dark Sci-Fi Audio Pack
+
+- 作者：SRG774
+- 来源：https://opengameart.org/content/dark-sci-fi-audio-pack
+- 许可证：CC0 1.0 Universal / Public Domain
+- 下载日期：2026-07-31
+- 原始附件：`ogg.zip`
+- 原始 ZIP SHA256：`C17C40F2B5FF32A51016D121A017CF1A307E0065C7ACFCC30C66F05F1D047CE1`
+- 修改：从官方 OGG 包中只保留 `sector.ogg` 与 `victory.ogg`，文件音频数据未修改；分别重命名为清晰的玩法音乐和装置完成音，玩法音乐在 Godot import 中启用循环。
+
+| 当前用途 | 文件 | SHA256 |
+| --- | --- | --- |
+| 施工玩法循环音乐 | `assets/echo_chase/audio/music/dark_sci_fi_sector.ogg` | `D5862627E6D0C424FC157EAFFAA5421BAE4F0BB177E7628D520BFB6A45AA9676` |
+| 支路永久装置激活 | `assets/echo_chase/audio/progression_victory.ogg` | `9ACDE356C84B1D326A3E7B813E43E8849596A285796144F7FABED898F2C21007` |
+| 来源与许可记录 | `assets/echo_chase/licenses/srg774_dark_sci_fi_audio_pack_cc0.txt` | `D03D122DDDEB5AFCF541ED32B84B334BFCDE91F143F40BD3821896EDF1C1B209` |
 
 ## Ansimuz: Sideview Sci-Fi - Patreon Collection
 

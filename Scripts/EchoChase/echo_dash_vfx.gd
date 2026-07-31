@@ -33,6 +33,7 @@ func begin(source: AnimatedSprite2D, direction: Vector2) -> void:
 	_active = true
 	_sample_elapsed = AFTERIMAGE_INTERVAL
 	_suppress_particles_for_current_dash = _uses_low_flash_mode()
+	_clear_afterimages()
 	start_ring.global_position = source.global_position
 	start_burst.global_position = source.global_position
 	_set_direction(direction)
@@ -87,7 +88,7 @@ func reset_vfx() -> void:
 	end_burst.emitting = false
 	start_animation_player.play(&"RESET")
 	end_animation_player.play(&"RESET")
-	afterimage_animation_player.play(&"RESET")
+	_clear_afterimages()
 
 
 # 返回冲刺尾效是否正在接收路径采样。
@@ -102,6 +103,14 @@ func _sample_afterimage(source: AnimatedSprite2D) -> void:
 	_copy_source_frame(afterimage_a, source, 0.34)
 	if _suppress_particles_for_current_dash:
 		afterimage_c.visible = false
+
+
+# Stops an old fade so a new dash cannot reuse the previous dash's image slots.
+func _clear_afterimages() -> void:
+	afterimage_animation_player.stop()
+	for afterimage in [afterimage_a, afterimage_b, afterimage_c]:
+		afterimage.texture = null
+		afterimage.hide()
 
 
 # 在残影槽之间复制静态帧和世界位置。

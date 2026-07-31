@@ -18,6 +18,7 @@ const ENTRY_STATE_PAST := &"past"
 @export var pause_screen: PauseScreen
 @export var setting_screen: SettingScreen
 @export var reset_audio: AudioStreamPlayer
+@export var gameplay_music: AudioStream
 @export var present_entry_transition: SceneTransition
 @export var past_entry_transition: SceneTransition
 
@@ -35,6 +36,10 @@ var _entry_tween: Tween
 # 收集当前场景实际摆放的机关，并接通存档、失败和暂停信号。
 func _ready() -> void:
 	EchoTimeline.set_gameplay_active(false)
+	if gameplay_music == null:
+		push_error("EchoChaseStart requires gameplay_music")
+	else:
+		GameAudio.play_music("echo_chase_gameplay", gameplay_music, 0.6)
 	_resolve_checkpoints()
 	_resolve_delay_switches()
 	_connect_gameplay_signals()

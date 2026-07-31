@@ -18,8 +18,6 @@ EchoChaseStart
 ├── World [PAUSABLE]
 │   ├── Platform [用户 authored TileMapLayer]
 │   ├── SpawnPoint
-│   ├── EchoTimelineController
-│   │   └── PastEcho
 │   ├── EchoPlayer
 │   ├── RoomCamera
 │   │   └── Camera2D
@@ -29,8 +27,10 @@ EchoChaseStart
 │   ├── RoomCameraTriggers
 │   │   └── RoomAreaA / B / C / D
 │   ├── EchoCheckpoint
+│   ├── PresentHub [Room B；内含 DialogueNpc]
 │   ├── DelayPickup1s / 3s / 5s
-│   ├── FutureRecorderA / B [各自内部一个 FutureEcho]
+│   ├── FutureRecorderA [内部一个 FutureEcho]
+│   ├── BranchProgressionDevice → BranchPersistentGate
 │   ├── TemporalPressurePlate → TemporalDoor
 │   └── FallResetArea
 ├── UI
@@ -54,6 +54,8 @@ EchoChaseStart
 - 菜单地图与三时态剪影只存在于 `MenuWorld/WorldParallax`，由 `WorldCamera` 产生轻微世界视差；标题、按钮、设置、感谢、转场和 `TemporalFrame` 位于固定 `MenuUi`。改地图、道路、剪影或其动画时只编辑 `menu_world.tscn`；不得在 `menu.tscn` 重建副本。
 - 音效节点已 authored：玩家冲刺/落地、过去体出现、失败复位、checkpoint 激活。
 - 菜单音乐为 Frenchyboy 的 CC0 `Mysterious2.wav` 转码版本：`assets/echo_chase/audio/music/mysterious_futuristic_loop.ogg`；来源与 SHA256 见 `docs/asset-attributions.md`。
+- 施工玩法音乐为 SRG774 的 CC0 `sector.ogg`，进入玩法时由 `GameAudio` 从菜单曲 crossfade；支路装置激活使用同包 `victory.ogg`。
+- 中央房每次进入都立即清除时态实体并让延迟台即时生效；NPC 复用 `ModularBalloon` 变体，范围内显示 `E`，首次剧情结束触发蓝色冲击波，之后改用短 `return` 对话。
 - Past/Future prefab 的 `OutlineVisual`、`PixelBurst`、`VfxAnimationPlayer`、`DepartureVfx` 是 authored 合同；`DepartureVfx` 是 `top_level` 旧位置快照，主体移动或槽位复用都不能带走它。
 - 主菜单是严格三等分固定剪影。Start 使用现在体青白径向转场，Continue 使用过去体洋红径向转场；玩法场景只负责同色淡出，不再包含三人入场 Overlay。
 
@@ -69,9 +71,11 @@ checkpoint_id
 checkpoint_position: {x, y}
 past_delay_seconds
 delay_switch_id
+activated_progression_device_ids
+present_hub_unlocked
 ```
 
-延迟台是可重复机关，类名仍为 `DelayPickup`。每个场景必须恰好一个默认 `3s` 台，所有台使用唯一 ID 并加入 `EchoChaseStart.delay_switch_paths`。激活 checkpoint 不清理当前时间线，但会记录当前选择；被过去体抓到或跌落后，玩家冻结 `0.4s`，随后先恢复坐标，再用保存的延迟和台 ID 调用 `EchoTimelineController.reset_timeline()`。Continue 同样建立干净时间线。
+延迟台是可重复机关，类名仍为 `DelayPickup`。每个场景必须恰好一个默认 `3s` 台，所有台使用唯一 ID；`EchoChaseStart` 从 authored `gameplay_world` 收集它们。激活 checkpoint 不清理当前时间线，但会记录当前选择；被过去体抓到或跌落后，玩家冻结 `0.4s`，随后先恢复坐标，再用保存的延迟和台 ID 调用 `EchoTimeline.reset_timeline()`。Continue 同样建立干净时间线。
 
 未来录像可在第一帧提交；短路径保持末帧补足到 `1s`。录制中接触过去体会提交/回传，不会触发失败。`TemporalRecordingHUD` 监听时间线与 `KeybindingModule.bindings_changed`，禁止把按键文本硬编码回 `L`。
 
@@ -79,13 +83,13 @@ delay_switch_id
 
 ## Future 与时间锚点
 
-`EchoTimelineController.recorders` 必须显式列出场景内全部记录器。每台 `FutureRecorder` 自带一个独占 `FutureEcho`，Future 容量随记录器数量变化；全局同时仍只允许一条录像。
+`EchoTimeline` 是 Autoload；关卡不要再实例化控制器。每台 `FutureRecorder` 进入树时自行注册，并自带一个独占 `FutureEcho`；Future 容量随 authored 记录器数量变化，全局同时仍只允许一条录像。
 
 开始录像时捕获现在体、过去体、延迟选择和所有已有 Future 的精确播放状态。提交后恢复锚点状态，再启动新 Future；录制期间已经结束的旧 Future 也按锚点恢复。录像期间 checkpoint 不激活。不要恢复固定 `FutureEchoA/B` 槽，也不要引入通用世界快照框架。
 
 ## Phantom Camera
 
-插件固定为官方 `v0.11.0.3`。起始场景的四台 PCam 中心为 `(240,775)`、`(720,775)`、`(1200,775)`、`(1680,775)`，均为固定位置、`zoom=4`、pixel snap，使用 `0.35s QUAD/EASE_IN_OUT` tween。
+插件固定为官方 `v0.11.0.3`。起始场景的四台 PCam 保留用户当前 Inspector 调整，均为固定位置、`zoom=4`、pixel snap，使用 `0.35s QUAD/EASE_IN_OUT` tween；不要用文档坐标覆盖场景值。
 
 四个 authored `Area2D` 直接使用 Phantom Camera 官方 `2d_trigger_area.gd` 示例脚本调整 PCam priority；真实 Camera2D 变换、转场中断和补间完全由 `PhantomCameraHost` 处理。不要增加 `PhantomRoomSwitch`、`RoomCameraController`、网格扫描、手写 camera tween 或备用相机逻辑。
 
@@ -95,11 +99,12 @@ delay_switch_id
 $godot = (Get-Command godot).Source
 $env:APPDATA = Join-Path $env:TEMP 'echo-chase-test-appdata'
 & $godot --headless --editor --path . --quit
-& $godot --headless --path . --scene res://Tests/EchoChase/run_tests.tscn
-& $godot --headless --path . --scene res://Scenes/EchoChase/echo_chase_start.tscn --quit-after 5
+& $godot --headless --path . res://Tests/EchoChase/run_tests.tscn
+& $godot --headless --path . res://Tests/echo_chase_architecture_smoke.tscn
+& $godot --headless --path . --quit-after 300 res://Scenes/EchoChase/echo_chase_start.tscn
 ```
 
-原型阶段的测试只验证路径插值与回传断点。不要添加把节点层级、Prefab 数量、资源路径、颜色、动画时长、房间坐标或 Inspector 参数锁死的测试；这些内容以作者当前的场景与 Inspector 调整为准。
+自动检查覆盖路径插值、回传断点、永久进度、现在房延迟切换和连续冲刺残影回归。不要添加把节点层级、Prefab 数量、颜色、动画时长、房间坐标或 Inspector 参数锁死的测试；这些内容以作者当前的场景与 Inspector 调整为准。
 
 人工只检查 `1920x1080` 与同比例 `1280x720`。不做超宽屏批量截图。
 
@@ -108,5 +113,5 @@ $env:APPDATA = Join-Path $env:TEMP 'echo-chase-test-appdata'
 - 用户灰盒 A、灰盒 B 和任何正式路线。
 - 正式 Phantom Camera 房间边界、位置与 tween 调参。
 - 记录器、压力板、门在正式场景中的谜题和最终摆位。
-- 正式玩法背景、怪物、玩法音乐、正式角色稿和剧情。菜单已有一首 CC0 占位曲。
+- 正式玩法背景、怪物、正式角色稿、正式选曲和完整剧情。菜单、施工玩法与中央 NPC 目前都只是 CC0/初稿占位。
 - Windows 导出。

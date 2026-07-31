@@ -42,6 +42,7 @@ YourGrayboxRoot (Node2D)
 | `DialogueNpc` | `dialogue_resource/dialogue_title` | Dialogue Manager 资源与起始 title |
 | `TemporalRecordingHUD` | `player` | 场景内玩家 |
 | `EchoChaseStart` | `player/gameplay_world/spawn_point/fall_reset_area/pause_screen/setting_screen/reset_audio` | 场景内对应 authored 节点 |
+| `EchoChaseStart` | `gameplay_music` | 进入玩法后交给 `GameAudio` crossfade 的独立循环曲 |
 | `EchoChaseStart` | `present_entry_transition/past_entry_transition` | 与菜单满屏颜色一致的 `0.35s` authored 淡出资源 |
 
 `EchoChaseStart` 会收集 `gameplay_world` 下实际 authored 的 checkpoint 与延迟台；Prefab 自己负责向 `EchoTimeline` 注册和注销。漏掉必填资源、ID 或直接引用应主动报错，不要添加静默 fallback。
@@ -91,7 +92,7 @@ YourGrayboxRoot (Node2D)
 
 普通 NPC 使用 `dialogue_npc.tscn`，赋值 `dialogue_resource` 和可选 `dialogue_title`。玩家进入范围看到 `E`，按下后复用 `Dialogue/EchoChase/echo_dialogue_balloon.tscn`；该变体保留 Flow、Animation、TypingSound、CharacterUI 和 Responses，禁用 History、SaveModule 与 Illustration。对话期间 `SceneTree.paused = true`，结束后恢复原状态。
 
-中央房直接实例化 `present_room.tscn`。其默认碰撞范围为 `480×270`，作者可按实际房间边界调整 `RoomShape`，并可替换内置 NPC 对话资源与位置。首次对话结束后，房间写入 `present_hub_unlocked`、播放蓝色冲击波并调用 `EchoTimeline.enter_present_room()`；后续进入直接清除 Past/Future。离开任意边界调用 `leave_present_room()`，从玩家当前位置重建时间线。不要让现在房自动激活 checkpoint。
+中央房直接实例化 `present_room.tscn`。其默认碰撞范围为 `480×270`，作者可按实际房间边界调整 `RoomShape`，并可替换内置 NPC 对话资源与位置。每次进入都立即调用 `EchoTimeline.enter_present_room()`，因此首次来访也会取消录像、清除 Past/Future，并让延迟台即时生效。首次按 `E` 完成对话后，房间写入 `present_hub_unlocked`、播放蓝色冲击波，NPC 随后改用 `return` title。离开任意边界调用 `leave_present_room()`，从玩家当前位置重建时间线。不要让现在房自动激活 checkpoint。
 
 ## 失败、重置和检查点
 
@@ -118,17 +119,19 @@ EchoTimeline.reset_timeline(saved_past_delay_seconds, saved_delay_switch_id)
 `Scenes/EchoChase/echo_chase_start.tscn` 已完成机制展台接线：
 
 - 一个 `EchoPlayer`；`EchoTimeline` 与 `PastEcho` 由全局 Autoload 提供。
-- 两台 `FutureRecorder`，每台内部自带一个隐藏 `FutureEcho`。
+- 一台 `FutureRecorder`，内部自带一个隐藏 `FutureEcho`。
 - 用户 authored 的 16px TileMap 测试骨架，横向划分四个 `480×270` 房间。
 - 一个 `EchoCheckpoint`、一个 `SpawnPoint`、一个 `FallResetArea`。
 - 一个 `Camera2D + PhantomCameraHost`，四台固定 `PhantomCamera2D`，`zoom=4`，共用 `0.35s QUAD/EASE_IN_OUT` tween。
 - 四个 authored `Area2D` 房间触发器，直接使用 Phantom Camera 官方 `2d_trigger_area.gd` 示例脚本；镜头选择、中断和补间全部由 Phantom Camera 插件负责。
-- `1s/3s/5s` 三个可重复 `DelayPickup` 延迟台、两个 `FutureRecorder`。
+- `1s/3s/5s` 三个可重复 `DelayPickup` 延迟台、一个 `FutureRecorder`。
 - 一个显式连接 `TemporalDoor` 的 `TemporalPressurePlate`。
+- Room B 已实例化 `PresentHub`，内含按 `E` 交互的 NPC、首次/回访剧情、蓝色冲击波和三座延迟台。
+- Room C/D 已摆放同 ID 的 `BranchProgressionDevice` 与 `BranchPersistentGate`，只作为永久进度接线样例；正式谜题仍由本关脚本在条件完成时调用 `activate()`。
 - 一个 `TemporalRecordingHUD`：玩家金色轮廓、屏幕金边、无数字进度条和实时回传键。
 - 两套 authored 入场淡出资源：新游戏使用青白，Continue 使用洋红；淡出期间冻结 World，不再摆三人 Overlay。
 - `PauseScreen` 与 `SettingScreen`；Hint 永久禁用。
-- 没有敌人、正式背景、正式路线或玩法音乐。
+- 没有敌人、正式背景或正式路线；`dark_sci_fi_sector.ogg` 只作为施工玩法占位曲。
 
 用户可以在 Godot Editor 直接编辑这棵树。房间边界、PCam 位置和机关位置都可直接替换；继续使用 Inspector 显式绑定，不要把 `echo_chase_start.gd` 改成自动搜索或自动生成内容。
 
@@ -152,6 +155,6 @@ EchoTimeline.reset_timeline(saved_past_delay_seconds, saved_delay_switch_id)
 
 ## 音频接线
 
-`GameAudio` 是唯一公开音频入口，Autoload 指向 `Scenes/Autoload/game_audio.tscn`。两台 Music 播放器负责 crossfade，三台固定 UI 播放器负责菜单确认、游戏内确认和取消音；`SettingsModule` 只保存并广播音量值，Bus 应用全部由 `GameAudio` 完成。`ShaderButton` 的 `SelectAudio` 继续负责悬停音，按钮按下只读取 `ui_sound_kind` 元数据，不再注入旧按键音播放器或 fallback。
+`GameAudio` 是唯一公开音频入口，Autoload 指向 `Scenes/Autoload/game_audio.tscn`。两台 Music 播放器负责 crossfade，三台固定 UI 播放器负责菜单确认、游戏内确认和取消音；`SettingsModule` 只保存并广播音量值，Bus 应用全部由 `GameAudio` 完成。菜单调用 `play_music("menu", ...)`，玩法入口调用 `play_music("echo_chase_gameplay", ...)`，因此切场景不会继续沿用菜单曲。`ShaderButton` 的 `SelectAudio` 继续负责悬停音，按钮按下只读取 `ui_sound_kind` 元数据，不再注入旧按键音播放器或 fallback。
 
-原型阶段只保留路径插值与回传断点两项算法检查。不要添加把节点层级、Prefab 数量、资源路径、颜色、动画时长、房间坐标或 Inspector 参数锁死的测试；这些内容以作者当前的场景与 Inspector 调整为准。
+自动检查只覆盖路径回放、现在房边界、永久进度和明确的行为回归。不要添加把节点层级、Prefab 数量、颜色、动画时长、房间坐标或 Inspector 参数锁死的测试；这些内容以作者当前的场景与 Inspector 调整为准。

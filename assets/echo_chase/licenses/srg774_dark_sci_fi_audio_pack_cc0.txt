@@ -1,0 +1,9 @@
+Asset: Dark Sci-Fi Audio Pack (sector.ogg, victory.ogg)
+Author: SRG774
+Source: https://opengameart.org/content/dark-sci-fi-audio-pack
+License: Creative Commons Zero v1.0 Universal (CC0 1.0)
+License URL: https://creativecommons.org/publicdomain/zero/1.0/
+
+The OpenGameArt submission lists the pack as CC0 and provides loopable OGG
+music plus UI/system sounds. The project keeps the original OGG data and only
+renames the selected files for clear runtime ownership.

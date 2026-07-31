@@ -243,10 +243,10 @@ func _apply_display_mode() -> void:
 			)
 			root_window.size = target_size
 			if usable_rect.size != Vector2i.ZERO:
-				var centered := usable_rect.position + (usable_rect.size - target_size) / 2
+				var centered: Vector2i = usable_rect.position + Vector2i((usable_rect.size - target_size) * 0.5)
 				root_window.position = centered
 			elif screen_size != Vector2i.ZERO:
-				root_window.position = screen_position + (screen_size - target_size) / 2
+				root_window.position = screen_position + Vector2i((screen_size - target_size) * 0.5)
 
 
 # Applies vertical sync mode through DisplayServer.

@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" path="res://Scripts/EchoChase/progression_device.gd" id="1_script"]
 [ext_resource type="Texture2D" path="res://assets/echo_chase/tilemap/monochrome_tilemap_transparent_packed.png" id="2_tilemap"]
-[ext_resource type="AudioStream" path="res://assets/echo_chase/audio/powerUp5.ogg" id="3_audio"]
+[ext_resource type="AudioStream" path="res://assets/echo_chase/audio/progression_victory.ogg" id="3_audio"]
 
 [sub_resource type="AtlasTexture" id="Atlas_device"]
 atlas = ExtResource("2_tilemap")
