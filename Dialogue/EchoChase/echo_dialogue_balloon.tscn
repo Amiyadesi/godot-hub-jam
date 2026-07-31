@@ -1,0 +1,20 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="PackedScene" path="res://Dialogue/Examples/modular_balloon.tscn" id="1_balloon"]
+
+[node name="EchoDialogueBalloon" instance=ExtResource("1_balloon")]
+process_mode = 3
+history_enabled = false
+auto_save_progress = false
+
+[node name="Illustrations" parent="." index="2"]
+visible = false
+
+[node name="HistoryModule" parent="." index="8"]
+is_enabled = false
+
+[node name="SaveModule" parent="." index="9"]
+is_enabled = false
+
+[node name="IllustrationModule" parent="." index="10"]
+is_enabled = false

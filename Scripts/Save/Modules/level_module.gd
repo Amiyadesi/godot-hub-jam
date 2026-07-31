@@ -2,6 +2,8 @@ class_name LevelModule
 extends ISaveModule
 ## 仅保存一个稳定的《延迟追迹》复活点。
 
+signal progression_device_activated(device_id: String)
+
 static var instance: LevelModule
 
 const VALID_PAST_DELAYS := [1.0, 3.0, 5.0]
@@ -11,6 +13,8 @@ var checkpoint_id := ""
 var checkpoint_position := Vector2.ZERO
 var past_delay_seconds := 3.0
 var delay_switch_id := ""
+var activated_progression_device_ids: Array[String] = []
+var present_hub_unlocked := false
 var _has_checkpoint_position := false
 
 
@@ -40,11 +44,14 @@ func collect_data() -> Dictionary:
 		},
 		"past_delay_seconds": past_delay_seconds,
 		"delay_switch_id": delay_switch_id,
+		"activated_progression_device_ids": activated_progression_device_ids.duplicate(),
+		"present_hub_unlocked": present_hub_unlocked,
 	}
 
 
 # 只接收当前坐标 schema；旧开发存档直接视为无进度。
 func apply_data(data: Dictionary) -> void:
+	_apply_world_progress(data)
 	var stored_position: Variant = data.get("checkpoint_position")
 	if not stored_position is Dictionary:
 		clear_checkpoint()
@@ -82,12 +89,15 @@ func get_default_data() -> Dictionary:
 		"checkpoint_position": {"x": 0.0, "y": 0.0},
 		"past_delay_seconds": 3.0,
 		"delay_switch_id": "",
+		"activated_progression_device_ids": [],
+		"present_hub_unlocked": false,
 	}
 
 
 # 新游戏清除旧复活点。
 func on_new_game() -> void:
 	clear_checkpoint()
+	clear_world_progress()
 
 
 # 保存 authored 复活点场景、ID 与世界坐标。
@@ -148,3 +158,52 @@ func clear_checkpoint() -> void:
 	past_delay_seconds = 3.0
 	delay_switch_id = ""
 	_has_checkpoint_position = false
+
+
+# Permanently activates one authored world device for the current save slot.
+func activate_progression_device(device_id: String) -> bool:
+	var normalized_id := device_id.strip_edges()
+	if normalized_id.is_empty():
+		push_error("LevelModule.activate_progression_device requires a non-empty id")
+		return false
+	if activated_progression_device_ids.has(normalized_id):
+		return false
+	activated_progression_device_ids.append(normalized_id)
+	progression_device_activated.emit(normalized_id)
+	return true
+
+
+# Reports whether one authored world device is permanently active.
+func is_progression_device_active(device_id: String) -> bool:
+	return activated_progression_device_ids.has(device_id.strip_edges())
+
+
+# Permanently marks the central room as converted into the present state.
+func unlock_present_hub() -> bool:
+	if present_hub_unlocked:
+		return false
+	present_hub_unlocked = true
+	return true
+
+
+# Reports whether the central present-room event has already completed.
+func is_present_hub_unlocked() -> bool:
+	return present_hub_unlocked
+
+
+# Clears permanent world progress only when starting a new run.
+func clear_world_progress() -> void:
+	activated_progression_device_ids.clear()
+	present_hub_unlocked = false
+
+
+# Restores optional world-progress fields without invalidating legacy checkpoints.
+func _apply_world_progress(data: Dictionary) -> void:
+	activated_progression_device_ids.clear()
+	var stored_ids: Variant = data.get("activated_progression_device_ids", [])
+	if stored_ids is Array or stored_ids is PackedStringArray:
+		for stored_id: Variant in stored_ids:
+			var normalized_id := str(stored_id).strip_edges()
+			if not normalized_id.is_empty() and not activated_progression_device_ids.has(normalized_id):
+				activated_progression_device_ids.append(normalized_id)
+	present_hub_unlocked = bool(data.get("present_hub_unlocked", false))

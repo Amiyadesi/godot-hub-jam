@@ -25,8 +25,7 @@ PhantomCameraManager="*res://addons/phantom_camera/scripts/managers/phantom_came
 SaveSystem="*res://addons/enhance_save_system/core/save_system.gd"
 SceneManager="*res://addons/scene_manager/autoload/scene_manager.tscn"
 GuiTransitions="*res://addons/simple-gui-transitions/singleton.gd"
-SoundManager="*res://addons/sound_manager/sound_manager.gd"
-GameAudio="*res://Scenes/Autoload/game_audio.gd"
+GameAudio="*res://Scenes/Autoload/game_audio.tscn"
 FeedbackOverlay="*res://Scenes/UI/Common/feedback_overlay.tscn"
 EchoTimeline="*res://Scenes/Autoload/echo_timeline_controller.tscn"
 
@@ -42,7 +41,7 @@ project/assembly_name="GodotHubJam"
 
 [editor_plugins]
 
-enabled=PackedStringArray("res://addons/dialogue_manager/plugin.cfg", "res://addons/enhance_save_system/plugin.cfg", "res://addons/godot_terrain_authoring/plugin.cfg", "res://addons/phantom_camera/plugin.cfg", "res://addons/richtext2/plugin.cfg", "res://addons/scene_manager/plugin.cfg", "res://addons/simple-gui-transitions/plugin.cfg", "res://addons/sound_manager/plugin.cfg")
+enabled=PackedStringArray("res://addons/dialogue_manager/plugin.cfg", "res://addons/enhance_save_system/plugin.cfg", "res://addons/godot_terrain_authoring/plugin.cfg", "res://addons/phantom_camera/plugin.cfg", "res://addons/richtext2/plugin.cfg", "res://addons/scene_manager/plugin.cfg", "res://addons/simple-gui-transitions/plugin.cfg")
 
 [gui_transitions]
 
@@ -93,6 +92,11 @@ echo_recall={
 "events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":0,"physical_keycode":76,"key_label":0,"unicode":108,"location":0,"echo":false,"script":null)
 ]
 }
+echo_interact={
+"deadzone": 0.2,
+"events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":0,"physical_keycode":69,"key_label":0,"unicode":101,"location":0,"echo":false,"script":null)
+]
+}
 pause={
 "deadzone": 0.2,
 "events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":0,"physical_keycode":4194305,"key_label":0,"unicode":0,"location":0,"echo":false,"script":null)
@@ -102,7 +106,7 @@ pause={
 [internationalization]
 
 locale/translations=PackedStringArray("res://translations/delay_trace.en.po", "res://translations/delay_trace.zh_CN.po")
-locale/translations_pot_files=PackedStringArray("res://Dialogue/Examples/demo/demo_dialogue.dialogue", "res://Dialogue/Examples/demo/illustration_test.dialogue", "res://Dialogue/Examples/demo/scene1_tutorial.dialogue", "res://Dialogue/Examples/demo/scene2_characters.dialogue", "res://Dialogue/Examples/demo/scene3_branch.dialogue", "res://Dialogue/Examples/demo/scene3_branches.dialogue")
+locale/translations_pot_files=PackedStringArray("res://Dialogue/Examples/demo/demo_dialogue.dialogue", "res://Dialogue/Examples/demo/illustration_test.dialogue", "res://Dialogue/Examples/demo/scene1_tutorial.dialogue", "res://Dialogue/Examples/demo/scene2_characters.dialogue", "res://Dialogue/Examples/demo/scene3_branch.dialogue", "res://Dialogue/Examples/demo/scene3_branches.dialogue", "res://Dialogue/EchoChase/present_hub.dialogue")
 
 [layer_names]
 

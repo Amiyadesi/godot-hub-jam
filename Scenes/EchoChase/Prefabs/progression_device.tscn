@@ -1,0 +1,78 @@
+[gd_scene load_steps=10 format=3]
+
+[ext_resource type="Script" path="res://Scripts/EchoChase/progression_device.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/echo_chase/tilemap/monochrome_tilemap_transparent_packed.png" id="2_tilemap"]
+[ext_resource type="AudioStream" path="res://assets/echo_chase/audio/powerUp5.ogg" id="3_audio"]
+
+[sub_resource type="AtlasTexture" id="Atlas_device"]
+atlas = ExtResource("2_tilemap")
+region = Rect2(0, 144, 48, 48)
+
+[sub_resource type="Animation" id="Animation_inactive"]
+resource_name = "inactive"
+length = 0.1
+tracks/0/type = "value"
+tracks/0/path = NodePath("Core:modulate")
+tracks/0/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 1, "values": [Color(0.4, 0.44, 0.46, 1)]}
+tracks/1/type = "value"
+tracks/1/path = NodePath("Ring:visible")
+tracks/1/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 1, "values": [false]}
+
+[sub_resource type="Animation" id="Animation_active"]
+resource_name = "active"
+length = 1.6
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/path = NodePath("Core:modulate")
+tracks/0/interp = 1
+tracks/0/keys = {"times": PackedFloat32Array(0, 0.8, 1.6), "transitions": PackedFloat32Array(1, 1, 1), "update": 0, "values": [Color(0.24, 0.9, 0.84, 1), Color(0.68, 1, 0.96, 1), Color(0.24, 0.9, 0.84, 1)]}
+tracks/1/type = "value"
+tracks/1/path = NodePath("Ring:visible")
+tracks/1/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 1, "values": [true]}
+tracks/2/type = "value"
+tracks/2/path = NodePath("Ring:rotation")
+tracks/2/interp = 1
+tracks/2/keys = {"times": PackedFloat32Array(0, 1.6), "transitions": PackedFloat32Array(1, 1), "update": 0, "values": [0.0, 6.283185]}
+
+[sub_resource type="Animation" id="Animation_active_reduced"]
+resource_name = "active_reduced"
+length = 1.6
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/path = NodePath("Core:modulate")
+tracks/0/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 1, "values": [Color(0.36, 0.96, 0.9, 1)]}
+tracks/1/type = "value"
+tracks/1/path = NodePath("Ring:visible")
+tracks/1/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 1, "values": [true]}
+tracks/2/type = "value"
+tracks/2/path = NodePath("Ring:rotation")
+tracks/2/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 1, "values": [0.0]}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_device"]
+_data = {&"active": SubResource("Animation_active"), &"active_reduced": SubResource("Animation_active_reduced"), &"inactive": SubResource("Animation_inactive")}
+
+[node name="ProgressionDevice" type="Node2D"]
+script = ExtResource("1_script")
+
+[node name="Ring" type="Sprite2D" parent="."]
+visible = false
+texture_filter = 1
+scale = Vector2(1.25, 1.25)
+texture = SubResource("Atlas_device")
+modulate = Color(0.24, 0.9, 0.84, 0.32)
+show_behind_parent = true
+
+[node name="Core" type="Sprite2D" parent="."]
+texture_filter = 1
+texture = SubResource("Atlas_device")
+modulate = Color(0.4, 0.44, 0.46, 1)
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+unique_name_in_owner = true
+libraries = {&"": SubResource("AnimationLibrary_device")}
+
+[node name="ActivationAudio" type="AudioStreamPlayer2D" parent="."]
+unique_name_in_owner = true
+stream = ExtResource("3_audio")
+volume_db = -4.0
+bus = &"SFX"

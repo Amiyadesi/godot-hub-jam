@@ -264,10 +264,16 @@ func reset_player(reset_position: Vector2) -> void:
 	_change_state(State.IDLE)
 
 
-# 捕获一次跳跃缓冲并处理可变跳高。
+# 捕获跳跃输入；按住下时直接穿过单向平台。
 func _collect_jump_input() -> void:
 	if _jump_requested or Input.is_action_just_pressed("echo_jump"):
 		_jump_requested = false
+		if Input.is_action_pressed("echo_move_down") and is_on_floor():
+			global_position.y += 1.0
+			velocity.y = maxf(velocity.y, 1.0)
+			_jump_buffer_remaining = 0.0
+			_coyote_remaining = 0.0
+			return
 		_jump_buffer_remaining = jump_buffer_seconds
 	if Input.is_action_just_released("echo_jump") and velocity.y < 0.0:
 		velocity.y *= jump_release_multiplier

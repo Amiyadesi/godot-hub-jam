@@ -76,6 +76,10 @@ func preview_phase_target(track: TemporalTrack, playback_time: float, elapsed_se
 	global_position = frame.position
 	_apply_frame_visual(frame)
 	visible = true
+	visual.visible = true
+	outline_visual.visible = true
+	history_trail.visible = true
+	history_trail_far.visible = true
 	_active = false
 	_materializing = true
 	var animation_name := &"phase_target_reduced" if _uses_low_flash_mode() else &"phase_target"
@@ -111,6 +115,23 @@ func reset_echo() -> void:
 	collision_shape.set_deferred("disabled", true)
 
 
+# Removes the past echo with its authored departure snapshot for a present room.
+func dissipate() -> void:
+	if visible:
+		departure_vfx.play_from_sprites(visual, outline_visual, _last_velocity)
+	_phase_shifting = false
+	_materializing = false
+	_first_materialization_pending = true
+	_active = false
+	visual.visible = false
+	outline_visual.visible = false
+	history_trail.visible = false
+	history_trail_far.visible = false
+	pixel_burst.emitting = false
+	vfx_animation_player.play(&"RESET")
+	collision_shape.set_deferred("disabled", true)
+
+
 # 返回过去体是否已具备伤害和机关能力。
 func is_active() -> bool:
 	return _active
@@ -129,6 +150,10 @@ func _set_active(value: bool) -> void:
 	collision_shape.set_deferred("disabled", not value)
 	if value:
 		visible = true
+		visual.visible = true
+		outline_visual.visible = true
+		history_trail.visible = true
+		history_trail_far.visible = true
 		vfx_animation_player.play(&"solid")
 		appear_audio.play()
 	elif not _materializing and not _phase_shifting:
@@ -180,6 +205,10 @@ func _begin_materialization(frame: TemporalFrame) -> void:
 	_active = false
 	_materializing = true
 	visible = true
+	visual.visible = true
+	outline_visual.visible = true
+	history_trail.visible = true
+	history_trail_far.visible = true
 	collision_shape.set_deferred("disabled", true)
 	vfx_animation_player.play(&"materialize_reduced" if _uses_low_flash_mode() else &"materialize")
 

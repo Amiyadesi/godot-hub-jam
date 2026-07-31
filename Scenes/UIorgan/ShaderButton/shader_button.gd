@@ -52,10 +52,6 @@ func _play_press_sound() -> void:
 	var game_audio := _get_game_audio()
 	if game_audio != null and game_audio.has_method("play_ui_button_press"):
 		game_audio.call("play_ui_button_press", self)
-		return
-	var press_audio := get_node_or_null("PressAudio") as AudioStreamPlayer
-	if press_audio != null and press_audio.stream != null:
-		press_audio.play()
 
 
 # 仅在 authored 资源存在时播放悬停音。

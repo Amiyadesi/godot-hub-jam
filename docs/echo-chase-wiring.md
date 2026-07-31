@@ -1,21 +1,22 @@
-# Delay Trace 灰盒接线
+# Delay Trace authored 地图接线
 
 显示名为 `Delay Trace`；`EchoChase` 仅作为内部路径和类名。
 
-本页只说明如何把已有 prefab 接进**用户已经搭好的灰盒场景**。它不定义路线、关卡尺寸、出口位置或机关解法，也不要求任何脚本动态生成节点。
+本页只说明如何把已有 prefab 接进作者在 Godot Editor 中搭建的连续大地图。基础房间规格为 `480×270`，但本文不定义房间数量、路线、出口位置或机关解法，也不要求任何脚本动态生成节点。
 
 ## 最小场景树
 
 ```text
 YourGrayboxRoot (Node2D)
 ├── World (Node2D, PROCESS_MODE_PAUSABLE)
-│   ├── EchoTimelineController   [instance: Prefabs/echo_timeline_controller.tscn]
-│   │   └── PastEcho
 │   ├── EchoPlayer               [instance: Prefabs/echo_player.tscn]
 │   ├── FutureRecorder           [按需 instance；内部自带一个 FutureEcho]
 │   ├── DelayPickup              [按需 instance；语义为可重复延迟台]
 │   ├── TemporalPressurePlate    [按需 instance]
 │   ├── TemporalDoor             [按需 instance]
+│   ├── ProgressionDevice        [支路末端按需 instance]
+│   ├── PersistentGate           [终点门/捷径按需 instance]
+│   ├── PresentRoom              [中央房 instance；内部自带 DialogueNpc]
 │   ├── Terrain                  [作者的 StaticBody2D / TileMapLayer]
 │   ├── SpawnPoint               [作者的 Marker2D]
 │   └── EchoCheckpoint           [instance: Prefabs/echo_checkpoint.tscn]
@@ -26,7 +27,7 @@ YourGrayboxRoot (Node2D)
 └── SceneController (Node, PROCESS_MODE_ALWAYS)
 ```
 
-`EchoTimelineController` 预制体内部只带一个过去体。每台 `FutureRecorder` 内部 authored 一个独占 `FutureEcho`；不要在关卡根节点或时间线下手工复制未来体。
+`EchoTimeline` 已在 `project.godot` 注册为 Autoload，其 authored scene 内部只带一个 `PastEcho`。关卡中不要再实例化 `echo_timeline_controller.tscn`。`EchoPlayer` 与每台 `FutureRecorder` 在进入场景时自行向 Autoload 注册；每台记录器内部 authored 一个独占 `FutureEcho`。
 
 ## Inspector 必填引用
 
@@ -34,19 +35,16 @@ YourGrayboxRoot (Node2D)
 
 | 节点 | Inspector 字段 | 指向 |
 | --- | --- | --- |
-| `EchoTimelineController` | `player` | 同级 `EchoPlayer` |
-| `EchoTimelineController` | `recorders` | 本场景全部 `FutureRecorder`，顺序稳定且不可重复 |
-| `EchoPlayer` | `timeline` | 同级 `EchoTimelineController` |
-| `FutureRecorder` | `timeline` | 同级 `EchoTimelineController` |
-| `DelayPickup` | `timeline` | 同级 `EchoTimelineController` |
+| `DelayPickup` | `delay_seconds/delay_switch_id/default_active` | `1/3/5`、场景内唯一 ID；恰好一个默认 `3s` 台 |
 | `TemporalPressurePlate` | `target_door` | 要控制的 `TemporalDoor`，可留空做自定义接线 |
-| `TemporalRecordingHUD` | `player/timeline` | 场景内玩家与时间线 |
-| `EchoChaseStart` | `player/timeline/gameplay_world/spawn_point/fall_reset_area/pause_screen/setting_screen/reset_audio` | 场景内对应 authored 节点 |
+| `ProgressionDevice` | `device_id` | 当前存档中稳定且唯一的世界进度 ID |
+| `PersistentGate` | `required_device_id` | 要监听的 `ProgressionDevice.device_id` |
+| `DialogueNpc` | `dialogue_resource/dialogue_title` | Dialogue Manager 资源与起始 title |
+| `TemporalRecordingHUD` | `player` | 场景内玩家 |
+| `EchoChaseStart` | `player/gameplay_world/spawn_point/fall_reset_area/pause_screen/setting_screen/reset_audio` | 场景内对应 authored 节点 |
 | `EchoChaseStart` | `present_entry_transition/past_entry_transition` | 与菜单满屏颜色一致的 `0.35s` authored 淡出资源 |
-| `EchoChaseStart` | `checkpoint_paths` | 本场景全部 `EchoCheckpoint`，ID 必须非空且唯一 |
-| `EchoChaseStart` | `delay_switch_paths` | 本场景全部延迟台；ID 唯一且恰好一个默认 `3s` 台 |
 
-漏掉任何一个必填引用会主动报错。这是有意的 authored 场景合同，不要添加静默 fallback。
+`EchoChaseStart` 会收集 `gameplay_world` 下实际 authored 的 checkpoint 与延迟台；Prefab 自己负责向 `EchoTimeline` 注册和注销。漏掉必填资源、ID 或直接引用应主动报错，不要添加静默 fallback。
 
 ## 碰撞层合同
 
@@ -67,7 +65,7 @@ YourGrayboxRoot (Node2D)
 
 ### 记录器
 
-实例化 `future_recorder.tscn`，摆在作者选择的录制起点，填入 `timeline`，并把它加入 `EchoTimelineController.recorders`。玩家进入空闲记录器时自动开始录像。录制中按 `L` 或达到 5 秒后提交；系统先恢复开始录像时的时间锚点，再从该记录器的独占未来体播放新轨迹。
+实例化 `future_recorder.tscn`，摆在作者选择的录制起点。它进入场景时自行注册到 `EchoTimeline`；玩家进入空闲记录器时自动开始录像。录制中按 `L` 或达到 5 秒后提交；系统先恢复开始录像时的时间锚点，再从该记录器的独占未来体播放新轨迹。
 
 全局同时只能录一条。记录器自己的未来体存在时保持 `OCCUPIED`；未来体释放且玩家离开后回到 `READY`。其他空闲记录器仍可继续制造各自的未来体，容量等于 authored 记录器数量。
 
@@ -75,9 +73,9 @@ YourGrayboxRoot (Node2D)
 
 ### 过去延迟台
 
-实例化 `delay_pickup.tscn`，设置 Inspector 的 `delay_seconds` 为 `1`、`3` 或 `5`，填写唯一 `delay_switch_id` 并绑定 `timeline`。它保留 `DelayPickup` 类名以避免无意义改名，但不会 `queue_free()`：玩家可反复触碰，当前目标显示收束环，切档完成后显示稳定激活环。
+实例化 `delay_pickup.tscn`，设置 Inspector 的 `delay_seconds` 为 `1`、`3` 或 `5`，填写唯一 `delay_switch_id`。它直接调用全局 `EchoTimeline`，不会 `queue_free()`：玩家可反复触碰，当前目标显示收束环，切档完成后显示稳定激活环。现在房内切换立即完成，不播放切档预警。
 
-同一场景必须恰好一台 `default_active = true` 的 `3s` 台。切档预警中触碰另一台只覆盖最新目标，不重置原 `0.6s`；`EchoChaseStart.delay_switch_paths` 必须列出全部台，供启动校验和 checkpoint 恢复。
+同一场景必须恰好一台 `default_active = true` 的 `3s` 台。切档预警中触碰另一台只覆盖最新目标，不重置原 `0.6s`；`EchoChaseStart` 从 `gameplay_world` 收集全部延迟台，供 checkpoint 恢复。
 
 ### 压力板与门
 
@@ -85,12 +83,22 @@ YourGrayboxRoot (Node2D)
 
 若关卡需要多个板共同控制一扇门，作者应在场景内显式放置一个本地组合节点或写一个小型本关脚本，并保持其输入来自各板的 `pressed_changed` 信号。不要把通用“谜题管理器”提前抽象出来。
 
+### 永久装置与门
+
+支路末端实例化 `progression_device.tscn` 并填写唯一 `device_id`。本关谜题完成时只调用该实例的 `activate()`；它负责去重、写入当前槽位并发出激活信号。终点门或回流捷径实例化 `persistent_gate.tscn`，将 `required_device_id` 设成同一 ID。门会在读档时直接恢复稳定开启末态，运行中激活时才播放开门反馈。
+
+### NPC 与中央现在房
+
+普通 NPC 使用 `dialogue_npc.tscn`，赋值 `dialogue_resource` 和可选 `dialogue_title`。玩家进入范围看到 `E`，按下后复用 `Dialogue/EchoChase/echo_dialogue_balloon.tscn`；该变体保留 Flow、Animation、TypingSound、CharacterUI 和 Responses，禁用 History、SaveModule 与 Illustration。对话期间 `SceneTree.paused = true`，结束后恢复原状态。
+
+中央房直接实例化 `present_room.tscn`。其默认碰撞范围为 `480×270`，作者可按实际房间边界调整 `RoomShape`，并可替换内置 NPC 对话资源与位置。首次对话结束后，房间写入 `present_hub_unlocked`、播放蓝色冲击波并调用 `EchoTimeline.enter_present_room()`；后续进入直接清除 Past/Future。离开任意边界调用 `leave_present_room()`，从玩家当前位置重建时间线。不要让现在房自动激活 checkpoint。
+
 ## 失败、重置和检查点
 
 场景根节点或现有关卡控制器应连接：
 
 ```text
-EchoTimelineController.player_caught -> 你的本关失败/重生入口
+EchoTimeline.player_caught -> 你的本关失败/重生入口
 ```
 
 失败和 checkpoint 恢复只还原稳定状态：
@@ -98,18 +106,18 @@ EchoTimelineController.player_caught -> 你的本关失败/重生入口
 ```gdscript
 # 示例：由你已有的关卡控制器在稳定重生时调用。
 player.reset_player(respawn_position)
-timeline.reset_timeline(saved_past_delay_seconds, saved_delay_switch_id)
+EchoTimeline.reset_timeline(saved_past_delay_seconds, saved_delay_switch_id)
 ```
 
 先复位玩家，再清时间线。不要保存或恢复在途路径、剩余录像、未来体位置、过去体切档过程或临时压力板占用。
 
-使用 `LevelModule.set_checkpoint(scene_path, checkpoint_id, respawn_position, past_delay_seconds, delay_switch_id)` 写入干净 checkpoint。`past_delay_seconds` 与 ID 必须来自 `timeline.get_selected_past_delay_seconds()` 和 `get_selected_delay_switch_id()`，这样切档预警中的最新选择也能稳定恢复。当前 schema 不保存其他机关状态，也不迁移缺少这两个字段的开发存档。
+使用 `LevelModule.set_checkpoint(scene_path, checkpoint_id, respawn_position, past_delay_seconds, delay_switch_id)` 写入干净 checkpoint。`past_delay_seconds` 与 ID 必须来自 `EchoTimeline.get_selected_past_delay_seconds()` 和 `get_selected_delay_switch_id()`，这样切档预警中的最新选择也能稳定恢复。世界进度另存 `activated_progression_device_ids` 与 `present_hub_unlocked`；旧存档缺少它们时默认空集合和未解锁，不影响现有 checkpoint。
 
 ## 起始施工场景
 
 `Scenes/EchoChase/echo_chase_start.tscn` 已完成机制展台接线：
 
-- 一个 `EchoPlayer`、一个 `EchoTimelineController` 和一个 `PastEcho`。
+- 一个 `EchoPlayer`；`EchoTimeline` 与 `PastEcho` 由全局 Autoload 提供。
 - 两台 `FutureRecorder`，每台内部自带一个隐藏 `FutureEcho`。
 - 用户 authored 的 16px TileMap 测试骨架，横向划分四个 `480×270` 房间。
 - 一个 `EchoCheckpoint`、一个 `SpawnPoint`、一个 `FallResetArea`。
@@ -134,12 +142,16 @@ timeline.reset_timeline(saved_past_delay_seconds, saved_delay_switch_id)
 
 ## 调试顺序
 
-1. 先只实例化 Timeline 和 Player，确认过去体会在默认 3 秒后沿历史路径出现。
+1. 先只实例化 Player，确认 Autoload `EchoTimeline` 的过去体会在默认 3 秒后沿历史路径出现。
 2. 加一台记录器，确认 `L` 后世界回到锚点且新未来体回放。
 3. 加第二台记录器，确认旧未来体恢复锚点进度且两台独立释放。
 4. 加一个压力板与门，确认未来体结束后门立即关闭。
 5. 最后才加 `1/3/5s` 延迟台组合。
 
-在每一步都从干净检查点重试。若路径回放不对，先检查 Timeline/Player 的 Inspector 引用和关卡的 `World` 碰撞层，不要通过修改路径算法或动态复制节点掩盖场景错误。
+在每一步都从干净检查点重试。若路径回放不对，先检查 `EchoTimeline` Autoload、玩家注册和关卡的 `World` 碰撞层，不要通过修改路径算法或动态复制节点掩盖场景错误。
+
+## 音频接线
+
+`GameAudio` 是唯一公开音频入口，Autoload 指向 `Scenes/Autoload/game_audio.tscn`。两台 Music 播放器负责 crossfade，三台固定 UI 播放器负责菜单确认、游戏内确认和取消音；`SettingsModule` 只保存并广播音量值，Bus 应用全部由 `GameAudio` 完成。`ShaderButton` 的 `SelectAudio` 继续负责悬停音，按钮按下只读取 `ui_sound_kind` 元数据，不再注入旧按键音播放器或 fallback。
 
 原型阶段只保留路径插值与回传断点两项算法检查。不要添加把节点层级、Prefab 数量、资源路径、颜色、动画时长、房间坐标或 Inspector 参数锁死的测试；这些内容以作者当前的场景与 Inspector 调整为准。

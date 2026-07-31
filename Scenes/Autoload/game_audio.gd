@@ -2,16 +2,16 @@ extends Node
 ## Template-wide audio router for music, UI sounds, and runtime bus volume.
 
 const DEFAULT_BUS_LAYOUT: AudioBusLayout = preload("res://default_bus_layout.tres")
-const UI_CANCEL_SOUND: AudioStream = preload("res://assets/phase_lag/audio/sfx/ui_cancel.ogg")
-const UI_CONFIRM_INGAME_SOUND: AudioStream = preload("res://assets/phase_lag/audio/sfx/ui_confirm_ingame.ogg")
-const UI_CONFIRM_MENU_SOUND: AudioStream = preload("res://assets/phase_lag/audio/sfx/ui_confirm_menu.ogg")
-const UI_CONFIRM_MENU_VOLUME_DB := -12.0
-const UI_CONFIRM_INGAME_VOLUME_DB := -13.0
-const UI_CANCEL_VOLUME_DB := -12.0
 const SILENCE_DB := -80.0
 
 @export var startup_music: AudioStream
 @export var startup_music_key := "menu"
+
+@onready var music_player_0: AudioStreamPlayer = %MusicPlayer0
+@onready var music_player_1: AudioStreamPlayer = %MusicPlayer1
+@onready var ui_confirm_menu: AudioStreamPlayer = %UiConfirmMenu
+@onready var ui_confirm_ingame: AudioStreamPlayer = %UiConfirmIngame
+@onready var ui_cancel: AudioStreamPlayer = %UiCancel
 
 var _current_music_key := ""
 var _music_players: Array[AudioStreamPlayer] = []
@@ -19,12 +19,12 @@ var _active_music_player_index := -1
 var _music_tween: Tween
 
 
-# Initializes persistent buses and the two crossfade players.
+# Initializes the authored players and applies persisted bus volumes.
 func _ready() -> void:
-	process_mode = Node.PROCESS_MODE_ALWAYS
 	AudioServer.set_bus_layout(DEFAULT_BUS_LAYOUT)
-	_ensure_music_players()
-	_apply_sound_manager_buses()
+	_music_players = [music_player_0, music_player_1]
+	for player in _music_players:
+		player.finished.connect(_on_music_player_finished.bind(player))
 	_connect_settings_signal()
 	refresh_runtime_volumes()
 	if startup_music != null:
@@ -35,7 +35,6 @@ func _ready() -> void:
 func play_music(track_key: String, stream: AudioStream, crossfade_duration := 0.6) -> void:
 	if stream == null:
 		return
-	_ensure_music_players()
 	var active_player := _get_active_music_player()
 	if _current_music_key == track_key and active_player != null and active_player.playing and active_player.stream == stream:
 		return
@@ -102,17 +101,17 @@ func stop_music(fade_out_duration := 0.3) -> void:
 
 # Plays the authored menu confirmation sound.
 func play_ui_confirm_menu() -> void:
-	_play_ui_sound(UI_CONFIRM_MENU_SOUND, UI_CONFIRM_MENU_VOLUME_DB)
+	ui_confirm_menu.play()
 
 
 # Plays the authored in-game confirmation sound.
 func play_ui_confirm_ingame() -> void:
-	_play_ui_sound(UI_CONFIRM_INGAME_SOUND, UI_CONFIRM_INGAME_VOLUME_DB)
+	ui_confirm_ingame.play()
 
 
 # Plays the authored cancellation sound.
 func play_ui_cancel() -> void:
-	_play_ui_sound(UI_CANCEL_SOUND, UI_CANCEL_VOLUME_DB)
+	ui_cancel.play()
 
 
 # Routes one button press through its authored sound category.
@@ -130,12 +129,12 @@ func play_ui_button_press(button: Node) -> void:
 
 # Assigns menu confirmation audio to one authored shader button.
 func setup_menu_shader_button(button: Node) -> void:
-	_set_shader_button_audio(button, UI_CONFIRM_MENU_SOUND, UI_CONFIRM_MENU_VOLUME_DB, "menu_confirm")
+	button.set_meta("ui_sound_kind", "menu_confirm")
 
 
 # Assigns in-game confirmation audio to one authored shader button.
 func setup_ingame_shader_button(button: Node) -> void:
-	_set_shader_button_audio(button, UI_CONFIRM_INGAME_SOUND, UI_CONFIRM_INGAME_VOLUME_DB, "ingame_confirm")
+	button.set_meta("ui_sound_kind", "ingame_confirm")
 
 
 # Stores a sound category on a plain authored button.
@@ -145,7 +144,6 @@ func setup_plain_button(button: Node, sound_kind := "ingame_confirm") -> void:
 
 # Applies persisted master and category volumes to live audio buses.
 func refresh_runtime_volumes() -> void:
-	_apply_sound_manager_buses()
 	var master_volume := _get_setting("master_volume", 0.8)
 	var music_volume := _get_setting("music_volume", 0.8)
 	var sfx_volume := _get_setting("sfx_volume", 0.8)
@@ -156,19 +154,6 @@ func refresh_runtime_volumes() -> void:
 	_set_bus_volume_linear("SFX", sfx_volume)
 	_set_bus_volume_linear("UI", ui_volume)
 	_set_bus_volume_linear("Ambient", ambient_volume)
-
-
-# Creates the two persistent crossfade players once and wires their loop fallback.
-func _ensure_music_players() -> void:
-	while _music_players.size() < 2:
-		var player := AudioStreamPlayer.new()
-		player.name = "MusicPlayer%d" % _music_players.size()
-		player.bus = "Music"
-		player.volume_db = SILENCE_DB
-		player.process_mode = Node.PROCESS_MODE_ALWAYS
-		add_child(player)
-		player.finished.connect(_on_music_player_finished.bind(player))
-		_music_players.append(player)
 
 
 # Returns the player currently owning the active keyed score.
@@ -183,29 +168,6 @@ func _on_music_player_finished(player: AudioStreamPlayer) -> void:
 	if player != _get_active_music_player() or player.stream == null or _current_music_key.is_empty():
 		return
 	player.play()
-
-
-# Plays one transient UI stream through the shared sound manager.
-func _play_ui_sound(stream: AudioStream, volume_db := 0.0) -> void:
-	var player := SoundManager.play_ui_sound(stream, "UI") as AudioStreamPlayer
-	player.volume_db = volume_db
-
-
-# Binds an authored shader button's embedded player and routing metadata.
-func _set_shader_button_audio(button: Node, press_stream: AudioStream, press_volume_db: float, sound_kind: String) -> void:
-	button.set_meta("ui_sound_kind", sound_kind)
-	var press_audio := button.get_node("PressAudio") as AudioStreamPlayer
-	press_audio.bus = "UI"
-	press_audio.stream = press_stream
-	press_audio.volume_db = press_volume_db
-
-
-# Configures SoundManager defaults for each project bus.
-func _apply_sound_manager_buses() -> void:
-	SoundManager.set_default_sound_bus("SFX")
-	SoundManager.set_default_ui_sound_bus("UI")
-	SoundManager.set_default_ambient_sound_bus("Ambient")
-	SoundManager.set_default_music_bus("Music")
 
 
 # Refreshes runtime buses whenever persisted settings change.

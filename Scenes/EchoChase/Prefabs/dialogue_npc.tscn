@@ -1,0 +1,59 @@
+[gd_scene load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://Scripts/EchoChase/dialogue_npc.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/phase_lag/characters/lu_heng/walk.png" id="2_npc"]
+[ext_resource type="PackedScene" path="res://Dialogue/EchoChase/echo_dialogue_balloon.tscn" id="3_balloon"]
+
+[sub_resource type="RectangleShape2D" id="Shape_interaction"]
+size = Vector2(64, 72)
+
+[sub_resource type="StyleBoxFlat" id="Style_prompt"]
+bg_color = Color(0.02, 0.08, 0.1, 0.92)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.25, 0.9, 1, 0.9)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+
+[sub_resource type="Theme" id="Theme_prompt"]
+Label/colors/font_color = Color(0.86, 0.98, 1, 1)
+Label/colors/font_outline_color = Color(0, 0.06, 0.08, 1)
+Label/constants/outline_size = 2
+Label/font_sizes/font_size = 16
+Label/styles/normal = SubResource("Style_prompt")
+
+[node name="DialogueNpc" type="Area2D"]
+process_mode = 3
+collision_layer = 0
+collision_mask = 2
+monitorable = false
+script = ExtResource("1_script")
+
+[node name="InteractionShape" type="CollisionShape2D" parent="."]
+position = Vector2(0, -16)
+shape = SubResource("Shape_interaction")
+
+[node name="Visual" type="Sprite2D" parent="."]
+texture_filter = 1
+position = Vector2(0, -16)
+texture = ExtResource("2_npc")
+hframes = 6
+frame = 1
+
+[node name="InteractPrompt" type="Label" parent="."]
+unique_name_in_owner = true
+offset_left = -18.0
+offset_top = -72.0
+offset_right = 18.0
+offset_bottom = -42.0
+theme = SubResource("Theme_prompt")
+text = "E"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="DialogueBalloon" parent="." instance=ExtResource("3_balloon")]
+unique_name_in_owner = true

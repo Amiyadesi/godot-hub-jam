@@ -9,6 +9,7 @@ signal future_recording_started
 signal future_recording_progress(elapsed_seconds: float, maximum_seconds: float)
 signal future_recording_finished
 signal future_recording_rejected
+signal present_room_changed(active: bool)
 
 const DEFAULT_PAST_DELAY := 3.0
 const DEFAULT_DELAY_SWITCH_ID := &"delay_3s"
@@ -37,6 +38,7 @@ var _recording_started_at := 0.0
 var _recording_anchor: Dictionary = {}
 var _future_slots_used := 0
 var _gameplay_active := false
+var _present_room_active := false
 
 # 初始化全局过去体；玩家与记录器由各自 prefab 进入场景时注册。
 func _ready() -> void:
@@ -49,6 +51,7 @@ func register_player(value: EchoPlayer) -> void:
 	if player == value:
 		return
 	player = value
+	_present_room_active = false
 	_gameplay_active = true
 	set_physics_process(true)
 	reset_timeline()
@@ -59,6 +62,7 @@ func unregister_player(value: EchoPlayer) -> void:
 	if player != value:
 		return
 	player = null
+	_present_room_active = false
 	_gameplay_active = false
 	reset_timeline()
 
@@ -100,7 +104,7 @@ func set_gameplay_active(value: bool) -> void:
 
 # 只在玩法未暂停时推进确定性回放时间。
 func _physics_process(delta: float) -> void:
-	if not _gameplay_active or player == null or get_tree().paused:
+	if not _gameplay_active or _present_room_active or player == null or get_tree().paused:
 		return
 	_timeline_seconds += delta
 	_advance_past_delay_shift(delta)
@@ -112,6 +116,8 @@ func _physics_process(delta: float) -> void:
 
 # 将玩家物理样本追加到实时历史和当前录像。
 func record_player_frame(frame: TemporalFrame) -> void:
+	if _present_room_active:
+		return
 	_run_track.append(frame)
 	if _recording_track == null:
 		return
@@ -127,7 +133,7 @@ func get_timeline_seconds() -> float:
 
 # 开始一次未来录像并立即占用可能性槽。
 func start_future_recording(recorder: FutureRecorder) -> bool:
-	if player == null or not recorders.has(recorder):
+	if _present_room_active or player == null or not recorders.has(recorder):
 		future_recording_rejected.emit()
 		return false
 	if _recording_track != null:
@@ -211,6 +217,15 @@ func request_past_delay(seconds: float, switch_id: StringName) -> bool:
 		and switch_id == _pending_past_delay_switch_id
 	):
 		return false
+	if _present_room_active:
+		_past_delay_seconds = seconds
+		_pending_past_delay_seconds = seconds
+		_past_delay_switch_id = switch_id
+		_pending_past_delay_switch_id = switch_id
+		_phase_warning_remaining = 0.0
+		past_echo.end_phase_shift()
+		past_delay_changed.emit(seconds, switch_id)
+		return true
 	_pending_past_delay_seconds = seconds
 	_pending_past_delay_switch_id = switch_id
 	if is_zero_approx(_phase_warning_remaining):
@@ -271,6 +286,41 @@ func is_future_recording() -> bool:
 	return _recording_track != null
 
 
+# Clears every non-present timeline state while preserving the selected delay.
+func enter_present_room() -> bool:
+	if _present_room_active:
+		return false
+	_present_room_active = true
+	_cancel_recording_for_present_room()
+	_timeline_seconds = 0.0
+	_phase_warning_remaining = 0.0
+	_run_track.clear()
+	past_echo.dissipate()
+	for recorder in recorders:
+		var future_echo := recorder.get_future_echo()
+		if not future_echo.is_available():
+			future_echo.dissipate()
+		recorder.refresh_future_state()
+	_sync_future_slot_count()
+	present_room_changed.emit(true)
+	return true
+
+
+# Starts a clean run from the player's current position on leaving the hub.
+func leave_present_room() -> bool:
+	if not _present_room_active:
+		return false
+	_present_room_active = false
+	reset_timeline(_pending_past_delay_seconds, _pending_past_delay_switch_id)
+	present_room_changed.emit(false)
+	return true
+
+
+# Reports whether history recording and echoes are suppressed by the hub.
+func is_present_room_active() -> bool:
+	return _present_room_active
+
+
 # 返回当前录像时长，供 authored 记录器表现使用。
 func get_future_recording_seconds() -> float:
 	return maxf(_timeline_seconds - _recording_started_at, 0.0) if _recording_track != null else 0.0
@@ -328,6 +378,19 @@ func _advance_future_recording() -> void:
 	future_recording_progress.emit(get_future_recording_seconds(), FUTURE_MAXIMUM_SECONDS)
 	if get_future_recording_seconds() >= FUTURE_MAXIMUM_SECONDS:
 		commit_future_recording()
+
+
+# Cancels an in-flight recording without committing its future path.
+func _cancel_recording_for_present_room() -> void:
+	var cancelled_recorder := _recording_recorder
+	_recording_track = null
+	_recording_recorder = null
+	_recording_future_echo = null
+	_recording_future_states.clear()
+	_recording_anchor = {}
+	if cancelled_recorder != null:
+		cancelled_recorder.recording_cancelled()
+	future_recording_finished.emit()
 
 
 # 回退恢复可能性后，用真实活动槽修正录制期间的释放计数。
