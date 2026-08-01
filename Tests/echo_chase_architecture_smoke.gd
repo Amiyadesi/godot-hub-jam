@@ -25,22 +25,36 @@ func _ready() -> void:
 	get_tree().quit(1)
 
 
-# Authored camera centers and trigger rectangles stay aligned to the four 480x270 rooms.
+# Authored camera centers and trigger rectangles cover every occupied 480x270 room.
 func _test_start_scene_camera_layout() -> void:
 	var scene := load("res://Scenes/EchoChase/echo_chase_start.tscn") as PackedScene
 	var root := scene.instantiate()
 	var default_camera := root.get_node("World/RoomCamera/Camera2D") as Camera2D
 	_expect(default_camera.position.is_equal_approx(Vector2(240.0, 808.0)), "default camera should center on room A")
-	for index in range(4):
-		var suffix := char(65 + index)
+	var expected_centers := {
+		"A": Vector2(240.0, 808.0), "B": Vector2(720.0, 808.0), "C": Vector2(1200.0, 808.0),
+		"D": Vector2(1680.0, 808.0), "E": Vector2(2160.0, 808.0), "F": Vector2(2640.0, 808.0),
+		"G": Vector2(240.0, 538.0), "H": Vector2(720.0, 538.0), "I": Vector2(1200.0, 538.0),
+		"J": Vector2(1680.0, 538.0), "K": Vector2(720.0, 1078.0), "L": Vector2(1200.0, 1078.0),
+		"M": Vector2(1680.0, 1078.0), "N": Vector2(2160.0, 1078.0), "O": Vector2(2640.0, 1078.0),
+		"P": Vector2(720.0, 1348.0), "Q": Vector2(1200.0, 1348.0), "R": Vector2(1680.0, 1348.0),
+		"S": Vector2(2160.0, 1348.0),
+	}
+	var cameras := root.get_node("World/RoomCameras") as Node2D
+	var triggers := root.get_node("World/RoomCameraTriggers") as Node2D
+	_expect(cameras.get_child_count() == expected_centers.size(), "room camera count should match authored rooms")
+	_expect(triggers.get_child_count() == expected_centers.size(), "room trigger count should match authored rooms")
+	for suffix in expected_centers:
+		var center: Vector2 = expected_centers[suffix]
 		var area := root.get_node("World/RoomCameraTriggers/RoomArea%s" % suffix) as Area2D
 		var shape := area.get_node("CollisionShape2D") as CollisionShape2D
 		var rectangle := shape.shape as RectangleShape2D
-		var expected_x := 240.0 + index * 480.0
-		_expect(area.position.is_equal_approx(Vector2(expected_x, 775.0)), "room trigger %s should use the authored room center" % suffix)
+		_expect(area.global_position.is_equal_approx(center), "room trigger %s should use the authored room center" % suffix)
 		_expect(rectangle.size.is_equal_approx(Vector2(480.0, 270.0)), "room trigger %s should cover one room" % suffix)
 		var camera := root.get_node("World/RoomCameras/RoomPcam%s" % suffix) as Node2D
-		_expect(camera.position.is_equal_approx(Vector2(expected_x, 773.0)), "room camera %s should align with its trigger" % suffix)
+		_expect(camera.global_position.is_equal_approx(center), "room camera %s should align with its trigger" % suffix)
+		_expect(camera.get("limit_target") == NodePath("../../RoomCameraTriggers/RoomArea%s/CollisionShape2D" % suffix), "room camera %s should use its trigger limits" % suffix)
+		_expect(area.get("area_pcam") == camera, "room trigger %s should activate its camera" % suffix)
 	root.free()
 
 
