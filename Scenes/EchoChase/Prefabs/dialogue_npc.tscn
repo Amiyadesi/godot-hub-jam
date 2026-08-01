@@ -14,46 +14,34 @@ loop_mode = 1
 tracks/0/type = "value"
 tracks/0/imported = false
 tracks/0/enabled = true
-tracks/0/path = NodePath("Visual:position")
+tracks/0/path = NodePath("Visual:self_modulate")
 tracks/0/interp = 1
 tracks/0/loop_wrap = true
 tracks/0/keys = {
 "times": PackedFloat32Array(0, 1, 2),
 "transitions": PackedFloat32Array(1, 1, 1),
 "update": 0,
-"values": [Vector2(0, -16), Vector2(0, -18), Vector2(0, -16)]
+"values": [Color(0.78, 0.96, 1, 0.88), Color(1, 1, 1, 1), Color(0.78, 0.96, 1, 0.88)]
 }
 tracks/1/type = "value"
 tracks/1/imported = false
 tracks/1/enabled = true
-tracks/1/path = NodePath("Visual:self_modulate")
+tracks/1/path = NodePath("InteractPrompt:self_modulate")
 tracks/1/interp = 1
 tracks/1/loop_wrap = true
 tracks/1/keys = {
 "times": PackedFloat32Array(0, 1, 2),
 "transitions": PackedFloat32Array(1, 1, 1),
 "update": 0,
-"values": [Color(0.78, 0.96, 1, 0.88), Color(1, 1, 1, 1), Color(0.78, 0.96, 1, 0.88)]
+"values": [Color(1, 1, 1, 0.62), Color(1, 1, 1, 1), Color(1, 1, 1, 0.62)]
 }
 tracks/2/type = "value"
 tracks/2/imported = false
 tracks/2/enabled = true
-tracks/2/path = NodePath("InteractPrompt:self_modulate")
+tracks/2/path = NodePath("Visual:frame")
 tracks/2/interp = 1
 tracks/2/loop_wrap = true
 tracks/2/keys = {
-"times": PackedFloat32Array(0, 1, 2),
-"transitions": PackedFloat32Array(1, 1, 1),
-"update": 0,
-"values": [Color(1, 1, 1, 0.62), Color(1, 1, 1, 1), Color(1, 1, 1, 0.62)]
-}
-tracks/3/type = "value"
-tracks/3/imported = false
-tracks/3/enabled = true
-tracks/3/path = NodePath("Visual:frame")
-tracks/3/interp = 1
-tracks/3/loop_wrap = true
-tracks/3/keys = {
 "times": PackedFloat32Array(0, 0.5, 1, 1.5, 2),
 "transitions": PackedFloat32Array(1, 1, 1, 1, 1),
 "update": 1,
@@ -77,16 +65,16 @@ position = Vector2(0, -17)
 shape = SubResource("Shape_interaction")
 
 [node name="Visual" type="Sprite2D" parent="." unique_id=1916729915]
-self_modulate = Color(0.9504708, 0.9909947, 1, 0.9729841)
+self_modulate = Color(0.8326942, 0.96958077, 1, 0.9087423)
 texture_filter = 1
-position = Vector2(0, -17.549734)
+position = Vector2(0, -17.012892)
 texture = ExtResource("2_npc")
 hframes = 4
-frame = 2
+frame = 3
 
 [node name="InteractPrompt" type="Label" parent="." unique_id=104259768]
 unique_name_in_owner = true
-self_modulate = Color(1, 1, 1, 0.9144496)
+self_modulate = Color(1, 1, 1, 0.71101725)
 offset_left = -18.0
 offset_top = -54.0
 offset_right = 18.0

@@ -201,3 +201,11 @@ bus = &"SFX"
 stream = ExtResource("5_land_audio")
 volume_db = -8.0
 bus = &"SFX"
+
+[node name="RayCast2D" type="RayCast2D" parent="." unique_id=1295525164]
+position = Vector2(0, -15)
+target_position = Vector2(12, 0)
+
+[node name="RayCast2D2" type="RayCast2D" parent="." unique_id=590327560]
+position = Vector2(0, 3)
+target_position = Vector2(12, 0)

@@ -27,6 +27,7 @@ var _last_velocity := Vector2.ZERO
 func _ready() -> void:
 	body_entered.connect(_on_body_entered)
 	area_entered.connect(_on_area_entered)
+	departure_vfx.finished.connect(_on_departure_finished)
 	if SettingsModule.instance != null:
 		SettingsModule.instance.settings_changed.connect(_on_setting_changed)
 	reset_echo()
@@ -123,13 +124,19 @@ func dissipate() -> void:
 	_materializing = false
 	_first_materialization_pending = true
 	_active = false
+	vfx_animation_player.stop()
 	visual.visible = false
 	outline_visual.visible = false
 	history_trail.visible = false
 	history_trail_far.visible = false
 	pixel_burst.emitting = false
-	vfx_animation_player.play(&"RESET")
 	collision_shape.set_deferred("disabled", true)
+
+
+# 隔离尾效结束后隐藏不再参与时间线的过去体外壳。
+func _on_departure_finished() -> void:
+	if not _active and not _materializing and not _phase_shifting:
+		visible = false
 
 
 # 返回过去体是否已具备伤害和机关能力。

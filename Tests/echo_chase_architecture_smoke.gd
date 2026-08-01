@@ -9,6 +9,7 @@ func _ready() -> void:
 	var original_level_module := LevelModule.instance
 	_test_dash_afterimages_restart_cleanly()
 	_test_temporal_reset_clears_past_vfx()
+	_test_present_departure_vfx_finishes_cleanly()
 	_test_start_scene_camera_layout()
 	_test_present_room_delay_switch_is_immediate()
 	_test_progression_device_ids_are_unique()
@@ -30,6 +31,8 @@ func _test_start_scene_camera_layout() -> void:
 	var scene := load("res://Scenes/EchoChase/echo_chase_start.tscn") as PackedScene
 	var root := scene.instantiate()
 	var default_camera := root.get_node("World/RoomCamera/Camera2D") as Camera2D
+	var run_label := root.get_node("World/SpawnPoint/RunLabel") as Label
+	_expect(run_label.text == "Run", "spawn point should show the authored Run label")
 	_expect(default_camera.position.is_equal_approx(Vector2(240.0, 808.0)), "default camera should center on room A")
 	var expected_centers := {
 		"A": Vector2(240.0, 808.0), "B": Vector2(720.0, 808.0), "C": Vector2(1200.0, 808.0),
@@ -62,10 +65,28 @@ func _test_start_scene_camera_layout() -> void:
 func _test_temporal_reset_clears_past_vfx() -> void:
 	var past_echo := EchoTimeline.past_echo
 	past_echo.show()
+	past_echo.visual.show()
+	past_echo.outline_visual.show()
+	past_echo.dissipate()
+	_expect(not past_echo.visual.visible, "Past dissipate should keep the body hidden")
+	past_echo.departure_vfx.animation_player.advance(0.3)
+	_expect(not past_echo.visible, "Past should hide after its departure VFX finishes")
 	past_echo.departure_vfx.show()
 	EchoTimeline.reset_timeline()
 	_expect(not past_echo.visible, "timeline reset should hide the Past echo")
 	_expect(not past_echo.departure_vfx.is_playing(), "timeline reset should stop Past departure VFX")
+
+
+# A present-room shockwave must finish with both its active flag and visuals cleared.
+func _test_present_departure_vfx_finishes_cleanly() -> void:
+	var vfx_scene := load("res://Scenes/EchoChase/Prefabs/temporal_departure_vfx.tscn") as PackedScene
+	var vfx := vfx_scene.instantiate() as TemporalDepartureVfx
+	add_child(vfx)
+	vfx.play_room_departure()
+	vfx.animation_player.advance(0.7)
+	_expect(not vfx.is_playing(), "present-room departure VFX should stop after its authored animation")
+	_expect(not vfx.visible, "present-room departure VFX should hide after its authored animation")
+	vfx.free()
 
 # A second dash must not inherit image slots from the first dash's world position.
 func _test_dash_afterimages_restart_cleanly() -> void:

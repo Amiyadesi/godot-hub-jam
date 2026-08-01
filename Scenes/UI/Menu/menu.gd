@@ -121,11 +121,7 @@ func _on_start_pressed() -> void:
 	if _transition_active or not _has_authored_entry_scene():
 		refresh_progress_controls()
 		return
-	var has_saved_run := (
-		SaveSystem.slot_exists(1)
-		and LevelModule.instance != null
-		and LevelModule.instance.has_continue_point()
-	)
+	var has_saved_run := _has_saved_run()
 	if has_saved_run:
 		var restart_confirmed := await FeedbackOverlay.ask(
 			tr("MENU_RESTART_TITLE"),
@@ -330,6 +326,15 @@ func _load_slot_progress() -> void:
 		SaveSystem.load_slot(1)
 	else:
 		SaveSystem.new_game(1)
+
+
+# 只有可恢复的 authored checkpoint 才需要确认“重新开始”。
+func _has_saved_run() -> bool:
+	return (
+		LevelModule.instance != null
+		and LevelModule.instance.has_continue_point()
+		and ResourceLoader.exists(LevelModule.instance.get_continue_scene_path())
+	)
 
 
 # 只接受真实存在的 authored 灰盒入口。

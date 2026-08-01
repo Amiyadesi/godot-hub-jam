@@ -52,5 +52,5 @@ func _on_dialogue_finished() -> void:
 	if not SaveSystem.save_slot(1):
 		push_error("PresentRoom failed to save slot 1 after unlocking")
 	dialogue_npc.dialogue_title = "return"
-	room_departure_vfx.play_room_departure()
-	EchoTimeline.enter_present_room()
+	if EchoTimeline.enter_present_room():
+		room_departure_vfx.play_room_departure()

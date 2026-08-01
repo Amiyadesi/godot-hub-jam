@@ -37,7 +37,6 @@ enum State {
 @export var wall_coyote_seconds := 0.12
 @export var wall_jump_speed_x := 176.0
 @export var wall_push_seconds := 0.10
-@export var wall_narrow_gap_probe_distance := 16.0
 
 @export_group("Dash Aim")
 @export var dash_aim_seconds := 0.04
@@ -59,6 +58,8 @@ enum State {
 @onready var dash_vfx: EchoDashVfx = %DashVfx
 @onready var dash_audio: AudioStreamPlayer2D = $DashAudio
 @onready var land_audio: AudioStreamPlayer2D = $LandAudio
+@onready var wall_head_ray: RayCast2D = $RayCast2D
+@onready var wall_foot_ray: RayCast2D = $RayCast2D2
 
 var facing := 1.0
 var _state := State.IDLE
@@ -303,7 +304,7 @@ func _update_floor_memory(delta: float) -> void:
 func _update_wall_memory(delta: float) -> void:
 	if is_on_wall_only():
 		var current_wall_normal := get_wall_normal()
-		if _has_narrow_wall_gap():
+		if not _wall_rays_detect_wall(current_wall_normal):
 			_wall_coyote_remaining = 0.0
 			_wall_normal = current_wall_normal
 			return
@@ -394,7 +395,7 @@ func _update_standard_movement(delta: float) -> void:
 		_resolve_standard_state()
 		return
 	velocity.y += gravity * delta
-	if is_on_wall_only() and velocity.y > 0.0:
+	if is_on_wall_only() and velocity.y > 0.0 and _wall_rays_detect_wall(get_wall_normal()):
 		velocity.y = minf(velocity.y, wall_slide_speed)
 	_apply_horizontal_motion(delta)
 	move_and_slide()
@@ -435,14 +436,16 @@ func _perform_wall_jump() -> void:
 	jump_started.emit()
 
 
-# Reject wall movement when both sides of a one-tile shaft are immediately occupied.
-func _has_narrow_wall_gap() -> bool:
-	if wall_narrow_gap_probe_distance <= 0.0:
+# Require both authored wall probes to see the same wall before allowing wall movement.
+func _wall_rays_detect_wall(wall_normal: Vector2) -> bool:
+	if is_zero_approx(wall_normal.x):
 		return false
-	return (
-		test_move(global_transform, Vector2.LEFT * wall_narrow_gap_probe_distance)
-		and test_move(global_transform, Vector2.RIGHT * wall_narrow_gap_probe_distance)
-	)
+	var ray_direction := -signf(wall_normal.x)
+	wall_head_ray.target_position.x = absf(wall_head_ray.target_position.x) * ray_direction
+	wall_foot_ray.target_position.x = absf(wall_foot_ray.target_position.x) * ray_direction
+	wall_head_ray.force_raycast_update()
+	wall_foot_ray.force_raycast_update()
+	return wall_head_ray.is_colliding() and wall_foot_ray.is_colliding()
 
 
 # 将符合条件的地面冲刺转成继承动量的跳跃。
@@ -527,7 +530,7 @@ func _request_trap_failure() -> void:
 func _resolve_standard_state() -> void:
 	if is_on_floor():
 		_change_state(State.RUN if absf(velocity.x) > 1.0 else State.IDLE)
-	elif is_on_wall_only() and velocity.y > 0.0:
+	elif is_on_wall_only() and velocity.y > 0.0 and _wall_rays_detect_wall(get_wall_normal()):
 		_change_state(State.WALL_SLIDE)
 	elif velocity.y < 0.0:
 		_change_state(State.JUMP)
