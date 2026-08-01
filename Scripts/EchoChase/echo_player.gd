@@ -20,29 +20,30 @@ enum State {
 }
 
 @export_group("Run")
-@export var run_speed := 250.0
-@export var run_acceleration := 4096.0
+@export var run_speed := 144.0
+@export var run_acceleration := 2304.0
 
 @export_group("Jump")
-@export var jump_speed := 400.0
-@export_range(0.0, 1.0, 0.05) var jump_release_multiplier := 0.5
+@export var jump_speed := 320.0
+@export_range(0.0, 1.0, 0.05) var jump_release_multiplier := 0.65
 @export var coyote_seconds := 0.15
 @export var jump_buffer_seconds := 0.15
 
 @export_group("Fall")
-@export var gravity := 980.0
+@export var gravity := 1200.0
 
 @export_group("Wall Slide")
-@export var wall_slide_speed := 250.0
+@export var wall_slide_speed := 48.0
 @export var wall_coyote_seconds := 0.12
-@export var wall_jump_speed_x := 250.0
+@export var wall_jump_speed_x := 176.0
 @export var wall_push_seconds := 0.10
+@export var wall_narrow_gap_probe_distance := 16.0
 
 @export_group("Dash Aim")
-@export var dash_aim_seconds := 0.10
+@export var dash_aim_seconds := 0.04
 
 @export_group("Dash")
-@export var dash_speed := 600.0
+@export var dash_speed := 336.0
 @export var dash_seconds := 0.10
 @export_range(0.0, 1.0, 0.05) var dash_jump_momentum := 0.65
 @export var dash_speed_cap_multiplier := 1.6
@@ -72,6 +73,8 @@ var _coyote_remaining := 0.0
 var _wall_coyote_remaining := 0.0
 var _wall_push_remaining := 0.0
 var _wall_normal := Vector2.ZERO
+var _wall_jump_locked := false
+var _wall_jump_lock_normal := Vector2.ZERO
 var _temporal_phase_remaining := 0.0
 var _dash_requested := false
 var _jump_requested := false
@@ -161,6 +164,8 @@ func capture_temporal_anchor(time_seconds: float) -> Dictionary:
 		"wall_coyote_remaining": _wall_coyote_remaining,
 		"wall_push_remaining": _wall_push_remaining,
 		"wall_normal": _wall_normal,
+		"wall_jump_locked": _wall_jump_locked,
+		"wall_jump_lock_normal": _wall_jump_lock_normal,
 		"was_on_floor": _was_on_floor,
 	}
 
@@ -182,6 +187,8 @@ func apply_temporal_recall(anchor: Dictionary, phase_seconds: float) -> void:
 	_wall_coyote_remaining = float(anchor["wall_coyote_remaining"])
 	_wall_push_remaining = float(anchor["wall_push_remaining"])
 	_wall_normal = anchor["wall_normal"] as Vector2
+	_wall_jump_locked = bool(anchor.get("wall_jump_locked", false))
+	_wall_jump_lock_normal = anchor.get("wall_jump_lock_normal", Vector2.ZERO) as Vector2
 	_was_on_floor = bool(anchor["was_on_floor"])
 	_dash_requested = false
 	_jump_requested = false
@@ -248,6 +255,8 @@ func reset_player(reset_position: Vector2) -> void:
 	_coyote_remaining = 0.0
 	_wall_coyote_remaining = 0.0
 	_wall_push_remaining = 0.0
+	_wall_jump_locked = false
+	_wall_jump_lock_normal = Vector2.ZERO
 	_temporal_phase_remaining = 0.0
 	_jump_requested = false
 	_recall_requested = false
@@ -284,6 +293,8 @@ func _update_floor_memory(delta: float) -> void:
 	if is_on_floor():
 		_coyote_remaining = coyote_seconds
 		_dash_available = true
+		_wall_jump_locked = false
+		_wall_jump_lock_normal = Vector2.ZERO
 	else:
 		_coyote_remaining = maxf(_coyote_remaining - delta, 0.0)
 
@@ -291,8 +302,19 @@ func _update_floor_memory(delta: float) -> void:
 # 短暂记住墙面法线，让延迟墙跳仍可用。
 func _update_wall_memory(delta: float) -> void:
 	if is_on_wall_only():
-		_wall_coyote_remaining = wall_coyote_seconds
-		_wall_normal = get_wall_normal()
+		var current_wall_normal := get_wall_normal()
+		if _has_narrow_wall_gap():
+			_wall_coyote_remaining = 0.0
+			_wall_normal = current_wall_normal
+			return
+		if _wall_jump_locked and _wall_jump_lock_normal.dot(current_wall_normal) < -0.8:
+			_wall_jump_locked = false
+			_wall_jump_lock_normal = Vector2.ZERO
+		if _wall_jump_locked:
+			_wall_coyote_remaining = 0.0
+		else:
+			_wall_coyote_remaining = wall_coyote_seconds
+		_wall_normal = current_wall_normal
 	else:
 		_wall_coyote_remaining = maxf(_wall_coyote_remaining - delta, 0.0)
 		_wall_push_remaining = maxf(_wall_push_remaining - delta, 0.0)
@@ -357,7 +379,7 @@ func _update_standard_movement(delta: float) -> void:
 	_jump_buffer_remaining = maxf(_jump_buffer_remaining - delta, 0.0)
 	var started_jump := false
 	if _jump_buffer_remaining > 0.0:
-		if _wall_coyote_remaining > 0.0 and not is_on_floor():
+		if _wall_coyote_remaining > 0.0 and not is_on_floor() and not _wall_jump_locked:
 			_perform_wall_jump()
 			started_jump = true
 		elif _coyote_remaining > 0.0:
@@ -404,11 +426,23 @@ func _perform_wall_jump() -> void:
 	_jump_buffer_remaining = 0.0
 	_wall_coyote_remaining = 0.0
 	_wall_push_remaining = wall_push_seconds
+	_wall_jump_locked = true
+	_wall_jump_lock_normal = _wall_normal
 	velocity.x = _wall_normal.x * wall_jump_speed_x
 	velocity.y = -jump_speed
 	facing = signf(_wall_normal.x)
 	_change_state(State.JUMP)
 	jump_started.emit()
+
+
+# Reject wall movement when both sides of a one-tile shaft are immediately occupied.
+func _has_narrow_wall_gap() -> bool:
+	if wall_narrow_gap_probe_distance <= 0.0:
+		return false
+	return (
+		test_move(global_transform, Vector2.LEFT * wall_narrow_gap_probe_distance)
+		and test_move(global_transform, Vector2.RIGHT * wall_narrow_gap_probe_distance)
+	)
 
 
 # 将符合条件的地面冲刺转成继承动量的跳跃。

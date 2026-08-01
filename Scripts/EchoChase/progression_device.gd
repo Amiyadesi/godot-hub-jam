@@ -46,6 +46,12 @@ func is_active() -> bool:
 	return _active
 
 
+# 玩家进入 authored 触发区时永久激活装置。
+func _on_activation_area_body_entered(body: Node2D) -> void:
+	if body == EchoTimeline.player:
+		activate()
+
+
 # Applies authored idle/active visuals and optional one-shot feedback.
 func _set_active(value: bool, play_feedback: bool) -> void:
 	_active = value

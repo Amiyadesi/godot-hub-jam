@@ -1,8 +1,9 @@
 class_name LevelModule
 extends ISaveModule
-## 仅保存一个稳定的《延迟追迹》复活点。
+## 保存《延迟追迹》的稳定复活点与槽位级世界进度。
 
 signal progression_device_activated(device_id: String)
+signal collectible_collected(item_id: String)
 
 static var instance: LevelModule
 
@@ -14,6 +15,7 @@ var checkpoint_position := Vector2.ZERO
 var past_delay_seconds := 3.0
 var delay_switch_id := ""
 var activated_progression_device_ids: Array[String] = []
+var collected_item_ids: Array[String] = []
 var present_hub_unlocked := false
 var _has_checkpoint_position := false
 
@@ -45,6 +47,7 @@ func collect_data() -> Dictionary:
 		"past_delay_seconds": past_delay_seconds,
 		"delay_switch_id": delay_switch_id,
 		"activated_progression_device_ids": activated_progression_device_ids.duplicate(),
+		"collected_item_ids": collected_item_ids.duplicate(),
 		"present_hub_unlocked": present_hub_unlocked,
 	}
 
@@ -90,6 +93,7 @@ func get_default_data() -> Dictionary:
 		"past_delay_seconds": 3.0,
 		"delay_switch_id": "",
 		"activated_progression_device_ids": [],
+		"collected_item_ids": [],
 		"present_hub_unlocked": false,
 	}
 
@@ -178,6 +182,24 @@ func is_progression_device_active(device_id: String) -> bool:
 	return activated_progression_device_ids.has(device_id.strip_edges())
 
 
+# Permanently stores one authored collectible for the current save slot.
+func collect_item(item_id: String) -> bool:
+	var normalized_id := item_id.strip_edges()
+	if normalized_id.is_empty():
+		push_error("LevelModule.collect_item requires a non-empty id")
+		return false
+	if collected_item_ids.has(normalized_id):
+		return false
+	collected_item_ids.append(normalized_id)
+	collectible_collected.emit(normalized_id)
+	return true
+
+
+# Reports whether one authored collectible already belongs to this slot.
+func is_item_collected(item_id: String) -> bool:
+	return collected_item_ids.has(item_id.strip_edges())
+
+
 # Permanently marks the central room as converted into the present state.
 func unlock_present_hub() -> bool:
 	if present_hub_unlocked:
@@ -194,6 +216,7 @@ func is_present_hub_unlocked() -> bool:
 # Clears permanent world progress only when starting a new run.
 func clear_world_progress() -> void:
 	activated_progression_device_ids.clear()
+	collected_item_ids.clear()
 	present_hub_unlocked = false
 
 
@@ -206,4 +229,11 @@ func _apply_world_progress(data: Dictionary) -> void:
 			var normalized_id := str(stored_id).strip_edges()
 			if not normalized_id.is_empty() and not activated_progression_device_ids.has(normalized_id):
 				activated_progression_device_ids.append(normalized_id)
+	collected_item_ids.clear()
+	var stored_item_ids: Variant = data.get("collected_item_ids", [])
+	if stored_item_ids is Array or stored_item_ids is PackedStringArray:
+		for stored_id: Variant in stored_item_ids:
+			var normalized_id := str(stored_id).strip_edges()
+			if not normalized_id.is_empty() and not collected_item_ids.has(normalized_id):
+				collected_item_ids.append(normalized_id)
 	present_hub_unlocked = bool(data.get("present_hub_unlocked", false))

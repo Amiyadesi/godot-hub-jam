@@ -16,7 +16,8 @@ YourGrayboxRoot (Node2D)
 │   ├── TemporalDoor             [按需 instance]
 │   ├── ProgressionDevice        [支路末端按需 instance]
 │   ├── PersistentGate           [终点门/捷径按需 instance]
-│   ├── PresentRoom              [中央房 instance；内部自带 DialogueNpc]
+│   ├── TemporalCollectible      [可选 instance；槽位持久化收集物]
+│   ├── PresentHub               [主场景内联 Area2D；内含 DialogueNpc 与冲击波]
 │   ├── Terrain                  [作者的 StaticBody2D / TileMapLayer]
 │   ├── SpawnPoint               [作者的 Marker2D]
 │   └── EchoCheckpoint           [instance: Prefabs/echo_checkpoint.tscn]
@@ -41,7 +42,7 @@ YourGrayboxRoot (Node2D)
 | `PersistentGate` | `required_device_id` | 要监听的 `ProgressionDevice.device_id` |
 | `DialogueNpc` | `dialogue_resource/dialogue_title` | Dialogue Manager 资源与起始 title |
 | `TemporalRecordingHUD` | `player` | 场景内玩家 |
-| `EchoChaseStart` | `player/gameplay_world/spawn_point/fall_reset_area/pause_screen/setting_screen/reset_audio` | 场景内对应 authored 节点 |
+| `EchoChaseStart` | `player/gameplay_world/spawn_point/present_room/pause_screen/setting_screen/reset_audio` | 场景内对应 authored 节点 |
 | `EchoChaseStart` | `gameplay_music` | 进入玩法后交给 `GameAudio` crossfade 的独立循环曲 |
 | `EchoChaseStart` | `present_entry_transition/past_entry_transition` | 与菜单满屏颜色一致的 `0.35s` authored 淡出资源 |
 
@@ -84,6 +85,10 @@ YourGrayboxRoot (Node2D)
 
 若关卡需要多个板共同控制一扇门，作者应在场景内显式放置一个本地组合节点或写一个小型本关脚本，并保持其输入来自各板的 `pressed_changed` 信号。不要把通用“谜题管理器”提前抽象出来。
 
+### 收集物
+
+实例化 `temporal_collectible.tscn` 并填写唯一 `item_id`。玩家触碰后只保存一次到当前槽位，播放 authored 收集动画并移除实例；旧存档缺少 `collected_item_ids` 时默认为空。它是可选世界进度，不是背包，也不参与主线门条件。
+
 ### 永久装置与门
 
 支路末端实例化 `progression_device.tscn` 并填写唯一 `device_id`。本关谜题完成时只调用该实例的 `activate()`；它负责去重、写入当前槽位并发出激活信号。终点门或回流捷径实例化 `persistent_gate.tscn`，将 `required_device_id` 设成同一 ID。门会在读档时直接恢复稳定开启末态，运行中激活时才播放开门反馈。
@@ -92,7 +97,9 @@ YourGrayboxRoot (Node2D)
 
 普通 NPC 使用 `dialogue_npc.tscn`，赋值 `dialogue_resource` 和可选 `dialogue_title`。玩家进入范围看到 `E`，按下后复用 `Dialogue/EchoChase/echo_dialogue_balloon.tscn`；该变体保留 Flow、Animation、TypingSound、CharacterUI 和 Responses，禁用 History、SaveModule 与 Illustration。对话期间 `SceneTree.paused = true`，结束后恢复原状态。
 
-中央房直接实例化 `present_room.tscn`。其默认碰撞范围为 `480×270`，作者可按实际房间边界调整 `RoomShape`，并可替换内置 NPC 对话资源与位置。每次进入都立即调用 `EchoTimeline.enter_present_room()`，因此首次来访也会取消录像、清除 Past/Future，并让延迟台即时生效。首次按 `E` 完成对话后，房间写入 `present_hub_unlocked`、播放蓝色冲击波，NPC 随后改用 `return` title。离开任意边界调用 `leave_present_room()`，从玩家当前位置重建时间线。不要让现在房自动激活 checkpoint。
+中央房直接在连续主场景中 authored 一个 `PresentHub (Area2D)`，不再实例化整房 prefab。其固定子节点为 `RoomShape`、`CurrentRoomCheckpoint`、`DialogueNpc` 和 `RoomDepartureVfx`；作者可在同一场景里调整边界、NPC 与出口，不需要切换房间 scene。
+
+首次进入时不清线，Past 可以跟着玩家进入；玩家在范围内按 `E`，或在尚未对话时触碰 `checkpoint_id = current_room`，两条路径都会启动同一段 NPC 对话。对话结束后写入 `present_hub_unlocked`，清除时态实体，并在 Hub 原点播放覆盖 `480×270` 的 `TemporalDepartureVfx`，使用与开场一致的环状冲击波素材。之后回访才在进入时调用 `EchoTimeline.enter_present_room()`；房内不推进时间线、不记录路径，延迟台即时生效。离开任意出口调用 `leave_present_room()`，从玩家当前位置重建时间线。`current_room` 仍是玩家触碰才激活的普通 checkpoint。
 
 ## 失败、重置和检查点
 
@@ -120,14 +127,15 @@ EchoTimeline.reset_timeline(saved_past_delay_seconds, saved_delay_switch_id)
 
 - 一个 `EchoPlayer`；`EchoTimeline` 与 `PastEcho` 由全局 Autoload 提供。
 - 一台 `FutureRecorder`，内部自带一个隐藏 `FutureEcho`。
-- 用户 authored 的 16px TileMap 测试骨架，横向划分四个 `480×270` 房间。
-- 一个 `EchoCheckpoint`、一个 `SpawnPoint`、一个 `FallResetArea`。
+- 用户 authored 的 16px TileMap 基线；当前镜头测试区仍按四个 `480×270` 触发范围组织，但不锁定正式路线。
+- `start_checkpoint` 与 `current_room` 两个 authored `EchoCheckpoint`，以及一个 `SpawnPoint`。
 - 一个 `Camera2D + PhantomCameraHost`，四台固定 `PhantomCamera2D`，`zoom=4`，共用 `0.35s QUAD/EASE_IN_OUT` tween。
 - 四个 authored `Area2D` 房间触发器，直接使用 Phantom Camera 官方 `2d_trigger_area.gd` 示例脚本；镜头选择、中断和补间全部由 Phantom Camera 插件负责。
 - `1s/3s/5s` 三个可重复 `DelayPickup` 延迟台、一个 `FutureRecorder`。
 - 一个显式连接 `TemporalDoor` 的 `TemporalPressurePlate`。
-- Room B 已实例化 `PresentHub`，内含按 `E` 交互的 NPC、首次/回访剧情、蓝色冲击波和三座延迟台。
-- Room C/D 已摆放同 ID 的 `BranchProgressionDevice` 与 `BranchPersistentGate`，只作为永久进度接线样例；正式谜题仍由本关脚本在条件完成时调用 `activate()`。
+- 主场景内联 `PresentHub`，内含按 `E` 交互的 NPC、`current_room` 自动对话、首次/回访剧情、全房环状冲击波、三座延迟台和 `RoomDepartureVfx`。
+- 场景内的 `BranchProgressionDevice` 与 `BranchPersistentGate` 只作为永久进度接线样例；正式谜题仍由本关脚本在条件完成时调用 `activate()`，二者素材与 checkpoint 分离。
+- `MemoryShardA/B/C` 使用 `TemporalCollectible`，只演示槽位持久化收集物，不引入背包。
 - 一个 `TemporalRecordingHUD`：玩家金色轮廓、屏幕金边、无数字进度条和实时回传键。
 - 两套 authored 入场淡出资源：新游戏使用青白，Continue 使用洋红；淡出期间冻结 World，不再摆三人 Overlay。
 - `PauseScreen` 与 `SettingScreen`；Hint 永久禁用。

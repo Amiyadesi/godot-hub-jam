@@ -6,18 +6,22 @@ signal finished
 
 const STANDARD_ANIMATION := &"depart"
 const REDUCED_ANIMATION := &"depart_reduced"
+const ROOM_STANDARD_ANIMATION := &"room_depart"
+const ROOM_REDUCED_ANIMATION := &"room_depart_reduced"
 const DRIFT_SPEED := 48.0
 
 @export var temporal_color := Color.WHITE
 
 @onready var core_snapshot: Sprite2D = %CoreSnapshot
 @onready var snapshot: Sprite2D = %Snapshot
+@onready var room_overlay: Polygon2D = %RoomOverlay
 @onready var impact_ring: Sprite2D = %ImpactRing
 @onready var particles: GPUParticles2D = %Particles
 @onready var animation_player: AnimationPlayer = %AnimationPlayer
 @onready var departure_audio: AudioStreamPlayer2D = %DepartureAudio
 
 var _active := false
+var _room_mode := false
 var _drift_velocity := Vector2.ZERO
 
 
@@ -36,6 +40,8 @@ func play_from_sprite(source: AnimatedSprite2D, velocity: Vector2) -> void:
 
 # 同时复制 Core 与 Outline，让退场仍保留完整角色轮廓和内部像素。
 func play_from_sprites(core: AnimatedSprite2D, outline: AnimatedSprite2D, velocity: Vector2) -> void:
+	_room_mode = false
+	room_overlay.visible = false
 	global_position = core.global_position
 	global_rotation = core.global_rotation
 	_copy_sprite_frame(core_snapshot, core)
@@ -55,15 +61,31 @@ func play_from_sprites(core: AnimatedSprite2D, outline: AnimatedSprite2D, veloci
 	departure_audio.play()
 
 
+# Plays the authored 480x270 conversion field from the PresentHub origin.
+func play_room_departure() -> void:
+	_room_mode = true
+	_drift_velocity = Vector2.ZERO
+	core_snapshot.visible = false
+	snapshot.visible = false
+	particles.emitting = false
+	impact_ring.modulate = temporal_color
+	_active = true
+	visible = true
+	animation_player.play(ROOM_REDUCED_ANIMATION if _uses_low_flash_mode() else ROOM_STANDARD_ANIMATION)
+	departure_audio.play()
+
+
 # 时间线重置时立即清掉旧位置、粒子、声音和完成回调状态。
 func reset_vfx() -> void:
 	_active = false
+	_room_mode = false
 	_drift_velocity = Vector2.ZERO
 	animation_player.stop()
 	particles.emitting = false
 	departure_audio.stop()
 	core_snapshot.texture = null
 	snapshot.texture = null
+	room_overlay.visible = false
 	impact_ring.visible = false
 	visible = false
 
@@ -81,9 +103,15 @@ func _process(delta: float) -> void:
 
 # 只有完整 authored 退场动画结束后才报告视觉消散。
 func _on_animation_finished(animation_name: StringName) -> void:
-	if not _active or animation_name not in [STANDARD_ANIMATION, REDUCED_ANIMATION]:
+	if not _active or animation_name not in [
+		STANDARD_ANIMATION,
+		REDUCED_ANIMATION,
+		ROOM_STANDARD_ANIMATION,
+		ROOM_REDUCED_ANIMATION,
+	]:
 		return
 	_active = false
+	_room_mode = false
 	_drift_velocity = Vector2.ZERO
 	particles.emitting = false
 	visible = false
@@ -99,7 +127,13 @@ func _on_setting_changed(key: String, _value: Variant) -> void:
 	var progress_ratio := 0.0
 	if animation_player.current_animation_length > 0.0:
 		progress_ratio = animation_player.current_animation_position / animation_player.current_animation_length
-	animation_player.play(REDUCED_ANIMATION if _uses_low_flash_mode() else STANDARD_ANIMATION)
+	var next_animation := (
+		ROOM_REDUCED_ANIMATION if _room_mode and _uses_low_flash_mode()
+		else ROOM_STANDARD_ANIMATION if _room_mode
+		else REDUCED_ANIMATION if _uses_low_flash_mode()
+		else STANDARD_ANIMATION
+	)
+	animation_player.play(next_animation)
 	animation_player.seek(progress_ratio * animation_player.current_animation_length, true)
 
 

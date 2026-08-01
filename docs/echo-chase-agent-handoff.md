@@ -27,18 +27,18 @@ EchoChaseStart
 │   ├── RoomCameraTriggers
 │   │   └── RoomAreaA / B / C / D
 │   ├── EchoCheckpoint
-│   ├── PresentHub [Room B；内含 DialogueNpc]
+│   ├── PresentHub [主场景内联；内含 CurrentRoomCheckpoint / DialogueNpc / RoomDepartureVfx]
 │   ├── DelayPickup1s / 3s / 5s
 │   ├── FutureRecorderA [内部一个 FutureEcho]
 │   ├── BranchProgressionDevice → BranchPersistentGate
-│   ├── TemporalPressurePlate → TemporalDoor
-│   └── FallResetArea
+│   ├── TemporalCollectible × 3
+│   └── TemporalPressurePlate → TemporalDoor
 ├── UI
 │   ├── TemporalRecordingHUD
 │   ├── PauseScreen
 │   └── SettingScreen
 └── SceneController [ALWAYS]
-    └── ResetAudio
+	└── ResetAudio
 ```
 
 场景已按用户要求接入四个横向 `480×270` Phantom Camera 测试房和完整机制展台。TileMap、机关顺序与房间参数只用于逐项测试，不代表作者的正式灰盒或路线；用户可以直接在 Editor 中移动、替换或删除。
@@ -55,7 +55,7 @@ EchoChaseStart
 - 音效节点已 authored：玩家冲刺/落地、过去体出现、失败复位、checkpoint 激活。
 - 菜单音乐为 Frenchyboy 的 CC0 `Mysterious2.wav` 转码版本：`assets/echo_chase/audio/music/mysterious_futuristic_loop.ogg`；来源与 SHA256 见 `docs/asset-attributions.md`。
 - 施工玩法音乐为 SRG774 的 CC0 `sector.ogg`，进入玩法时由 `GameAudio` 从菜单曲 crossfade；支路装置激活使用同包 `victory.ogg`。
-- 中央房每次进入都立即清除时态实体并让延迟台即时生效；NPC 复用 `ModularBalloon` 变体，范围内显示 `E`，首次剧情结束触发蓝色冲击波，之后改用短 `return` 对话。
+- 首次进入中央房允许 Past 进入；NPC 复用 `ModularBalloon` 变体，范围内显示 `E`，或触碰 `current_room` 时自动开始同一段对话。首次剧情结束触发覆盖整房的环状 `TemporalDepartureVfx` 并清线；之后回访才在入房时清除时态实体、让延迟台即时生效，并改用短 `return` 对话。
 - Past/Future prefab 的 `OutlineVisual`、`PixelBurst`、`VfxAnimationPlayer`、`DepartureVfx` 是 authored 合同；`DepartureVfx` 是 `top_level` 旧位置快照，主体移动或槽位复用都不能带走它。
 - 主菜单是严格三等分固定剪影。Start 使用现在体青白径向转场，Continue 使用过去体洋红径向转场；玩法场景只负责同色淡出，不再包含三人入场 Overlay。
 
@@ -72,10 +72,11 @@ checkpoint_position: {x, y}
 past_delay_seconds
 delay_switch_id
 activated_progression_device_ids
+collected_item_ids
 present_hub_unlocked
 ```
 
-延迟台是可重复机关，类名仍为 `DelayPickup`。每个场景必须恰好一个默认 `3s` 台，所有台使用唯一 ID；`EchoChaseStart` 从 authored `gameplay_world` 收集它们。激活 checkpoint 不清理当前时间线，但会记录当前选择；被过去体抓到或跌落后，玩家冻结 `0.4s`，随后先恢复坐标，再用保存的延迟和台 ID 调用 `EchoTimeline.reset_timeline()`。Continue 同样建立干净时间线。
+延迟台是可重复机关，类名仍为 `DelayPickup`。每个场景必须恰好一个默认 `3s` 台，所有台使用唯一 ID；`EchoChaseStart` 从 authored `gameplay_world` 收集它们。激活 checkpoint 不清理当前时间线，但会记录当前选择；触碰 `current_room` 且尚未完成对话时会启动中央 NPC 剧情。被过去体抓到后，玩家冻结 `0.4s`，随后先恢复坐标，再用保存的延迟和台 ID 调用 `EchoTimeline.reset_timeline()`。Continue 同样建立干净时间线。
 
 未来录像可在第一帧提交；短路径保持末帧补足到 `1s`。录制中接触过去体会提交/回传，不会触发失败。`TemporalRecordingHUD` 监听时间线与 `KeybindingModule.bindings_changed`，禁止把按键文本硬编码回 `L`。
 

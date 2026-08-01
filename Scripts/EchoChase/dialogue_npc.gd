@@ -31,20 +31,23 @@ func _unhandled_input(event: InputEvent) -> void:
 	if get_tree().paused or not _player_inside or _dialogue_active or not event.is_action_pressed(&"echo_interact"):
 		return
 	get_viewport().set_input_as_handled()
-	_start_dialogue()
+	start_dialogue()
 
 
 # Pauses the existing world state and opens the authored balloon.
-func _start_dialogue() -> void:
+func start_dialogue() -> bool:
+	if _dialogue_active:
+		return false
 	if dialogue_resource == null:
 		push_error("DialogueNpc cannot start without a dialogue_resource")
-		return
+		return false
 	_dialogue_active = true
 	interact_prompt.hide()
 	_was_tree_paused = get_tree().paused
 	get_tree().paused = true
 	dialogue_started_here.emit()
 	balloon.start(dialogue_resource, dialogue_title, [self])
+	return true
 
 
 # Shows the interaction prompt for the current EchoPlayer only.

@@ -1,10 +1,9 @@
 class_name PresentRoom
 extends Area2D
-## Authored central room that permanently suppresses temporal echoes after its first dialogue.
+## Authored central room that converts only after its first completed dialogue.
 
 @onready var dialogue_npc: DialogueNpc = %DialogueNpc
-@onready var shockwave_animation_player: AnimationPlayer = %ShockwaveAnimationPlayer
-@onready var shockwave_audio: AudioStreamPlayer2D = %ShockwaveAudio
+@onready var room_departure_vfx: TemporalDepartureVfx = %RoomDepartureVfx
 
 var _player_inside := false
 
@@ -20,12 +19,13 @@ func _ready() -> void:
 		dialogue_npc.dialogue_title = "return"
 
 
-# Clears temporal entities whenever the current player enters the authored room.
+# Lets the first Past enter; unlocked returns clear the room immediately.
 func _on_body_entered(body: Node2D) -> void:
 	if body != EchoTimeline.player:
 		return
 	_player_inside = true
-	EchoTimeline.enter_present_room()
+	if LevelModule.instance != null and LevelModule.instance.is_present_hub_unlocked():
+		EchoTimeline.enter_present_room()
 
 
 # Starts a clean timeline from whichever authored exit the player uses.
@@ -37,23 +37,20 @@ func _on_body_exited(body: Node2D) -> void:
 		EchoTimeline.leave_present_room()
 
 
+# Starts the same first conversation when the current-room checkpoint is touched.
+func request_checkpoint_dialogue() -> bool:
+	if LevelModule.instance == null or LevelModule.instance.is_present_hub_unlocked():
+		return false
+	return dialogue_npc.start_dialogue()
+
+
 # Converts the room once after the first completed central NPC conversation.
 func _on_dialogue_finished() -> void:
-	if not _player_inside or LevelModule.instance == null or LevelModule.instance.is_present_hub_unlocked():
+	if LevelModule.instance == null or LevelModule.instance.is_present_hub_unlocked():
 		return
 	LevelModule.instance.unlock_present_hub()
 	if not SaveSystem.save_slot(1):
 		push_error("PresentRoom failed to save slot 1 after unlocking")
 	dialogue_npc.dialogue_title = "return"
-	_play_shockwave()
+	room_departure_vfx.play_room_departure()
 	EchoTimeline.enter_present_room()
-
-
-# Plays the authored blue conversion pulse with the accessibility variant.
-func _play_shockwave() -> void:
-	var low_flash := (
-		SettingsModule.instance != null
-		and bool(SettingsModule.instance.get_value("low_flash_mode", false))
-	)
-	shockwave_animation_player.play(&"pulse_reduced" if low_flash else &"pulse")
-	shockwave_audio.play()

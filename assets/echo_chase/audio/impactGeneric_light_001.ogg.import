@@ -13,7 +13,7 @@ dest_files=["res://.godot/imported/impactGeneric_light_001.ogg-c47b70ced67993f6f
 [params]
 
 loop=false
-loop_offset=0
-bpm=0
+loop_offset=0.0
+bpm=0.0
 beat_count=0
 bar_beats=4

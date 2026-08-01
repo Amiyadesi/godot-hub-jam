@@ -8,13 +8,14 @@ const RESET_DELAY_SECONDS := 0.4
 const ENTRY_STATE_META := &"echo_chase_entry_temporal_state"
 const ENTRY_STATE_PRESENT := &"present"
 const ENTRY_STATE_PAST := &"past"
+const CURRENT_ROOM_CHECKPOINT_ID := &"current_room"
 
 @export_file("*.tscn") var checkpoint_scene_path := ""
 @export_file("*.tscn") var menu_scene_path := ""
 @export var player: EchoPlayer
 @export var gameplay_world: Node2D
 @export var spawn_point: Marker2D
-@export var fall_reset_area: Area2D
+@export var present_room: PresentRoom
 @export var pause_screen: PauseScreen
 @export var setting_screen: SettingScreen
 @export var reset_audio: AudioStreamPlayer
@@ -99,7 +100,6 @@ func _resolve_delay_switches() -> void:
 func _connect_gameplay_signals() -> void:
 	EchoTimeline.player_caught.connect(_on_player_caught)
 	player.failure_requested.connect(_on_player_failure_requested)
-	fall_reset_area.body_entered.connect(_on_fall_reset_body_entered)
 	for checkpoint in _checkpoints:
 		checkpoint.activation_requested.connect(_on_checkpoint_activation_requested)
 
@@ -224,6 +224,8 @@ func _on_checkpoint_activation_requested(checkpoint: EchoCheckpoint) -> void:
 		String(_respawn_delay_switch_id)
 	)
 	SaveSystem.save_slot(1)
+	if checkpoint.get_checkpoint_id() == CURRENT_ROOM_CHECKPOINT_ID:
+		present_room.request_checkpoint_dialogue()
 
 
 # 过去体抓到玩家时播放失败反馈并排入复位。
@@ -236,11 +238,7 @@ func _on_player_failure_requested(animation_name: StringName) -> void:
 	_begin_failure_reset(animation_name)
 
 
-# 只有当前玩家进入 authored 出界区域时才触发跌落复位。
-func _on_fall_reset_body_entered(body: Node2D) -> void:
-	if body != player:
-		return
-	_begin_failure_reset(&"death")
+
 
 
 # 冻结玩家 0.4 秒，然后先恢复坐标、再清空时间线。
@@ -250,10 +248,11 @@ func _begin_failure_reset(animation_name: StringName) -> void:
 	_reset_in_progress = true
 	EchoTimeline.set_gameplay_active(false)
 	player.prepare_for_reset(animation_name)
+	# Clear temporal entities before the death animation so Past/VFX cannot linger behind it.
+	EchoTimeline.reset_timeline(_respawn_past_delay_seconds, _respawn_delay_switch_id)
 	reset_audio.play()
 	await get_tree().create_timer(RESET_DELAY_SECONDS).timeout
 	player.reset_player(_respawn_position)
-	EchoTimeline.reset_timeline(_respawn_past_delay_seconds, _respawn_delay_switch_id)
 	EchoTimeline.set_gameplay_active(true)
 	_reset_in_progress = false
 	reset_completed.emit(_respawn_position)

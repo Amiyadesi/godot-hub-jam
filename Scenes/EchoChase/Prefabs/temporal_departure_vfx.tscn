@@ -1,133 +1,337 @@
-[gd_scene load_steps=10 format=3]
+[gd_scene format=3 uid="uid://c228e1fi1rg1t"]
 
-[ext_resource type="Script" path="res://Scripts/EchoChase/temporal_departure_vfx.gd" id="1_script"]
-[ext_resource type="Texture2D" path="res://assets/echo_chase/vfx/temporal_particle.svg" id="2_particle"]
-[ext_resource type="AudioStream" path="res://assets/echo_chase/audio/phaserDown2.ogg" id="3_audio"]
-[ext_resource type="Texture2D" path="res://assets/echo_chase/vfx/temporal_transition_ring.svg" id="4_ring"]
+[ext_resource type="Script" uid="uid://b0egvtafwjvv2" path="res://Scripts/EchoChase/temporal_departure_vfx.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://cvfu3k8hdr2x5" path="res://assets/echo_chase/vfx/temporal_particle.svg" id="2_particle"]
+[ext_resource type="AudioStream" uid="uid://bj0g7n60xthrv" path="res://assets/echo_chase/audio/phaserDown2.ogg" id="3_audio"]
+[ext_resource type="Texture2D" uid="uid://bqyfshrwdgvmw" path="res://assets/echo_chase/vfx/temporal_transition_ring.svg" id="4_ring"]
 
 [sub_resource type="ParticleProcessMaterial" id="Particle_departure"]
 particle_flag_disable_z = true
-direction = Vector3(1, 0, 0)
+emission_shape = 1
+emission_sphere_radius = 8.0
 spread = 48.0
 initial_velocity_min = 44.0
 initial_velocity_max = 104.0
 gravity = Vector3(0, 10, 0)
 scale_min = 0.7
 scale_max = 1.55
-emission_shape = 1
-emission_sphere_radius = 8.0
 
 [sub_resource type="Animation" id="Animation_reset"]
 resource_name = "RESET"
 length = 0.05
 tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
 tracks/0/path = NodePath("CoreSnapshot:visible")
-tracks/0/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 1, "values": [false]}
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [false]
+}
 tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
 tracks/1/path = NodePath("Snapshot:visible")
-tracks/1/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 1, "values": [false]}
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [false]
+}
 tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
 tracks/2/path = NodePath("ImpactRing:visible")
-tracks/2/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 1, "values": [false]}
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [false]
+}
 
 [sub_resource type="Animation" id="Animation_depart"]
 resource_name = "depart"
 length = 0.25
 tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
 tracks/0/path = NodePath("CoreSnapshot:visible")
-tracks/0/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 1, "values": [true]}
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [true]
+}
 tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
 tracks/1/path = NodePath("CoreSnapshot:self_modulate")
 tracks/1/interp = 1
-tracks/1/keys = {"times": PackedFloat32Array(0, 0.08, 0.25), "transitions": PackedFloat32Array(1, 1, 1), "update": 0, "values": [Color(1, 1, 1, 0.92), Color(1, 1, 1, 0.72), Color(1, 1, 1, 0)]}
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.08, 0.25),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Color(1, 1, 1, 0.92), Color(1, 1, 1, 0.72), Color(1, 1, 1, 0)]
+}
 tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
 tracks/2/path = NodePath("Snapshot:visible")
-tracks/2/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 1, "values": [true]}
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [true]
+}
 tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
 tracks/3/path = NodePath("Snapshot:self_modulate")
 tracks/3/interp = 1
-tracks/3/keys = {"times": PackedFloat32Array(0, 0.08, 0.25), "transitions": PackedFloat32Array(1, 1, 1), "update": 0, "values": [Color(1, 1, 1, 1), Color(1, 1, 1, 0.9), Color(1, 1, 1, 0)]}
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(0, 0.08, 0.25),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Color(1, 1, 1, 1), Color(1, 1, 1, 0.9), Color(1, 1, 1, 0)]
+}
 tracks/4/type = "value"
+tracks/4/imported = false
+tracks/4/enabled = true
 tracks/4/path = NodePath("ImpactRing:visible")
-tracks/4/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 1, "values": [true]}
+tracks/4/interp = 1
+tracks/4/loop_wrap = true
+tracks/4/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [true]
+}
 tracks/5/type = "value"
+tracks/5/imported = false
+tracks/5/enabled = true
 tracks/5/path = NodePath("ImpactRing:scale")
 tracks/5/interp = 1
-tracks/5/keys = {"times": PackedFloat32Array(0, 0.2), "transitions": PackedFloat32Array(0.65, 1), "update": 0, "values": [Vector2(0.28, 0.28), Vector2(1.35, 1.35)]}
+tracks/5/loop_wrap = true
+tracks/5/keys = {
+"times": PackedFloat32Array(0, 0.2),
+"transitions": PackedFloat32Array(0.65, 1),
+"update": 0,
+"values": [Vector2(0.28, 0.28), Vector2(1.35, 1.35)]
+}
 tracks/6/type = "value"
+tracks/6/imported = false
+tracks/6/enabled = true
 tracks/6/path = NodePath("ImpactRing:self_modulate")
 tracks/6/interp = 1
-tracks/6/keys = {"times": PackedFloat32Array(0, 0.2), "transitions": PackedFloat32Array(1, 1), "update": 0, "values": [Color(1, 1, 1, 0.8), Color(1, 1, 1, 0)]}
+tracks/6/loop_wrap = true
+tracks/6/keys = {
+"times": PackedFloat32Array(0, 0.2),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Color(1, 1, 1, 0.8), Color(1, 1, 1, 0)]
+}
 
 [sub_resource type="Animation" id="Animation_depart_reduced"]
 resource_name = "depart_reduced"
 length = 0.25
 tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
 tracks/0/path = NodePath("CoreSnapshot:visible")
-tracks/0/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 1, "values": [true]}
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [true]
+}
 tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
 tracks/1/path = NodePath("CoreSnapshot:self_modulate")
 tracks/1/interp = 1
-tracks/1/keys = {"times": PackedFloat32Array(0, 0.25), "transitions": PackedFloat32Array(1, 1), "update": 0, "values": [Color(1, 1, 1, 0.72), Color(1, 1, 1, 0)]}
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.25),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Color(1, 1, 1, 0.72), Color(1, 1, 1, 0)]
+}
 tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
 tracks/2/path = NodePath("Snapshot:visible")
-tracks/2/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 1, "values": [true]}
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [true]
+}
 tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
 tracks/3/path = NodePath("Snapshot:self_modulate")
 tracks/3/interp = 1
-tracks/3/keys = {"times": PackedFloat32Array(0, 0.25), "transitions": PackedFloat32Array(1, 1), "update": 0, "values": [Color(1, 1, 1, 0.72), Color(1, 1, 1, 0)]}
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(0, 0.25),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Color(1, 1, 1, 0.72), Color(1, 1, 1, 0)]
+}
 tracks/4/type = "value"
+tracks/4/imported = false
+tracks/4/enabled = true
 tracks/4/path = NodePath("ImpactRing:visible")
-tracks/4/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 1, "values": [true]}
+tracks/4/interp = 1
+tracks/4/loop_wrap = true
+tracks/4/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [true]
+}
 tracks/5/type = "value"
+tracks/5/imported = false
+tracks/5/enabled = true
 tracks/5/path = NodePath("ImpactRing:scale")
 tracks/5/interp = 1
-tracks/5/keys = {"times": PackedFloat32Array(0, 0.25), "transitions": PackedFloat32Array(1, 1), "update": 0, "values": [Vector2(0.55, 0.55), Vector2(1.05, 1.05)]}
+tracks/5/loop_wrap = true
+tracks/5/keys = {
+"times": PackedFloat32Array(0, 0.25),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector2(0.55, 0.55), Vector2(1.05, 1.05)]
+}
 tracks/6/type = "value"
+tracks/6/imported = false
+tracks/6/enabled = true
 tracks/6/path = NodePath("ImpactRing:self_modulate")
 tracks/6/interp = 1
-tracks/6/keys = {"times": PackedFloat32Array(0, 0.25), "transitions": PackedFloat32Array(1, 1), "update": 0, "values": [Color(1, 1, 1, 0.28), Color(1, 1, 1, 0)]}
+tracks/6/loop_wrap = true
+tracks/6/keys = {
+"times": PackedFloat32Array(0, 0.25),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Color(1, 1, 1, 0.28), Color(1, 1, 1, 0)]
+}
+
+[sub_resource type="Animation" id="Animation_room_depart"]
+resource_name = "room_depart"
+length = 0.65
+tracks/0/type = "value"
+tracks/0/path = NodePath("RoomOverlay:visible")
+tracks/0/keys = {"times": PackedFloat32Array(0, 0.65), "transitions": PackedFloat32Array(1, 1), "update": 1, "values": [true, false]}
+tracks/1/type = "value"
+tracks/1/path = NodePath("RoomOverlay:self_modulate")
+tracks/1/interp = 1
+tracks/1/keys = {"times": PackedFloat32Array(0, 0.08, 0.65), "transitions": PackedFloat32Array(1, 1, 1), "update": 0, "values": [Color(1, 1, 1, 0), Color(1, 1, 1, 0.28), Color(1, 1, 1, 0)]}
+tracks/2/type = "value"
+tracks/2/path = NodePath("ImpactRing:visible")
+tracks/2/keys = {"times": PackedFloat32Array(0, 0.65), "transitions": PackedFloat32Array(1, 1), "update": 1, "values": [true, false]}
+tracks/3/type = "value"
+tracks/3/path = NodePath("ImpactRing:scale")
+tracks/3/interp = 1
+tracks/3/keys = {"times": PackedFloat32Array(0, 0.65), "transitions": PackedFloat32Array(0.35, 1), "update": 0, "values": [Vector2(0.2, 0.2), Vector2(10, 10)]}
+tracks/4/type = "value"
+tracks/4/path = NodePath("ImpactRing:self_modulate")
+tracks/4/interp = 1
+tracks/4/keys = {"times": PackedFloat32Array(0, 0.65), "transitions": PackedFloat32Array(1, 1), "update": 0, "values": [Color(1, 1, 1, 0.9), Color(1, 1, 1, 0)]}
+
+[sub_resource type="Animation" id="Animation_room_depart_reduced"]
+resource_name = "room_depart_reduced"
+length = 0.65
+tracks/0/type = "value"
+tracks/0/path = NodePath("RoomOverlay:visible")
+tracks/0/keys = {"times": PackedFloat32Array(0, 0.65), "transitions": PackedFloat32Array(1, 1), "update": 1, "values": [true, false]}
+tracks/1/type = "value"
+tracks/1/path = NodePath("RoomOverlay:self_modulate")
+tracks/1/interp = 1
+tracks/1/keys = {"times": PackedFloat32Array(0, 0.65), "transitions": PackedFloat32Array(1, 1), "update": 0, "values": [Color(1, 1, 1, 0.1), Color(1, 1, 1, 0)]}
+tracks/2/type = "value"
+tracks/2/path = NodePath("ImpactRing:visible")
+tracks/2/keys = {"times": PackedFloat32Array(0, 0.65), "transitions": PackedFloat32Array(1, 1), "update": 1, "values": [true, false]}
+tracks/3/type = "value"
+tracks/3/path = NodePath("ImpactRing:scale")
+tracks/3/interp = 1
+tracks/3/keys = {"times": PackedFloat32Array(0, 0.65), "transitions": PackedFloat32Array(1, 1), "update": 0, "values": [Vector2(0.2, 0.2), Vector2(10, 10)]}
+tracks/4/type = "value"
+tracks/4/path = NodePath("ImpactRing:self_modulate")
+tracks/4/interp = 1
+tracks/4/keys = {"times": PackedFloat32Array(0, 0.65), "transitions": PackedFloat32Array(1, 1), "update": 0, "values": [Color(1, 1, 1, 0.4), Color(1, 1, 1, 0)]}
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_departure"]
-_data = {&"RESET": SubResource("Animation_reset"), &"depart": SubResource("Animation_depart"), &"depart_reduced": SubResource("Animation_depart_reduced")}
+_data = {
+&"RESET": SubResource("Animation_reset"),
+&"depart": SubResource("Animation_depart"),
+&"depart_reduced": SubResource("Animation_depart_reduced"),
+&"room_depart": SubResource("Animation_room_depart"),
+&"room_depart_reduced": SubResource("Animation_room_depart_reduced")
+}
 
-[node name="TemporalDepartureVfx" type="Node2D"]
+[node name="TemporalDepartureVfx" type="Node2D" unique_id=1091663762]
 top_level = true
 z_index = 12
-visible = false
 script = ExtResource("1_script")
 
-[node name="CoreSnapshot" type="Sprite2D" parent="."]
+[node name="CoreSnapshot" type="Sprite2D" parent="." unique_id=344164492]
 unique_name_in_owner = true
+visible = false
+self_modulate = Color(1, 1, 1, 0.92)
 texture_filter = 1
 
-[node name="Snapshot" type="Sprite2D" parent="."]
-unique_name_in_owner = true
-texture_filter = 1
-
-[node name="ImpactRing" type="Sprite2D" parent="."]
+[node name="Snapshot" type="Sprite2D" parent="." unique_id=575312072]
 unique_name_in_owner = true
 visible = false
 texture_filter = 1
+
+[node name="RoomOverlay" type="Polygon2D" parent="."]
+unique_name_in_owner = true
+visible = false
+self_modulate = Color(1, 1, 1, 0)
+color = Color(0.18, 0.82, 1, 1)
+polygon = PackedVector2Array(-240, -135, 240, -135, 240, 135, -240, 135)
+
+[node name="ImpactRing" type="Sprite2D" parent="." unique_id=1500319185]
+unique_name_in_owner = true
+visible = false
+self_modulate = Color(1, 1, 1, 0.8)
+texture_filter = 1
+scale = Vector2(0.28, 0.28)
 texture = ExtResource("4_ring")
 
-[node name="Particles" type="GPUParticles2D" parent="."]
+[node name="Particles" type="GPUParticles2D" parent="." unique_id=2025162127]
 unique_name_in_owner = true
 emitting = false
 amount = 30
-process_material = SubResource("Particle_departure")
 texture = ExtResource("2_particle")
 lifetime = 0.3
 one_shot = true
 explosiveness = 1.0
-local_coords = false
 visibility_rect = Rect2(-80, -80, 160, 160)
+process_material = SubResource("Particle_departure")
 
-[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+[node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=986960419]
 unique_name_in_owner = true
-libraries = {&"": SubResource("AnimationLibrary_departure")}
+libraries/ = SubResource("AnimationLibrary_departure")
 
-[node name="DepartureAudio" type="AudioStreamPlayer2D" parent="."]
+[node name="DepartureAudio" type="AudioStreamPlayer2D" parent="." unique_id=1349838689]
 unique_name_in_owner = true
 stream = ExtResource("3_audio")
 volume_db = -7.0

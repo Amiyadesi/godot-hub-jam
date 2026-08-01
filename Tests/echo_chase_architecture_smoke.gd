@@ -8,8 +8,11 @@ var _failures: Array[String] = []
 func _ready() -> void:
 	var original_level_module := LevelModule.instance
 	_test_dash_afterimages_restart_cleanly()
+	_test_temporal_reset_clears_past_vfx()
+	_test_start_scene_camera_layout()
 	_test_present_room_delay_switch_is_immediate()
 	_test_progression_device_ids_are_unique()
+	_test_collectible_ids_are_unique()
 	_test_progress_round_trip()
 	_test_legacy_checkpoint_defaults_progress()
 	LevelModule.instance = original_level_module
@@ -20,6 +23,35 @@ func _ready() -> void:
 	for failure in _failures:
 		push_error(failure)
 	get_tree().quit(1)
+
+
+# Authored camera centers and trigger rectangles stay aligned to the four 480x270 rooms.
+func _test_start_scene_camera_layout() -> void:
+	var scene := load("res://Scenes/EchoChase/echo_chase_start.tscn") as PackedScene
+	var root := scene.instantiate()
+	var default_camera := root.get_node("World/RoomCamera/Camera2D") as Camera2D
+	_expect(default_camera.position.is_equal_approx(Vector2(240.0, 808.0)), "default camera should center on room A")
+	for index in range(4):
+		var suffix := char(65 + index)
+		var area := root.get_node("World/RoomCameraTriggers/RoomArea%s" % suffix) as Area2D
+		var shape := area.get_node("CollisionShape2D") as CollisionShape2D
+		var rectangle := shape.shape as RectangleShape2D
+		var expected_x := 240.0 + index * 480.0
+		_expect(area.position.is_equal_approx(Vector2(expected_x, 775.0)), "room trigger %s should use the authored room center" % suffix)
+		_expect(rectangle.size.is_equal_approx(Vector2(480.0, 270.0)), "room trigger %s should cover one room" % suffix)
+		var camera := root.get_node("World/RoomCameras/RoomPcam%s" % suffix) as Node2D
+		_expect(camera.position.is_equal_approx(Vector2(expected_x, 773.0)), "room camera %s should align with its trigger" % suffix)
+	root.free()
+
+
+# A failure reset must remove both the Past body and any departure snapshot.
+func _test_temporal_reset_clears_past_vfx() -> void:
+	var past_echo := EchoTimeline.past_echo
+	past_echo.show()
+	past_echo.departure_vfx.show()
+	EchoTimeline.reset_timeline()
+	_expect(not past_echo.visible, "timeline reset should hide the Past echo")
+	_expect(not past_echo.departure_vfx.is_playing(), "timeline reset should stop Past departure VFX")
 
 # A second dash must not inherit image slots from the first dash's world position.
 func _test_dash_afterimages_restart_cleanly() -> void:
@@ -61,6 +93,27 @@ func _test_progression_device_ids_are_unique() -> void:
 	_expect(emitted_ids == ["short_route"], "device activation signal should emit once")
 
 
+# One collectible ID is stored once and emits once.
+func _test_collectible_ids_are_unique() -> void:
+	var module := LevelModule.new()
+	var api_available := (
+		module.has_signal("collectible_collected")
+		and module.has_method("collect_item")
+		and module.has_method("is_item_collected")
+	)
+	_expect(api_available, "LevelModule collectible API should exist")
+	if not api_available:
+		return
+	var emitted_ids: Array[String] = []
+	module.collectible_collected.connect(func(item_id: String) -> void:
+		emitted_ids.append(item_id)
+	)
+	_expect(module.collect_item("memory_shard_a"), "first collectible should be stored")
+	_expect(not module.collect_item("memory_shard_a"), "duplicate collectible should be ignored")
+	_expect(module.is_item_collected("memory_shard_a"), "collected item should be queryable")
+	_expect(emitted_ids == ["memory_shard_a"], "collectible signal should emit once")
+
+
 # Collected slot data restores checkpoint and permanent world progress together.
 func _test_progress_round_trip() -> void:
 	var source := LevelModule.new()
@@ -68,12 +121,14 @@ func _test_progress_round_trip() -> void:
 		return
 	source.set_checkpoint("res://map.tscn", "hub", Vector2(24.0, 48.0), 5.0, "delay_5s")
 	source.activate_progression_device("long_route")
+	source.collect_item("memory_shard_a")
 	_expect(source.unlock_present_hub(), "first present hub unlock should succeed")
 	_expect(not source.unlock_present_hub(), "present hub unlock should be idempotent")
 	var restored := LevelModule.new()
 	restored.apply_data(source.collect_data())
 	_expect(restored.get_checkpoint().get("checkpoint_id", "") == "hub", "checkpoint should survive round-trip")
 	_expect(restored.is_progression_device_active("long_route"), "device state should survive round-trip")
+	_expect(restored.is_item_collected("memory_shard_a"), "collectible state should survive round-trip")
 	_expect(restored.is_present_hub_unlocked(), "present hub state should survive round-trip")
 
 
@@ -91,6 +146,7 @@ func _test_legacy_checkpoint_defaults_progress() -> void:
 	})
 	_expect(module.has_continue_point(), "legacy checkpoint should remain valid")
 	_expect(not module.is_progression_device_active("missing"), "legacy progress should default empty")
+	_expect(not module.is_item_collected("missing"), "legacy collectibles should default empty")
 	_expect(not module.is_present_hub_unlocked(), "legacy present hub state should default locked")
 
 

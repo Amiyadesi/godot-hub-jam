@@ -108,6 +108,7 @@ func refresh_progress_controls() -> void:
 	continue_button.disabled = (
 		not entry_ready
 		or LevelModule.instance == null
+		or not SaveSystem.slot_exists(1)
 		or not LevelModule.instance.has_continue_point()
 		or not ResourceLoader.exists(LevelModule.instance.get_continue_scene_path())
 	)
@@ -120,7 +121,12 @@ func _on_start_pressed() -> void:
 	if _transition_active or not _has_authored_entry_scene():
 		refresh_progress_controls()
 		return
-	if LevelModule.instance != null and LevelModule.instance.has_continue_point():
+	var has_saved_run := (
+		SaveSystem.slot_exists(1)
+		and LevelModule.instance != null
+		and LevelModule.instance.has_continue_point()
+	)
+	if has_saved_run:
 		var restart_confirmed := await FeedbackOverlay.ask(
 			tr("MENU_RESTART_TITLE"),
 			tr("MENU_RESTART_BODY"),
@@ -322,6 +328,8 @@ func _set_main_menu_input_enabled(enabled: bool) -> void:
 func _load_slot_progress() -> void:
 	if SaveSystem.slot_exists(1):
 		SaveSystem.load_slot(1)
+	else:
+		SaveSystem.new_game(1)
 
 
 # 只接受真实存在的 authored 灰盒入口。

@@ -1,83 +1,103 @@
-[gd_scene load_steps=9 format=3]
+[gd_scene format=3 uid="uid://c04c1tep0dsdd"]
 
-[ext_resource type="Script" path="res://Scripts/EchoChase/dialogue_npc.gd" id="1_script"]
-[ext_resource type="Texture2D" path="res://assets/phase_lag/characters/lu_heng/walk.png" id="2_npc"]
+[ext_resource type="Script" uid="uid://b41jaiy0sqh1n" path="res://Scripts/EchoChase/dialogue_npc.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://cgpaprm3svfcg" path="res://assets/echo_chase/character/present_keeper_idle.png" id="2_npc"]
 [ext_resource type="PackedScene" path="res://Dialogue/EchoChase/echo_dialogue_balloon.tscn" id="3_balloon"]
 
 [sub_resource type="RectangleShape2D" id="Shape_interaction"]
-size = Vector2(64, 72)
-
-[sub_resource type="StyleBoxFlat" id="Style_prompt"]
-bg_color = Color(0.02, 0.08, 0.1, 0.92)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(0.25, 0.9, 1, 0.9)
-corner_radius_top_left = 3
-corner_radius_top_right = 3
-corner_radius_bottom_right = 3
-corner_radius_bottom_left = 3
-
-[sub_resource type="Theme" id="Theme_prompt"]
-Label/colors/font_color = Color(0.86, 0.98, 1, 1)
-Label/colors/font_outline_color = Color(0, 0.06, 0.08, 1)
-Label/constants/outline_size = 2
-Label/font_sizes/font_size = 16
-Label/styles/normal = SubResource("Style_prompt")
+size = Vector2(22, 34)
 
 [sub_resource type="Animation" id="Animation_idle"]
 resource_name = "idle"
 length = 2.0
 loop_mode = 1
 tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
 tracks/0/path = NodePath("Visual:position")
 tracks/0/interp = 1
-tracks/0/keys = {"times": PackedFloat32Array(0, 1, 2), "transitions": PackedFloat32Array(1, 1, 1), "update": 0, "values": [Vector2(0, -16), Vector2(0, -18), Vector2(0, -16)]}
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 1, 2),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Vector2(0, -16), Vector2(0, -18), Vector2(0, -16)]
+}
 tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
 tracks/1/path = NodePath("Visual:self_modulate")
 tracks/1/interp = 1
-tracks/1/keys = {"times": PackedFloat32Array(0, 1, 2), "transitions": PackedFloat32Array(1, 1, 1), "update": 0, "values": [Color(0.78, 0.96, 1, 0.88), Color(1, 1, 1, 1), Color(0.78, 0.96, 1, 0.88)]}
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 1, 2),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Color(0.78, 0.96, 1, 0.88), Color(1, 1, 1, 1), Color(0.78, 0.96, 1, 0.88)]
+}
 tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
 tracks/2/path = NodePath("InteractPrompt:self_modulate")
 tracks/2/interp = 1
-tracks/2/keys = {"times": PackedFloat32Array(0, 1, 2), "transitions": PackedFloat32Array(1, 1, 1), "update": 0, "values": [Color(1, 1, 1, 0.62), Color(1, 1, 1, 1), Color(1, 1, 1, 0.62)]}
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0, 1, 2),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Color(1, 1, 1, 0.62), Color(1, 1, 1, 1), Color(1, 1, 1, 0.62)]
+}
+tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("Visual:frame")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(0, 0.5, 1, 1.5, 2),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1),
+"update": 1,
+"values": [0, 1, 2, 3, 0]
+}
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_npc"]
-_data = {&"idle": SubResource("Animation_idle")}
+_data = {
+&"idle": SubResource("Animation_idle")
+}
 
-[node name="DialogueNpc" type="Area2D"]
+[node name="DialogueNpc" type="Area2D" unique_id=1871193411]
 process_mode = 3
 collision_layer = 0
 collision_mask = 2
 monitorable = false
 script = ExtResource("1_script")
 
-[node name="InteractionShape" type="CollisionShape2D" parent="."]
-position = Vector2(0, -16)
+[node name="InteractionShape" type="CollisionShape2D" parent="." unique_id=326762757]
+position = Vector2(0, -17)
 shape = SubResource("Shape_interaction")
 
-[node name="Visual" type="Sprite2D" parent="."]
+[node name="Visual" type="Sprite2D" parent="." unique_id=1916729915]
+self_modulate = Color(0.9504708, 0.9909947, 1, 0.9729841)
 texture_filter = 1
-position = Vector2(0, -16)
+position = Vector2(0, -17.549734)
 texture = ExtResource("2_npc")
-hframes = 6
-frame = 1
+hframes = 4
+frame = 2
 
-[node name="InteractPrompt" type="Label" parent="."]
+[node name="InteractPrompt" type="Label" parent="." unique_id=104259768]
 unique_name_in_owner = true
+self_modulate = Color(1, 1, 1, 0.9144496)
 offset_left = -18.0
-offset_top = -72.0
+offset_top = -54.0
 offset_right = 18.0
-offset_bottom = -42.0
-theme = SubResource("Theme_prompt")
+offset_bottom = -24.0
 text = "E"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
-libraries = {&"": SubResource("AnimationLibrary_npc")}
-autoplay = "idle"
+[node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=1861125609]
+libraries/ = SubResource("AnimationLibrary_npc")
+autoplay = &"idle"
 
-[node name="DialogueBalloon" parent="." instance=ExtResource("3_balloon")]
+[node name="DialogueBalloon" parent="." unique_id=1382245253 instance=ExtResource("3_balloon")]
 unique_name_in_owner = true
