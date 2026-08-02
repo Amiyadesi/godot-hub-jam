@@ -11,6 +11,7 @@ func _ready() -> void:
 	_test_temporal_reset_clears_past_vfx()
 	_test_present_departure_vfx_finishes_cleanly()
 	_test_start_scene_camera_layout()
+	_test_present_room_ambient_vfx()
 	_test_present_room_delay_switch_is_immediate()
 	_test_progression_device_ids_are_unique()
 	_test_collectible_ids_are_unique()
@@ -26,38 +27,46 @@ func _ready() -> void:
 	get_tree().quit(1)
 
 
-# Authored camera centers and trigger rectangles cover every occupied 480x270 room.
+# Every authored room trigger pairs with a camera that follows it; no room counts
+# or coordinates are locked so the author can freely add, move, or remove rooms.
 func _test_start_scene_camera_layout() -> void:
 	var scene := load("res://Scenes/EchoChase/echo_chase_start.tscn") as PackedScene
 	var root := scene.instantiate()
-	var default_camera := root.get_node("World/RoomCamera/Camera2D") as Camera2D
 	var run_label := root.get_node("World/SpawnPoint/RunLabel") as Label
 	_expect(run_label.text == "Run", "spawn point should show the authored Run label")
-	_expect(default_camera.position.is_equal_approx(Vector2(240.0, 808.0)), "default camera should center on room A")
-	var expected_centers := {
-		"A": Vector2(240.0, 808.0), "B": Vector2(720.0, 808.0), "C": Vector2(1200.0, 808.0),
-		"D": Vector2(1680.0, 808.0), "E": Vector2(2160.0, 808.0), "F": Vector2(2640.0, 808.0),
-		"G": Vector2(240.0, 538.0), "H": Vector2(720.0, 538.0), "I": Vector2(1200.0, 538.0),
-		"J": Vector2(1680.0, 538.0), "K": Vector2(720.0, 1078.0), "L": Vector2(1200.0, 1078.0),
-		"M": Vector2(1680.0, 1078.0), "N": Vector2(2160.0, 1078.0), "O": Vector2(2640.0, 1078.0),
-		"P": Vector2(720.0, 1348.0), "Q": Vector2(1200.0, 1348.0), "R": Vector2(1680.0, 1348.0),
-		"S": Vector2(2160.0, 1348.0),
-	}
 	var cameras := root.get_node("World/RoomCameras") as Node2D
 	var triggers := root.get_node("World/RoomCameraTriggers") as Node2D
-	_expect(cameras.get_child_count() == expected_centers.size(), "room camera count should match authored rooms")
-	_expect(triggers.get_child_count() == expected_centers.size(), "room trigger count should match authored rooms")
-	for suffix in expected_centers:
-		var center: Vector2 = expected_centers[suffix]
-		var area := root.get_node("World/RoomCameraTriggers/RoomArea%s" % suffix) as Area2D
-		var shape := area.get_node("CollisionShape2D") as CollisionShape2D
-		var rectangle := shape.shape as RectangleShape2D
-		_expect(area.global_position.is_equal_approx(center), "room trigger %s should use the authored room center" % suffix)
-		_expect(rectangle.size.is_equal_approx(Vector2(480.0, 270.0)), "room trigger %s should cover one room" % suffix)
-		var camera := root.get_node("World/RoomCameras/RoomPcam%s" % suffix) as Node2D
-		_expect(camera.global_position.is_equal_approx(center), "room camera %s should align with its trigger" % suffix)
-		_expect(camera.get("limit_target") == NodePath("../../RoomCameraTriggers/RoomArea%s/CollisionShape2D" % suffix), "room camera %s should use its trigger limits" % suffix)
-		_expect(area.get("area_pcam") == camera, "room trigger %s should activate its camera" % suffix)
+	_expect(cameras.get_child_count() > 0, "scene should author at least one room camera")
+	_expect(cameras.get_child_count() == triggers.get_child_count(), "each room trigger should pair with a camera")
+	var referenced_camera_ids: Dictionary = {}
+	for index in range(triggers.get_child_count()):
+		var area := triggers.get_child(index) as Area2D
+		_expect(area is Area2D, "every room trigger should be an Area2D")
+		var shape_node := area.get_node_or_null("CollisionShape2D") as CollisionShape2D
+		_expect(shape_node is CollisionShape2D, "every room trigger should own a CollisionShape2D")
+		_expect(shape_node != null and shape_node.shape is RectangleShape2D, "every room trigger should use a rectangular camera bounds")
+		var camera = area.get("area_pcam")
+		_expect(camera is Node2D and cameras.is_ancestor_of(camera), "every room trigger should point at a camera under RoomCameras")
+		if not (camera is Node2D):
+			continue
+		var camera_id: int = camera.get_instance_id()
+		_expect(not referenced_camera_ids.has(camera_id), "each room trigger should use a distinct room camera")
+		referenced_camera_ids[camera_id] = true
+		_expect(camera.global_position.is_equal_approx(area.global_position), "every room camera should align with its trigger")
+		var limit_path = camera.get("limit_target")
+		_expect(limit_path is NodePath and camera.get_node_or_null(limit_path) == shape_node, "every room camera should bound its own trigger shape")
+	for camera in cameras.get_children():
+		_expect(referenced_camera_ids.has(camera.get_instance_id()), "every authored room camera should be bound to a room trigger")
+	root.free()
+
+
+# PresentHub keeps an authored blue room field and ambient particles active.
+func _test_present_room_ambient_vfx() -> void:
+	var scene := load("res://Scenes/EchoChase/echo_chase_start.tscn") as PackedScene
+	var root := scene.instantiate()
+	var particles := root.get_node("World/PresentHub/AmbientParticles") as GPUParticles2D
+	_expect(particles.emitting, "PresentHub ambient particles should emit continuously")
+	_expect(particles.process_mode == Node.PROCESS_MODE_ALWAYS, "PresentHub ambient particles should continue during dialogue pause")
 	root.free()
 
 

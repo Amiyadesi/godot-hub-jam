@@ -26,6 +26,7 @@
 [ext_resource type="Resource" uid="uid://cd1itjr3hd7h8" path="res://Dialogue/EchoChase/present_hub.dialogue" id="31_present_dialogue"]
 [ext_resource type="PackedScene" uid="uid://c228e1fi1rg1t" path="res://Scenes/EchoChase/Prefabs/temporal_departure_vfx.tscn" id="33_room_departure"]
 [ext_resource type="PackedScene" path="res://Scenes/EchoChase/Prefabs/temporal_collectible.tscn" id="34_collectible"]
+[ext_resource type="Texture2D" path="res://assets/echo_chase/vfx/temporal_particle.svg" id="35_hub_particle"]
 
 [sub_resource type="Resource" id="PhantomCameraTween_room"]
 script = ExtResource("25_pcam_tween")
@@ -48,7 +49,20 @@ size = Vector2(480, 270)
 size = Vector2(480, 270)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_present_room"]
-size = Vector2(480, 270)
+size = Vector2(473, 251)
+
+[sub_resource type="ParticleProcessMaterial" id="Particle_present_room_ambient"]
+particle_flag_disable_z = true
+direction = Vector3(0, -1, 0)
+spread = 28.0
+initial_velocity_min = 4.0
+initial_velocity_max = 14.0
+gravity = Vector3(0, -4, 0)
+scale_min = 0.55
+scale_max = 1.4
+color = Color(0.27, 0.82, 1, 0.34)
+emission_shape = 3
+emission_box_extents = Vector3(234, 126, 0)
 
 [node name="EchoChaseStart" type="Node2D" unique_id=1352532759]
 
@@ -76,13 +90,12 @@ use_kinematic_bodies = true
 [node name="SpawnPoint" type="Marker2D" parent="World" unique_id=2132630730]
 position = Vector2(43, 840)
 
-[node name="RunLabel" type="Label" parent="World/SpawnPoint"]
+[node name="RunLabel" type="Label" parent="World/SpawnPoint" unique_id=626622607]
 z_index = 20
 offset_left = -24.0
 offset_top = -34.0
 offset_right = 24.0
 offset_bottom = -10.0
-mouse_filter = 2
 theme_override_colors/font_color = Color(0.78, 0.96, 1, 0.92)
 theme_override_colors/font_outline_color = Color(0.02, 0.03, 0.04, 0.9)
 theme_override_constants/outline_size = 3
@@ -509,6 +522,7 @@ monitorable = false
 script = ExtResource("27_present_room_script")
 
 [node name="RoomShape" type="CollisionShape2D" parent="World/PresentHub" unique_id=336322153]
+position = Vector2(-0.5, 6.5)
 shape = SubResource("RectangleShape2D_present_room")
 
 [node name="CurrentRoomCheckpoint" parent="World/PresentHub" unique_id=352653243 instance=ExtResource("6_smevq")]
@@ -528,17 +542,38 @@ process_mode = 3
 top_level = false
 temporal_color = Color(0.2, 0.82, 1, 1)
 
+[node name="AmbientGlow" type="Polygon2D" parent="World/PresentHub" unique_id=2065150301]
+position = Vector2(0, 6.5)
+z_index = -1
+show_behind_parent = true
+color = Color(0.09, 0.56, 0.92, 0.08)
+polygon = PackedVector2Array(-240, -135, 240, -135, 240, 135, -240, 135)
+
+[node name="AmbientParticles" type="GPUParticles2D" parent="World/PresentHub" unique_id=2065150302]
+position = Vector2(0, 6.5)
+z_index = 2
+process_mode = 3
+emitting = true
+amount = 96
+lifetime = 2.6
+preprocess = 1.8
+randomness = 0.75
+visibility_rect = Rect2(-248, -143, 496, 286)
+local_coords = true
+texture = ExtResource("35_hub_particle")
+process_material = SubResource("Particle_present_room_ambient")
+
 [node name="DelayPickup1s" parent="World" unique_id=197557776 instance=ExtResource("15_delay")]
 position = Vector2(1348, 856)
 delay_seconds = 1
 delay_switch_id = &"delay_1s"
 
 [node name="DelayPickup3s" parent="World" unique_id=627379123 instance=ExtResource("15_delay")]
-position = Vector2(1066, 712)
+position = Vector2(1308, 715)
 default_active = true
 
 [node name="DelayPickup5s" parent="World" unique_id=532268979 instance=ExtResource("15_delay")]
-position = Vector2(1323, 718)
+position = Vector2(1069, 715)
 delay_seconds = 5
 delay_switch_id = &"delay_5s"
 

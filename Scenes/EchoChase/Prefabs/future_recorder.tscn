@@ -226,21 +226,21 @@ script = ExtResource("1_script")
 shape = SubResource("Shape_recorder")
 
 [node name="StateRing" type="Sprite2D" parent="." unique_id=139436704]
-modulate = Color(1, 0.72, 0.2, 0.52)
+modulate = Color(1, 0.76, 0.28, 0.07999998)
 show_behind_parent = true
 texture_filter = 1
-scale = Vector2(2.55, 2.55)
+scale = Vector2(2.7, 2.7)
 texture = SubResource("Atlas_recorder")
 
 [node name="Visual" type="Sprite2D" parent="." unique_id=1511217999]
 unique_name_in_owner = true
-modulate = Color(1, 0.72, 0.22, 1)
+modulate = Color(1, 0.78, 0.24, 1)
 texture_filter = 1
 scale = Vector2(2, 2)
 texture = SubResource("Atlas_recorder")
 
 [node name="Core" type="Sprite2D" parent="." unique_id=38205937]
-modulate = Color(1, 0.9, 0.5, 0.62)
+modulate = Color(1, 0.94, 0.58, 0.82)
 texture_filter = 1
 scale = Vector2(1.25, 1.25)
 texture = SubResource("Atlas_recorder")

@@ -23,9 +23,9 @@ EchoChaseStart
 │   │   └── Camera2D
 │   │       └── PhantomCameraHost
 │   ├── RoomCameras
-│   │   └── RoomPcamA / B / C / D
+│   │   └── RoomPcamA / B / … / S
 │   ├── RoomCameraTriggers
-│   │   └── RoomAreaA / B / C / D
+│   │   └── RoomAreaA / B / … / S
 │   ├── EchoCheckpoint
 │   ├── PresentHub [主场景内联；内含 CurrentRoomCheckpoint / DialogueNpc / RoomDepartureVfx]
 │   ├── DelayPickup1s / 3s / 5s
@@ -41,7 +41,7 @@ EchoChaseStart
 	└── ResetAudio
 ```
 
-场景已按用户要求接入四个横向 `480×270` Phantom Camera 测试房和完整机制展台。TileMap、机关顺序与房间参数只用于逐项测试，不代表作者的正式灰盒或路线；用户可以直接在 Editor 中移动、替换或删除。
+场景已按用户要求接入一组 `480×270` Phantom Camera 测试房（当前 19 房 A–S）和完整机制展台。TileMap、机关顺序与房间参数只用于逐项测试，不代表作者的正式灰盒或路线；用户可以直接在 Editor 中移动、替换或删除。
 
 ## 可替换素材
 
@@ -90,9 +90,9 @@ present_hub_unlocked
 
 ## Phantom Camera
 
-插件固定为官方 `v0.11.0.3`。起始场景的四台 PCam 保留用户当前 Inspector 调整，均为固定位置、`zoom=4`、pixel snap，使用 `0.35s QUAD/EASE_IN_OUT` tween；不要用文档坐标覆盖场景值。
+插件固定为官方 `v0.11.0.3`。起始场景的每房一台 PCam 保留用户当前 Inspector 调整，均为固定位置、`zoom=4`、pixel snap，使用 `0.35s QUAD/EASE_IN_OUT` tween；不要用文档坐标覆盖场景值。
 
-四个 authored `Area2D` 直接使用 Phantom Camera 官方 `2d_trigger_area.gd` 示例脚本调整 PCam priority；真实 Camera2D 变换、转场中断和补间完全由 `PhantomCameraHost` 处理。不要增加 `PhantomRoomSwitch`、`RoomCameraController`、网格扫描、手写 camera tween 或备用相机逻辑。
+每个 authored `Area2D` 房间触发器直接使用 Phantom Camera 官方 `2d_trigger_area.gd` 示例脚本调整 PCam priority；真实 Camera2D 变换、转场中断和补间完全由 `PhantomCameraHost` 处理。不要增加 `PhantomRoomSwitch`、`RoomCameraController`、网格扫描、手写 camera tween 或备用相机逻辑。
 
 ## 验证命令
 

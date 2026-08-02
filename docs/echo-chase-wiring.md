@@ -127,10 +127,10 @@ EchoTimeline.reset_timeline(saved_past_delay_seconds, saved_delay_switch_id)
 
 - 一个 `EchoPlayer`；`EchoTimeline` 与 `PastEcho` 由全局 Autoload 提供。
 - 一台 `FutureRecorder`，内部自带一个隐藏 `FutureEcho`。
-- 用户 authored 的 16px TileMap 基线；当前镜头测试区仍按四个 `480×270` 触发范围组织，但不锁定正式路线。
+- 用户 authored 的 16px TileMap 基线；当前镜头测试区按 19 个 `480×270` 触发范围组织（房 A–S），但不锁定正式路线。
 - `start_checkpoint` 与 `current_room` 两个 authored `EchoCheckpoint`，以及一个 `SpawnPoint`。
-- 一个 `Camera2D + PhantomCameraHost`，四台固定 `PhantomCamera2D`，`zoom=4`，共用 `0.35s QUAD/EASE_IN_OUT` tween。
-- 四个 authored `Area2D` 房间触发器，直接使用 Phantom Camera 官方 `2d_trigger_area.gd` 示例脚本；镜头选择、中断和补间全部由 Phantom Camera 插件负责。
+- 一个 `Camera2D + PhantomCameraHost`，每房一台固定 `PhantomCamera2D`（当前 19 台），`zoom=4`，共用 `0.35s QUAD/EASE_IN_OUT` tween。
+- 每房一个 authored `Area2D` 房间触发器（当前 19 个），直接使用 Phantom Camera 官方 `2d_trigger_area.gd` 示例脚本；镜头选择、中断和补间全部由 Phantom Camera 插件负责。
 - `1s/3s/5s` 三个可重复 `DelayPickup` 延迟台、一个 `FutureRecorder`。
 - 一个显式连接 `TemporalDoor` 的 `TemporalPressurePlate`。
 - 主场景内联 `PresentHub`，内含按 `E` 交互的 NPC、`current_room` 自动对话、首次/回访剧情、全房环状冲击波、三座延迟台和 `RoomDepartureVfx`。

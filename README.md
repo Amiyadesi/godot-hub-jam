@@ -43,7 +43,7 @@
 - `temporal_door.tscn`
 - `echo_checkpoint.tscn`
 
-施工入口是 [echo_chase_start.tscn](Scenes/EchoChase/echo_chase_start.tscn)：包含一个玩家、四个横向 `480×270` 测试房、Phantom Camera Host 与四台固定 PCam、一个 checkpoint、`1/3/5s` 延迟台、两台自带未来体的记录器、已接线压力板与时间门、录制 HUD、同色时态淡入、出界复位和暂停/设置 UI。它是机制展台，不代表正式路线。
+施工入口是 [echo_chase_start.tscn](Scenes/EchoChase/echo_chase_start.tscn)：包含一个玩家、一组 `480×270` 测试房（当前 19 房 A–S）、Phantom Camera Host 与每房固定 PCam、一个 checkpoint、`1/3/5s` 延迟台、一台自带未来体的记录器、已接线压力板与时间门、支路进度与收集样例、录制 HUD、同色时态淡入、出界复位和暂停/设置 UI。它是机制展台，不代表正式路线。
 
 接线步骤、碰撞层和检查点调用顺序见 [echo-chase-wiring.md](docs/echo-chase-wiring.md)。不要用脚本动态补节点；每个关卡场景必须显式实例化并绑定所需组件。
 

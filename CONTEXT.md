@@ -60,7 +60,7 @@
 
 检查点只保存 authored 场景路径、检查点 ID、复活坐标、玩家选中的 `past_delay_seconds` 和精确 `delay_switch_id`。预警中的最新选择也视为当前选择，但不保存剩余预警时间。不保存现在体血量、在途录像、未来体、敌人临时状态或任何半完成时间线。恢复或失败时先复位玩家到稳定坐标，再用检查点延迟参数调用 `EchoTimelineController.reset_timeline()`。
 
-`Scenes/EchoChase/echo_chase_start.tscn` 是机制展台，不是正式关卡。它含一个玩家、四个横向 `480×270` 测试房、Phantom Camera Host 与固定 PCam、一个 checkpoint、`1/3/5s` 延迟台、两台记录器、压力板与门、录制 HUD、同色时态淡入、出界复位和暂停 UI。所有位置都只是逐项测试摆位，不代表作者灰盒或路线设计。
+`Scenes/EchoChase/echo_chase_start.tscn` 是机制展台，不是正式关卡。它含一个玩家、一组横向/纵向 `480×270` 测试房（当前 19 房 A–S）、Phantom Camera Host 与每房固定 PCam、一个 checkpoint、`1/3/5s` 延迟台、一台记录器、压力板与门、支路进度与收集样例、录制 HUD、同色时态淡入、出界复位和暂停 UI。所有位置都只是逐项测试摆位，不代表作者灰盒或路线设计。
 
 ## 作者边界
 
