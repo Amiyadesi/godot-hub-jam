@@ -6,7 +6,7 @@
 [ext_resource type="PackedScene" uid="uid://dl7b3wmwdq67u" path="res://Scenes/UI/PauseScreen/pause_screen.tscn" id="8_wwiui"]
 [ext_resource type="PackedScene" uid="uid://b7hivg2dnaer8" path="res://Scenes/UI/Menu/setting_screen.tscn" id="10_hg02a"]
 [ext_resource type="Script" uid="uid://blg8o5qqjypkc" path="res://Scripts/EchoChase/echo_chase_start.gd" id="12_pasgv"]
-[ext_resource type="AudioStream" uid="uid://bj0g7n60xthrv" path="res://assets/echo_chase/audio/phaserDown2.ogg" id="13_55wkc"]
+[ext_resource type="AudioStream" path="res://assets/phase_lag/audio/sfx/impact_metal.ogg" id="13_55wkc"]
 [ext_resource type="AudioStream" uid="uid://bs4xhkgsehp8s" path="res://assets/echo_chase/audio/music/dark_sci_fi_sector.ogg" id="14_gameplay_music"]
 [ext_resource type="PackedScene" path="res://Scenes/EchoChase/Prefabs/delay_pickup.tscn" id="15_delay"]
 [ext_resource type="PackedScene" uid="uid://bvn43sm7w0wuc" path="res://Scenes/EchoChase/Prefabs/future_recorder.tscn" id="16_recorder"]

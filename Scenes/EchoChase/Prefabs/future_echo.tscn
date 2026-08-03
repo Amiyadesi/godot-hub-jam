@@ -5,8 +5,8 @@
 [ext_resource type="SpriteFrames" path="res://assets/echo_chase/character/echo_character_outline_frames.tres" id="3_outline_frames"]
 [ext_resource type="Shader" path="res://assets/echo_chase/vfx/temporal_outline.gdshader" id="4_outline_shader"]
 [ext_resource type="Texture2D" path="res://assets/echo_chase/vfx/temporal_particle.svg" id="5_particle"]
-[ext_resource type="AudioStream" path="res://assets/echo_chase/audio/phaserUp4.ogg" id="6_appear_audio"]
-[ext_resource type="AudioStream" path="res://assets/echo_chase/audio/phaserDown2.ogg" id="7_dissipate_audio"]
+[ext_resource type="AudioStream" path="res://assets/phase_lag/audio/sfx/laser_small.ogg" id="6_appear_audio"]
+[ext_resource type="AudioStream" path="res://assets/phase_lag/audio/sfx/explosion_crunch.ogg" id="7_dissipate_audio"]
 [ext_resource type="PackedScene" path="res://Scenes/EchoChase/Prefabs/temporal_departure_vfx.tscn" id="8_departure"]
 
 [sub_resource type="RectangleShape2D" id="Shape_future"]

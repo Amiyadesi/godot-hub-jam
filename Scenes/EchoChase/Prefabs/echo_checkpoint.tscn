@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://cgpuhn6jnerk3" path="res://Scripts/EchoChase/echo_checkpoint.gd" id="1_script"]
 [ext_resource type="Texture2D" uid="uid://bgrnghgd1ccr6" path="res://assets/echo_chase/tilemap/monochrome_tilemap_transparent_packed.png" id="2_tilemap"]
-[ext_resource type="AudioStream" uid="uid://bgt3amkgjcdj" path="res://assets/echo_chase/audio/powerUp5.ogg" id="3_audio"]
+[ext_resource type="AudioStream" path="res://assets/phase_lag/audio/sfx/boss_magnetic_clamp.ogg" id="3_audio"]
 
 [sub_resource type="RectangleShape2D" id="Shape_checkpoint"]
 size = Vector2(24, 43)

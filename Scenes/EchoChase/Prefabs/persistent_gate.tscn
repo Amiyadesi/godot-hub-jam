@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" path="res://Scripts/EchoChase/persistent_gate.gd" id="1_script"]
 [ext_resource type="Texture2D" path="res://assets/echo_chase/tilemap/monochrome_tilemap_transparent_packed.png" id="2_tilemap"]
-[ext_resource type="AudioStream" path="res://assets/phase_lag/audio/sfx/door_open.ogg" id="3_audio"]
+[ext_resource type="AudioStream" path="res://assets/phase_lag/audio/sfx/boss_core_open.ogg" id="3_audio"]
 
 [sub_resource type="RectangleShape2D" id="Shape_gate"]
 size = Vector2(48, 48)
