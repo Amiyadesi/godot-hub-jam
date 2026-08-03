@@ -69,6 +69,7 @@ const DASH_MARKER_SWITCH_SPEED := 225.0
 @onready var dash_vfx: EchoDashVfx = %DashVfx
 @onready var dash_audio: AudioStreamPlayer2D = $DashAudio
 @onready var land_audio: AudioStreamPlayer2D = $LandAudio
+@onready var jump_audio: AudioStreamPlayer2D = $JumpAudio
 @onready var dash_charge_marker: Node2D = %DashChargeMarker
 @onready var dash_charge_facing_pivot: Node2D = $DashChargeMarker/FacingPivot
 @onready var dash_charge_animation_player: AnimationPlayer = $DashChargeMarker/AnimationPlayer
@@ -489,6 +490,7 @@ func _perform_standard_jump() -> void:
 	_coyote_remaining = 0.0
 	velocity.y = -jump_speed
 	_change_state(State.JUMP)
+	jump_audio.play()
 	jump_started.emit()
 
 
@@ -503,6 +505,7 @@ func _perform_wall_jump() -> void:
 	velocity.y = -jump_speed
 	facing = signf(_wall_normal.x)
 	_change_state(State.JUMP)
+	jump_audio.play()
 	jump_started.emit()
 
 
@@ -529,6 +532,7 @@ func _perform_dash_jump() -> void:
 	velocity.x = clampf(_dash_direction.x * dash_speed * dash_jump_momentum, -speed_cap, speed_cap)
 	velocity.y = -jump_speed
 	_change_state(State.JUMP)
+	jump_audio.play()
 	jump_started.emit()
 
 

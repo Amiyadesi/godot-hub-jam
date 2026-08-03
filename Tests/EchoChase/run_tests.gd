@@ -25,6 +25,8 @@ func _ready() -> void:
 	await _test_landing_restores_single_dash()
 	_test_temporal_door_requires_all_sources()
 	_test_temporal_door_latches_after_all_sources()
+	_test_temporal_door_modes_and_indicators()
+	_test_temporal_pressure_plate_feedback()
 	_test_future_echo_reports_active_playback()
 	_test_future_barrier_follows_its_recorder()
 	await _test_future_collision_refills_single_dash()
@@ -230,6 +232,52 @@ func _test_temporal_door_latches_after_all_sources() -> void:
 	plate_a.free()
 	plate_b.free()
 	plate_c.free()
+
+
+# 验证两种门模式使用不同颜色，并只显示已接线的指示格。
+func _test_temporal_door_modes_and_indicators() -> void:
+	var plate_a := PRESSURE_PLATE_SCENE.instantiate() as TemporalPressurePlate
+	var plate_b := PRESSURE_PLATE_SCENE.instantiate() as TemporalPressurePlate
+	add_child(plate_a)
+	add_child(plate_b)
+	var player := PLAYER_SCENE.instantiate()
+	var momentary := TEMPORAL_DOOR_SCENE.instantiate() as TemporalDoor
+	momentary.source_plates = [plate_a]
+	add_child(momentary)
+	_expect(momentary.get_node("Indicators/IndicatorA").visible, "Momentary door shows its connected source indicator")
+	_expect(not momentary.get_node("Indicators/IndicatorB").visible, "Momentary door hides unused source indicators")
+	_expect(momentary.visual.modulate.is_equal_approx(TemporalDoor.MOMENTARY_CLOSED_COLOR), "Momentary door uses its closed color")
+	plate_a.body_entered.emit(player)
+	_expect(momentary.is_open(), "Momentary door opens with its only source")
+	_expect(momentary.visual.modulate.is_equal_approx(TemporalDoor.MOMENTARY_OPEN_COLOR), "Momentary door uses its open color")
+	var latched := TEMPORAL_DOOR_SCENE.instantiate() as TemporalDoor
+	latched.mode = TemporalDoor.Mode.LATCHED_ALL
+	latched.source_plates = [plate_a, plate_b]
+	add_child(latched)
+	_expect(latched.visual.modulate.is_equal_approx(TemporalDoor.LATCHED_CLOSED_COLOR), "Latched door uses a distinct closed color")
+	plate_b.body_entered.emit(player)
+	_expect(latched.is_open(), "Latched door opens after all sources press")
+	_expect(latched.visual.modulate.is_equal_approx(TemporalDoor.LATCHED_OPEN_COLOR), "Latched door uses a distinct open color")
+	latched.free()
+	momentary.free()
+	plate_a.free()
+	plate_b.free()
+	player.free()
+
+
+# 验证压板按下与释放都切换 authored 动画，并保留两种音效资源。
+func _test_temporal_pressure_plate_feedback() -> void:
+	var plate := PRESSURE_PLATE_SCENE.instantiate() as TemporalPressurePlate
+	add_child(plate)
+	var player := PLAYER_SCENE.instantiate()
+	plate.body_entered.emit(player)
+	_expect(plate.animation_player.current_animation == &"pressed", "Pressure plate plays its pressed animation")
+	_expect(plate.press_audio.stream != null, "Pressure plate has a press sound")
+	plate.body_exited.emit(player)
+	_expect(plate.animation_player.current_animation == &"released", "Pressure plate plays its released animation")
+	_expect(plate.release_audio.stream != null, "Pressure plate has a release sound")
+	plate.free()
+	player.free()
 
 
 # 验证未来体只在真实回放生命周期变化时广播活跃状态。

@@ -5,6 +5,10 @@ extends Area2D
 signal pressed_changed(is_pressed: bool)
 signal occupancy_changed(occupancy: int)
 
+@onready var animation_player: AnimationPlayer = %AnimationPlayer
+@onready var press_audio: AudioStreamPlayer2D = %PressAudio
+@onready var release_audio: AudioStreamPlayer2D = %ReleaseAudio
+
 var _occupants: Dictionary = {}
 
 
@@ -14,6 +18,7 @@ func _ready() -> void:
 	body_exited.connect(_on_body_exited)
 	area_entered.connect(_on_area_entered)
 	area_exited.connect(_on_area_exited)
+	animation_player.play(&"released")
 
 
 # 判断是否至少有一个有效时态实体压住压力板。
@@ -51,7 +56,8 @@ func _add_occupant(occupant: Node) -> void:
 	_occupants[occupant.get_instance_id()] = occupant
 	occupancy_changed.emit(_occupants.size())
 	if was_pressed != is_pressed():
-		pressed_changed.emit(is_pressed())
+		_apply_pressed_feedback(true)
+		pressed_changed.emit(true)
 
 
 # 移除一个重叠，只在真实按压状态变化时发信号。
@@ -60,4 +66,11 @@ func _remove_occupant(occupant: Node) -> void:
 	_occupants.erase(occupant.get_instance_id())
 	occupancy_changed.emit(_occupants.size())
 	if was_pressed != is_pressed():
-		pressed_changed.emit(is_pressed())
+		_apply_pressed_feedback(false)
+		pressed_changed.emit(false)
+
+
+# 播放压板按下或释放的 authored 动画与一次性音效。
+func _apply_pressed_feedback(pressed: bool) -> void:
+	animation_player.play(&"pressed" if pressed else &"released")
+	(press_audio if pressed else release_audio).play()

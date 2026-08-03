@@ -2,6 +2,8 @@
 
 [ext_resource type="Script" uid="uid://b8y1k5bqvh085" path="res://Scripts/EchoChase/temporal_door.gd" id="1_script"]
 [ext_resource type="Texture2D" uid="uid://bgrnghgd1ccr6" path="res://assets/echo_chase/tilemap/monochrome_tilemap_transparent_packed.png" id="2_tilemap"]
+[ext_resource type="AudioStream" path="res://assets/phase_lag/audio/sfx/door_open.ogg" id="3_open_audio"]
+[ext_resource type="AudioStream" path="res://assets/phase_lag/audio/sfx/door_close.ogg" id="4_close_audio"]
 
 [sub_resource type="RectangleShape2D" id="Shape_door"]
 size = Vector2(32, 32)
@@ -29,40 +31,52 @@ position = Vector2(0, -16)
 scale = Vector2(2, 2)
 texture = SubResource("Atlas_door")
 
-[node name="Indicators" type="Node2D" parent="."]
-position = Vector2(0, -37)
+[node name="Indicators" type="Node2D" parent="." unique_id=1580140142]
+position = Vector2(0, -24)
 
-[node name="IndicatorA" type="Node2D" parent="Indicators"]
+[node name="IndicatorA" type="Node2D" parent="Indicators" unique_id=1863588928]
 position = Vector2(-8, 0)
 
-[node name="Back" type="Polygon2D" parent="Indicators/IndicatorA"]
+[node name="Back" type="Polygon2D" parent="Indicators/IndicatorA" unique_id=928779148]
 color = Color(0.12, 0.16, 0.18, 0.92)
 polygon = PackedVector2Array(-3, -3, 3, -3, 3, 3, -3, 3)
 
-[node name="Fill" type="Polygon2D" parent="Indicators/IndicatorA"]
+[node name="Fill" type="Polygon2D" parent="Indicators/IndicatorA" unique_id=201745925]
 visible = false
 color = Color(1, 0.72, 0.2, 1)
 polygon = PackedVector2Array(-2, -2, 2, -2, 2, 2, -2, 2)
 
-[node name="IndicatorB" type="Node2D" parent="Indicators"]
+[node name="OpenAudio" type="AudioStreamPlayer2D" parent="." unique_id=1924410741]
+unique_name_in_owner = true
+stream = ExtResource("3_open_audio")
+volume_db = -6.0
+bus = &"SFX"
 
-[node name="Back" type="Polygon2D" parent="Indicators/IndicatorB"]
+[node name="CloseAudio" type="AudioStreamPlayer2D" parent="." unique_id=1924410742]
+unique_name_in_owner = true
+stream = ExtResource("4_close_audio")
+volume_db = -8.0
+bus = &"SFX"
+
+[node name="IndicatorB" type="Node2D" parent="Indicators" unique_id=842653372]
+
+[node name="Back" type="Polygon2D" parent="Indicators/IndicatorB" unique_id=2073883982]
 color = Color(0.12, 0.16, 0.18, 0.92)
 polygon = PackedVector2Array(-3, -3, 3, -3, 3, 3, -3, 3)
 
-[node name="Fill" type="Polygon2D" parent="Indicators/IndicatorB"]
+[node name="Fill" type="Polygon2D" parent="Indicators/IndicatorB" unique_id=1279064550]
 visible = false
 color = Color(1, 0.72, 0.2, 1)
 polygon = PackedVector2Array(-2, -2, 2, -2, 2, 2, -2, 2)
 
-[node name="IndicatorC" type="Node2D" parent="Indicators"]
+[node name="IndicatorC" type="Node2D" parent="Indicators" unique_id=173032722]
 position = Vector2(8, 0)
 
-[node name="Back" type="Polygon2D" parent="Indicators/IndicatorC"]
+[node name="Back" type="Polygon2D" parent="Indicators/IndicatorC" unique_id=890482037]
 color = Color(0.12, 0.16, 0.18, 0.92)
 polygon = PackedVector2Array(-3, -3, 3, -3, 3, 3, -3, 3)
 
-[node name="Fill" type="Polygon2D" parent="Indicators/IndicatorC"]
+[node name="Fill" type="Polygon2D" parent="Indicators/IndicatorC" unique_id=2082892125]
 visible = false
 color = Color(1, 0.72, 0.2, 1)
 polygon = PackedVector2Array(-2, -2, 2, -2, 2, 2, -2, 2)

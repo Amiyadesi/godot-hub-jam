@@ -10,6 +10,11 @@ enum Mode {
 @export var mode: Mode = Mode.MOMENTARY_ALL
 @export var source_plates: Array[TemporalPressurePlate] = []
 
+const MOMENTARY_CLOSED_COLOR := Color(0.92, 0.34, 0.32, 0.88)
+const MOMENTARY_OPEN_COLOR := Color(1.0, 0.58, 0.34, 0.44)
+const LATCHED_CLOSED_COLOR := Color(0.52, 0.36, 0.86, 0.92)
+const LATCHED_OPEN_COLOR := Color(0.52, 0.86, 1.0, 0.38)
+
 @onready var collision_shape: CollisionShape2D = %CollisionShape2D
 @onready var visual: CanvasItem = %Visual
 @onready var indicator_roots: Array[Node2D] = [
@@ -22,6 +27,8 @@ enum Mode {
 	$Indicators/IndicatorB/Fill,
 	$Indicators/IndicatorC/Fill,
 ]
+@onready var open_audio: AudioStreamPlayer2D = %OpenAudio
+@onready var close_audio: AudioStreamPlayer2D = %CloseAudio
 
 var _is_open := false
 var _latched := false
@@ -46,7 +53,7 @@ func _refresh_state() -> void:
 	var all_pressed := _are_all_sources_pressed()
 	if mode == Mode.LATCHED_ALL and all_pressed:
 		_latched = true
-	_update_indicators()
+	_update_indicators(all_pressed)
 	set_open(_latched if mode == Mode.LATCHED_ALL else all_pressed)
 
 
@@ -60,23 +67,33 @@ func _are_all_sources_pressed() -> bool:
 	return true
 
 
-# 显示已接线的三个 authored 指示格及其当前满足状态。
-func _update_indicators() -> void:
+# 显示已接线的 authored 指示格及其当前满足状态。
+func _update_indicators(all_pressed: bool) -> void:
 	for index in indicator_roots.size():
 		var connected := index < source_plates.size()
 		indicator_roots[index].visible = connected
 		indicator_fills[index].visible = connected and (
 			_latched or source_plates[index].is_pressed()
 		)
+		if connected:
+			indicator_fills[index].modulate = _mode_color(_latched or all_pressed)
 
 
-# 开闭物理通路，并向关卡脚本暴露清晰状态。
+# 开闭物理通路、状态颜色与开关音效，并向关卡脚本暴露清晰状态。
 func set_open(value: bool) -> void:
-	if _is_open == value:
-		return
+	var changed := _is_open != value
 	_is_open = value
-	collision_shape.set_deferred("disabled", value)
-	visual.modulate = Color(0.38, 0.96, 0.82, 0.32) if value else Color(0.92, 0.34, 0.32, 0.88)
+	if changed:
+		collision_shape.set_deferred("disabled", value)
+		(open_audio if value else close_audio).play()
+	visual.modulate = _mode_color(value)
+
+
+# 返回当前门模式在关闭或打开时使用的基础色。
+func _mode_color(open: bool) -> Color:
+	if mode == Mode.LATCHED_ALL:
+		return LATCHED_OPEN_COLOR if open else LATCHED_CLOSED_COLOR
+	return MOMENTARY_OPEN_COLOR if open else MOMENTARY_CLOSED_COLOR
 
 
 # 向外部关卡逻辑报告当前障碍状态。

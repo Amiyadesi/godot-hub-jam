@@ -48,6 +48,8 @@ var _credits_origin: CreditsOrigin = CreditsOrigin.MAIN_MENU
 var _settings_tab_before_credits := 0
 var _intro_active := false
 var _transition_active := false
+var _transition_skip_requested := false
+var _scene_transition_tween: Tween
 
 
 # 初始化存档、音频、固定信号和 authored 菜单入场。
@@ -153,6 +155,9 @@ func _on_continue_pressed() -> void:
 # 先播放 authored 时态原点脉冲，再用同色径向遮罩切入玩法。
 func _transition_to_game(scene_path: String, temporal_state: StringName) -> bool:
 	_transition_active = true
+	_transition_skip_requested = false
+	_scene_transition_tween = null
+	world_animation_player.speed_scale = 1.0
 	_set_main_menu_input_enabled(false)
 	var reduced := _uses_reduced_intro()
 	if not reduced:
@@ -160,9 +165,13 @@ func _transition_to_game(scene_path: String, temporal_state: StringName) -> bool
 		await world_animation_player.animation_finished
 	var transition := _get_exit_transition(temporal_state, reduced)
 	SceneManager.set_meta(ENTRY_STATE_META, temporal_state)
-	var tween := SceneManager.transition_start(transition)
-	if tween != null:
-		await tween.finished
+	_scene_transition_tween = SceneManager.transition_start(transition)
+	if _transition_skip_requested and _scene_transition_tween != null and _scene_transition_tween.is_valid():
+		_scene_transition_tween.set_speed_scale(1000.0)
+	if _scene_transition_tween != null:
+		await _scene_transition_tween.finished
+	_scene_transition_tween = null
+	world_animation_player.speed_scale = 1.0
 	var error := SceneManager.change_scene_to_file(scene_path)
 	if error == OK:
 		return true
@@ -355,7 +364,17 @@ func _is_intro_skip_event(event: InputEvent) -> bool:
 
 # 消费首次跳过输入，禁止它顺带触发已落定按钮。
 func _unhandled_input(event: InputEvent) -> void:
-	if not _intro_active or not _is_intro_skip_event(event):
+	if not _is_intro_skip_event(event):
+		return
+	if _transition_active:
+		_transition_skip_requested = true
+		if world_animation_player.is_playing():
+			world_animation_player.speed_scale = 1000.0
+		if _scene_transition_tween != null and _scene_transition_tween.is_valid():
+			_scene_transition_tween.set_speed_scale(1000.0)
+		get_viewport().set_input_as_handled()
+		return
+	if not _intro_active:
 		return
 	_skip_menu_intro()
 	get_viewport().set_input_as_handled()

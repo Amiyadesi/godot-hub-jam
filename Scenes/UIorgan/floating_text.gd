@@ -19,7 +19,7 @@ func start(text: String) -> void:
 # Starts a formatted numeric damage label with up to two decimals.
 func start_damage(amount: float, tint: Color = Color(1.0, 0.87, 0.48, 1.0), scale_boost: float = 1.0) -> void:
 	label.modulate = tint
-	scale = Vector2.ONE * scale_boost
+	#scale = Vector2.ONE * scale_boost
 	show_float(_format_damage(amount))
 
 

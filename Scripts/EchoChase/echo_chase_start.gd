@@ -53,18 +53,18 @@ func _ready() -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if _reset_in_progress:
 		return
-	if event.is_action_pressed(&"pause"):
-		if _entry_intro_active:
+	if _entry_intro_active:
+		if _is_entry_skip_event(event):
 			_finish_entry_intro()
+			get_viewport().set_input_as_handled()
+		return
+	if event.is_action_pressed(&"pause"):
 		get_viewport().set_input_as_handled()
 		if pause_screen.visible:
 			_resume_game()
 		else:
 			_pause_game()
 		return
-	if _entry_intro_active and _is_entry_skip_event(event):
-		_finish_entry_intro()
-		get_viewport().set_input_as_handled()
 
 
 # 返回玩法入场是否仍在冻结时间线。

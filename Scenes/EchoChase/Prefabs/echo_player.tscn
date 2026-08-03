@@ -9,6 +9,7 @@
 [ext_resource type="PackedScene" path="res://Scenes/EchoChase/Prefabs/echo_dash_vfx.tscn" id="7_dash_vfx"]
 [ext_resource type="Texture2D" path="res://assets/echo_chase/vfx/temporal_particle.svg" id="8_marker_particle"]
 [ext_resource type="AudioStream" path="res://assets/echo_chase/audio/powerUp5.ogg" id="9_refill_audio"]
+[ext_resource type="AudioStream" path="res://assets/phase_lag/audio/sfx/phase_send.ogg" id="10_jump_audio"]
 
 [sub_resource type="RectangleShape2D" id="Shape_player"]
 size = Vector2(10, 15)
@@ -376,6 +377,11 @@ bus = &"SFX"
 [node name="LandAudio" type="AudioStreamPlayer2D" parent="." unique_id=1426816605]
 stream = ExtResource("5_land_audio")
 volume_db = -8.0
+bus = &"SFX"
+
+[node name="JumpAudio" type="AudioStreamPlayer2D" parent="." unique_id=1924410746]
+stream = ExtResource("10_jump_audio")
+volume_db = -10.0
 bus = &"SFX"
 
 [node name="RayCast2D" type="RayCast2D" parent="." unique_id=1295525164]
