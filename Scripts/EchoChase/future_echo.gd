@@ -4,6 +4,7 @@ extends Area2D
 
 signal slot_released(future_echo: FutureEcho)
 signal dissipated(future_echo: FutureEcho)
+signal active_changed(active: bool)
 
 @onready var collision_shape: CollisionShape2D = %CollisionShape2D
 @onready var visual: AnimatedSprite2D = %Visual
@@ -39,13 +40,13 @@ func start_playback(track: TemporalTrack, duration: float, phase_seconds: float)
 	_duration = duration
 	_playback_seconds = 0.0
 	_phase_remaining = phase_seconds
-	_active = true
 	visible = true
 	visual.visible = true
 	outline_visual.visible = true
 	outer_outline_visual.visible = true
 	prediction_visual.visible = true
 	collision_shape.set_deferred("disabled", false)
+	_set_active(true)
 	vfx_animation_player.play(&"materialize_reduced" if _uses_low_flash_mode() else &"materialize")
 	appear_audio.play()
 	var first_frame: TemporalFrame = _track.sample_at(0.0)
@@ -93,6 +94,11 @@ func is_available() -> bool:
 	return not _active
 
 
+# 报告未来体是否正在正式回放，而不是只被录制流程预留。
+func is_active() -> bool:
+	return _active
+
+
 # 返回未来体是否仍处于生成后的时间碰撞相位。
 func is_temporally_phased() -> bool:
 	return _phase_remaining > 0.0
@@ -120,7 +126,6 @@ func restore_playback_state(state: Dictionary) -> void:
 	_playback_seconds = float(state["playback_seconds"])
 	_phase_remaining = float(state["phase_remaining"])
 	_last_velocity = state["last_velocity"] as Vector2
-	_active = true
 	visible = true
 	visual.visible = true
 	outline_visual.visible = true
@@ -130,6 +135,7 @@ func restore_playback_state(state: Dictionary) -> void:
 	departure_vfx.reset_vfx()
 	vfx_animation_player.play(&"solid")
 	collision_shape.set_deferred("disabled", false)
+	_set_active(true)
 	var frame: TemporalFrame = _track.sample_at(_playback_seconds)
 	if frame != null:
 		global_position = frame.position
@@ -142,7 +148,7 @@ func reset_echo() -> void:
 	_duration = 0.0
 	_playback_seconds = 0.0
 	_phase_remaining = 0.0
-	_active = false
+	_set_active(false)
 	visible = false
 	visual.flip_h = false
 	outline_visual.flip_h = false
@@ -158,11 +164,12 @@ func reset_echo() -> void:
 	collision_shape.set_deferred("disabled", true)
 
 
-# 当前玩家接触非相位未来体时将其消散。
+# 当前玩家接触非相位未来体时恢复唯一冲刺并将其消散。
 func _on_body_entered(body: Node2D) -> void:
 	var echo_player := body as EchoPlayer
 	if not _active or echo_player == null or echo_player.is_temporally_phased() or _phase_remaining > 0.0:
 		return
+	echo_player.reset_dash()
 	dissipate(echo_player.velocity)
 
 
@@ -189,13 +196,21 @@ func _release_slot() -> void:
 	if not _active:
 		return
 	departure_vfx.play_from_sprites(visual, outline_visual, _last_velocity)
-	_active = false
+	_set_active(false)
 	collision_shape.set_deferred("disabled", true)
 	visual.visible = false
 	outline_visual.visible = false
 	outer_outline_visual.visible = false
 	prediction_visual.visible = false
 	slot_released.emit(self)
+
+
+# 只在真实生命周期切换时同步绑定机关。
+func _set_active(value: bool) -> void:
+	if _active == value:
+		return
+	_active = value
+	active_changed.emit(_active)
 
 
 # 尾效结束只关闭空闲主体显示，不干扰已复用槽的新回放。

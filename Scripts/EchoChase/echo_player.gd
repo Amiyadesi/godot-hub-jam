@@ -19,6 +19,17 @@ enum State {
 	DISABLED,
 }
 
+enum DashChargeFeedback {
+	SYNC,
+	CONSUME,
+	LANDING,
+	FUTURE,
+}
+
+const DASH_MARKER_OFFSET_X := 9.0
+const DASH_MARKER_OFFSET_Y := -6.0
+const DASH_MARKER_SWITCH_SPEED := 225.0
+
 @export_group("Run")
 @export var run_speed := 144.0
 @export var run_acceleration := 2304.0
@@ -58,6 +69,11 @@ enum State {
 @onready var dash_vfx: EchoDashVfx = %DashVfx
 @onready var dash_audio: AudioStreamPlayer2D = $DashAudio
 @onready var land_audio: AudioStreamPlayer2D = $LandAudio
+@onready var dash_charge_marker: Node2D = %DashChargeMarker
+@onready var dash_charge_facing_pivot: Node2D = $DashChargeMarker/FacingPivot
+@onready var dash_charge_animation_player: AnimationPlayer = $DashChargeMarker/AnimationPlayer
+@onready var dash_charge_refill_particles: GPUParticles2D = %RefillParticles
+@onready var dash_charge_refill_audio: AudioStreamPlayer2D = %FutureRefillAudio
 @onready var wall_head_ray: RayCast2D = $RayCast2D
 @onready var wall_foot_ray: RayCast2D = $RayCast2D2
 
@@ -91,6 +107,10 @@ func _ready() -> void:
 	temporal_outline.play(&"idle")
 	recording_outline.play(&"idle")
 	recording_animation_player.play(&"inactive")
+	dash_charge_animation_player.animation_finished.connect(_on_dash_charge_animation_finished)
+	if SettingsModule.instance != null:
+		SettingsModule.instance.settings_changed.connect(_on_setting_changed)
+	_set_dash_available(_dash_available, DashChargeFeedback.SYNC)
 	hurtbox.area_entered.connect(_on_hurtbox_area_entered)
 	hurtbox.body_entered.connect(_on_hurtbox_body_entered)
 	_was_on_floor = is_on_floor()
@@ -117,6 +137,7 @@ func _physics_process(delta: float) -> void:
 		_:
 			_update_standard_movement(delta)
 	_update_animation()
+	_update_dash_charge_marker_position(delta)
 	_update_landing_audio()
 	EchoTimeline.record_player_frame(build_temporal_frame(EchoTimeline.get_timeline_seconds()))
 	if _recall_requested or Input.is_action_just_pressed("echo_recall"):
@@ -149,6 +170,49 @@ func get_current_state() -> State:
 	return _state
 
 
+# Future 接触恢复唯一一格冲刺；满充时只播放溢出反馈。
+func reset_dash() -> void:
+	_set_dash_available(true, DashChargeFeedback.FUTURE)
+
+
+# 统一唯一冲刺存量与 authored 菱晶反馈，避免各恢复路径视觉漂移。
+func _set_dash_available(value: bool, feedback: DashChargeFeedback) -> void:
+	var changed := _dash_available != value
+	_dash_available = value
+	match feedback:
+		DashChargeFeedback.CONSUME:
+			dash_charge_marker.visible = true
+			dash_charge_animation_player.play(&"consume")
+		DashChargeFeedback.LANDING:
+			if changed:
+				dash_charge_marker.visible = true
+				dash_charge_animation_player.play(&"landing_refill")
+		DashChargeFeedback.FUTURE:
+			dash_charge_marker.visible = true
+			if changed:
+				dash_charge_animation_player.play(
+					&"future_refill_reduced" if _uses_low_flash_mode() else &"future_refill"
+				)
+				if not _uses_low_flash_mode():
+					dash_charge_refill_particles.restart()
+					dash_charge_refill_particles.emitting = true
+				dash_charge_refill_audio.play()
+			else:
+				dash_charge_animation_player.play(
+					&"future_full_reduced" if _uses_low_flash_mode() else &"future_full"
+				)
+		DashChargeFeedback.SYNC:
+			dash_charge_refill_particles.emitting = false
+			dash_charge_refill_audio.stop()
+			dash_charge_marker.position = Vector2(-facing * DASH_MARKER_OFFSET_X, DASH_MARKER_OFFSET_Y)
+			dash_charge_facing_pivot.scale = Vector2(facing, 1.0)
+			dash_charge_marker.visible = value
+			if value:
+				dash_charge_animation_player.play(&"idle")
+			else:
+				dash_charge_animation_player.stop()
+
+
 # 捕获录制起点的当前体运动状态，不包含之后的输入请求。
 func capture_temporal_anchor(time_seconds: float) -> Dictionary:
 	return {
@@ -177,7 +241,7 @@ func apply_temporal_recall(anchor: Dictionary, phase_seconds: float) -> void:
 	global_position = frame.position
 	velocity = frame.velocity
 	facing = frame.facing
-	_dash_available = bool(anchor["dash_available"])
+	_set_dash_available(bool(anchor["dash_available"]), DashChargeFeedback.SYNC)
 	_dash_aim_remaining = float(anchor["dash_aim_remaining"])
 	_dash_remaining = float(anchor["dash_remaining"])
 	_dash_recovery_remaining = float(anchor["dash_recovery_remaining"])
@@ -248,7 +312,8 @@ func prepare_for_reset(animation_name: StringName) -> void:
 func reset_player(reset_position: Vector2) -> void:
 	global_position = reset_position
 	velocity = Vector2.ZERO
-	_dash_available = true
+	facing = 1.0
+	_set_dash_available(true, DashChargeFeedback.SYNC)
 	_dash_aim_remaining = 0.0
 	_dash_remaining = 0.0
 	_dash_recovery_remaining = 0.0
@@ -295,11 +360,10 @@ func _collect_jump_input() -> void:
 		velocity.y *= jump_release_multiplier
 
 
-# 维护地面土狼时间和地空共用的一次冲刺次数。
+# 维护地面土狼时间；冲刺只在真实落地边沿恢复。
 func _update_floor_memory(delta: float) -> void:
 	if is_on_floor():
 		_coyote_remaining = coyote_seconds
-		_dash_available = true
 		_wall_jump_locked = false
 		_wall_jump_lock_normal = Vector2.ZERO
 	else:
@@ -336,7 +400,7 @@ func _can_start_dash() -> bool:
 
 # 在定速冲刺移动前进入短暂调向窗口。
 func _start_dash() -> void:
-	_dash_available = false
+	_set_dash_available(false, DashChargeFeedback.CONSUME)
 	_dash_started_on_floor = is_on_floor()
 	_dash_direction = _read_dash_direction()
 	_dash_aim_remaining = dash_aim_seconds
@@ -507,12 +571,59 @@ func _update_animation() -> void:
 	recording_outline.flip_h = visual.flip_h
 
 
-# 只在从空中落到地面的边沿播放一次落地音效。
+# 将唯一冲刺菱晶在 0.08 秒内滑到当前朝向的肩后。
+func _update_dash_charge_marker_position(delta: float) -> void:
+	var target_x := -facing * DASH_MARKER_OFFSET_X
+	dash_charge_marker.position.x = move_toward(
+		dash_charge_marker.position.x,
+		target_x,
+		DASH_MARKER_SWITCH_SPEED * delta
+	)
+	dash_charge_marker.position.y = DASH_MARKER_OFFSET_Y
+	dash_charge_facing_pivot.scale = Vector2(facing, 1.0)
+
+
+# 只在从空中落到地面的边沿恢复冲刺并播放一次落地音效。
 func _update_landing_audio() -> void:
 	var on_floor := is_on_floor()
 	if on_floor and not _was_on_floor:
+		_set_dash_available(true, DashChargeFeedback.LANDING)
 		land_audio.play()
 	_was_on_floor = on_floor
+
+
+# 单次回充或消耗反馈结束后回到待机，空槽则隐藏菱晶。
+func _on_dash_charge_animation_finished(animation_name: StringName) -> void:
+	if animation_name == &"consume" and not _dash_available:
+		dash_charge_marker.visible = false
+		return
+	if _dash_available:
+		dash_charge_animation_player.play(&"idle")
+
+
+# 低闪设置运行时切换对应动画，并在低闪时关闭快速回充粒子。
+func _on_setting_changed(key: String, _value: Variant) -> void:
+	if key != "low_flash_mode":
+		return
+	var low_flash_mode := _uses_low_flash_mode()
+	if low_flash_mode:
+		dash_charge_refill_particles.emitting = false
+	var progress_seconds := dash_charge_animation_player.current_animation_position
+	match dash_charge_animation_player.current_animation:
+		&"future_refill", &"future_refill_reduced":
+			dash_charge_animation_player.play(&"future_refill_reduced" if low_flash_mode else &"future_refill")
+			dash_charge_animation_player.seek(progress_seconds, true)
+		&"future_full", &"future_full_reduced":
+			dash_charge_animation_player.play(&"future_full_reduced" if low_flash_mode else &"future_full")
+			dash_charge_animation_player.seek(progress_seconds, true)
+
+
+# 读取共享低闪设置，保留菱晶状态但压低快速闪光。
+func _uses_low_flash_mode() -> bool:
+	return (
+		SettingsModule.instance != null
+		and bool(SettingsModule.instance.get_value("low_flash_mode", false))
+	)
 
 
 # authored Trap Area 接触玩家 Hurtbox 时请求统一失败流程。

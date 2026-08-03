@@ -28,3 +28,41 @@ texture_filter = 1
 position = Vector2(0, -16)
 scale = Vector2(2, 2)
 texture = SubResource("Atlas_door")
+
+[node name="Indicators" type="Node2D" parent="."]
+position = Vector2(0, -37)
+
+[node name="IndicatorA" type="Node2D" parent="Indicators"]
+position = Vector2(-8, 0)
+
+[node name="Back" type="Polygon2D" parent="Indicators/IndicatorA"]
+color = Color(0.12, 0.16, 0.18, 0.92)
+polygon = PackedVector2Array(-3, -3, 3, -3, 3, 3, -3, 3)
+
+[node name="Fill" type="Polygon2D" parent="Indicators/IndicatorA"]
+visible = false
+color = Color(1, 0.72, 0.2, 1)
+polygon = PackedVector2Array(-2, -2, 2, -2, 2, 2, -2, 2)
+
+[node name="IndicatorB" type="Node2D" parent="Indicators"]
+
+[node name="Back" type="Polygon2D" parent="Indicators/IndicatorB"]
+color = Color(0.12, 0.16, 0.18, 0.92)
+polygon = PackedVector2Array(-3, -3, 3, -3, 3, 3, -3, 3)
+
+[node name="Fill" type="Polygon2D" parent="Indicators/IndicatorB"]
+visible = false
+color = Color(1, 0.72, 0.2, 1)
+polygon = PackedVector2Array(-2, -2, 2, -2, 2, 2, -2, 2)
+
+[node name="IndicatorC" type="Node2D" parent="Indicators"]
+position = Vector2(8, 0)
+
+[node name="Back" type="Polygon2D" parent="Indicators/IndicatorC"]
+color = Color(0.12, 0.16, 0.18, 0.92)
+polygon = PackedVector2Array(-3, -3, 3, -3, 3, 3, -3, 3)
+
+[node name="Fill" type="Polygon2D" parent="Indicators/IndicatorC"]
+visible = false
+color = Color(1, 0.72, 0.2, 1)
+polygon = PackedVector2Array(-2, -2, 2, -2, 2, 2, -2, 2)

@@ -1,16 +1,73 @@
 class_name TemporalDoor
 extends StaticBody2D
-## 由一个或多个现存时态实体打开的简单 authored 障碍。
+## 监听最多三块 authored 压力板的标准时间门。
+
+enum Mode {
+	MOMENTARY_ALL,
+	LATCHED_ALL,
+}
+
+@export var mode: Mode = Mode.MOMENTARY_ALL
+@export var source_plates: Array[TemporalPressurePlate] = []
 
 @onready var collision_shape: CollisionShape2D = %CollisionShape2D
 @onready var visual: CanvasItem = %Visual
+@onready var indicator_roots: Array[Node2D] = [
+	$Indicators/IndicatorA,
+	$Indicators/IndicatorB,
+	$Indicators/IndicatorC,
+]
+@onready var indicator_fills: Array[CanvasItem] = [
+	$Indicators/IndicatorA/Fill,
+	$Indicators/IndicatorB/Fill,
+	$Indicators/IndicatorC/Fill,
+]
 
-var _is_open := true
+var _is_open := false
+var _latched := false
 
 
-# 门进入场景时应用 authored 关闭状态。
+# 连接显式来源，并从当前板状态应用门与指示格。
 func _ready() -> void:
-	set_open(false)
+	assert(source_plates.size() <= 3, "TemporalDoor supports at most three source plates")
+	for plate in source_plates:
+		assert(plate != null, "TemporalDoor source_plates cannot contain null")
+		plate.pressed_changed.connect(_on_source_pressed_changed)
+	_refresh_state()
+
+
+# 任一压力板变化时重新计算全部输入。
+func _on_source_pressed_changed(_is_pressed: bool) -> void:
+	_refresh_state()
+
+
+# Momentary 跟随实时输入；Latched 首次全满足后保持开启。
+func _refresh_state() -> void:
+	var all_pressed := _are_all_sources_pressed()
+	if mode == Mode.LATCHED_ALL and all_pressed:
+		_latched = true
+	_update_indicators()
+	set_open(_latched if mode == Mode.LATCHED_ALL else all_pressed)
+
+
+# 只有存在来源且每块板都按下时才算满足。
+func _are_all_sources_pressed() -> bool:
+	if source_plates.is_empty():
+		return false
+	for plate in source_plates:
+		if not plate.is_pressed():
+			return false
+	return true
+
+
+# 显示已接线的三个 authored 指示格及其当前满足状态。
+func _update_indicators() -> void:
+	for index in indicator_roots.size():
+		var connected := index < source_plates.size()
+		indicator_roots[index].visible = connected
+		indicator_fills[index].visible = connected and (
+			_latched or source_plates[index].is_pressed()
+		)
 
 
 # 开闭物理通路，并向关卡脚本暴露清晰状态。

@@ -32,8 +32,8 @@ func _ready() -> void:
 func _test_start_scene_camera_layout() -> void:
 	var scene := load("res://Scenes/EchoChase/echo_chase_start.tscn") as PackedScene
 	var root := scene.instantiate()
-	var run_label := root.get_node("World/SpawnPoint/RunLabel") as Label
-	_expect(run_label.text == "Run", "spawn point should show the authored Run label")
+	var run_label := root.get_node("World/SpawnPoint/RunLabel") as Node2D
+	_expect(run_label.get("auto_start_text") == "Run", "spawn point should author the Run floating cue")
 	var cameras := root.get_node("World/RoomCameras") as Node2D
 	var triggers := root.get_node("World/RoomCameraTriggers") as Node2D
 	_expect(cameras.get_child_count() > 0, "scene should author at least one room camera")
@@ -60,12 +60,14 @@ func _test_start_scene_camera_layout() -> void:
 	root.free()
 
 
-# PresentHub keeps an authored blue room field and ambient particles active.
+# PresentHub starts quiet until the saved central-room conversion is complete.
 func _test_present_room_ambient_vfx() -> void:
 	var scene := load("res://Scenes/EchoChase/echo_chase_start.tscn") as PackedScene
 	var root := scene.instantiate()
 	var particles := root.get_node("World/PresentHub/AmbientParticles") as GPUParticles2D
-	_expect(particles.emitting, "PresentHub ambient particles should emit continuously")
+	var glow := root.get_node("World/PresentHub/AmbientGlow") as Polygon2D
+	_expect(not particles.emitting, "locked PresentHub ambient particles should be idle")
+	_expect(not glow.visible, "locked PresentHub ambient glow should be hidden")
 	_expect(particles.process_mode == Node.PROCESS_MODE_ALWAYS, "PresentHub ambient particles should continue during dialogue pause")
 	root.free()
 

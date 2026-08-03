@@ -1,8 +1,15 @@
 extends Node2D
 ## Floating damage text that supports configurable color, scale, and decimals.
 
+@export var auto_start_text := ""
 
 @onready var label: Label = $Label
+
+
+# Starts authored one-shot labels such as the spawn-point Run cue.
+func _ready() -> void:
+	if not auto_start_text.is_empty():
+		start(auto_start_text)
 
 # Starts the floating label with raw text for existing callers.
 func start(text: String) -> void:

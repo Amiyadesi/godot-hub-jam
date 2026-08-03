@@ -1,11 +1,9 @@
 class_name TemporalPressurePlate
 extends Area2D
-## 统计现存时态实体，并驱动可选 authored 时间门。
+## 统计现存时态实体，并广播 authored 压力板状态。
 
 signal pressed_changed(is_pressed: bool)
 signal occupancy_changed(occupancy: int)
-
-@export var target_door: TemporalDoor
 
 var _occupants: Dictionary = {}
 
@@ -16,8 +14,6 @@ func _ready() -> void:
 	body_exited.connect(_on_body_exited)
 	area_entered.connect(_on_area_entered)
 	area_exited.connect(_on_area_exited)
-	if target_door != null:
-		pressed_changed.connect(target_door.set_open)
 
 
 # 判断是否至少有一个有效时态实体压住压力板。

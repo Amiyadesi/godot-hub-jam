@@ -11,6 +11,7 @@ YourGrayboxRoot (Node2D)
 ├── World (Node2D, PROCESS_MODE_PAUSABLE)
 │   ├── EchoPlayer               [instance: Prefabs/echo_player.tscn]
 │   ├── FutureRecorder           [按需 instance；内部自带一个 FutureEcho]
+│   ├── FutureCondensationBarrier[按需 instance；显式绑定一台 FutureRecorder]
 │   ├── DelayPickup              [按需 instance；语义为可重复延迟台]
 │   ├── TemporalPressurePlate    [按需 instance]
 │   ├── TemporalDoor             [按需 instance]
@@ -37,7 +38,8 @@ YourGrayboxRoot (Node2D)
 | 节点 | Inspector 字段 | 指向 |
 | --- | --- | --- |
 | `DelayPickup` | `delay_seconds/delay_switch_id/default_active` | `1/3/5`、场景内唯一 ID；恰好一个默认 `3s` 台 |
-| `TemporalPressurePlate` | `target_door` | 要控制的 `TemporalDoor`，可留空做自定义接线 |
+| `TemporalDoor` | `mode/source_plates` | `MOMENTARY_ALL` 或 `LATCHED_ALL`；显式拖入最多 3 块板 |
+| `FutureCondensationBarrier` | `source_recorder` | 唯一负责该屏障的 `FutureRecorder` |
 | `ProgressionDevice` | `device_id` | 当前存档中稳定且唯一的世界进度 ID |
 | `PersistentGate` | `required_device_id` | 要监听的 `ProgressionDevice.device_id` |
 | `DialogueNpc` | `dialogue_resource/dialogue_title` | Dialogue Manager 资源与起始 title |
@@ -71,7 +73,7 @@ YourGrayboxRoot (Node2D)
 
 全局同时只能录一条。记录器自己的未来体存在时保持 `OCCUPIED`；未来体释放且玩家离开后回到 `READY`。其他空闲记录器仍可继续制造各自的未来体，容量等于 authored 记录器数量。
 
-时间锚点只恢复现有时态玩法状态：现在体运动、过去体、延迟选择、所有已有未来体的轨迹与精确播放进度。压力板和门由恢复后的实体碰撞重新计算。不要把它扩展成通用世界序列化器。
+时间锚点只恢复现有时态玩法状态：现在体运动、过去体、延迟选择、所有已有未来体的轨迹与精确播放进度。Momentary 门由恢复后的实体碰撞重新计算；已经锁存的 Latched 门保持当前场景状态。不要把它扩展成通用世界序列化器。
 
 ### 过去延迟台
 
@@ -81,9 +83,20 @@ YourGrayboxRoot (Node2D)
 
 ### 压力板与门
 
-实例化 `temporal_door.tscn` 和 `temporal_pressure_plate.tscn`，在压力板的 `target_door` 中绑定门。现在体、过去体和未来体都可压板；未来体消散或过去体切档时，碰撞释放会自然让门关闭。
+实例化 `temporal_door.tscn` 和所需数量的 `temporal_pressure_plate.tscn`。压力板只广播状态；在门的 `source_plates` 数组中显式拖入 1–3 块板，并选择模式：
 
-若关卡需要多个板共同控制一扇门，作者应在场景内显式放置一个本地组合节点或写一个小型本关脚本，并保持其输入来自各板的 `pressed_changed` 信号。不要把通用“谜题管理器”提前抽象出来。
+- `MOMENTARY_ALL`：全部板同时按下才保持开启，任一释放立即关闭。
+- `LATCHED_ALL`：全部板同时按下一次后保持开启，直到场景重载；它不是永久存档门。
+
+现在体、过去体和未来体都可压板。门 prefab authored 三个状态格，未接线的格子隐藏，已接线格显示当前缺少哪个输入。不要在关卡脚本中重新组合这些板，也不要用它代替 `PersistentGate`。
+
+### Future 凝固屏障
+
+实例化 `future_condensation_barrier.tscn`，把 `source_recorder` 拖到唯一负责它的记录器。默认竖放是墙；旋转根节点 `90°` 后是平台，整体缩放可调整 authored 长度。
+
+屏障只监听该记录器内部 `FutureEcho.active_changed`。进入 Recorder 或录制中只预留槽位，不会凝固；Future 正式 `start_playback()` 才开启碰撞和结晶动画。Future 自然结束、被 Present/Past 撞散、现在房清线或 timeline reset 时，同帧关闭碰撞并解体。Recall 恢复已有 Future 时也会恢复屏障。多个屏障可以绑定同一 Recorder；不要改成监听全局 `future_slots_changed`。
+
+Future 与屏障共用琥珀金色。Future 自己的出现/消散音作为这组结构的统一音色，屏障不额外叠加一套音效，避免多个同源屏障同时放大音量。
 
 ### 收集物
 
@@ -132,7 +145,7 @@ EchoTimeline.reset_timeline(saved_past_delay_seconds, saved_delay_switch_id)
 - 一个 `Camera2D + PhantomCameraHost`，每房一台固定 `PhantomCamera2D`（当前 19 台），`zoom=4`，共用 `0.35s QUAD/EASE_IN_OUT` tween。
 - 每房一个 authored `Area2D` 房间触发器（当前 19 个），直接使用 Phantom Camera 官方 `2d_trigger_area.gd` 示例脚本；镜头选择、中断和补间全部由 Phantom Camera 插件负责。
 - `1s/3s/5s` 三个可重复 `DelayPickup` 延迟台、一个 `FutureRecorder`。
-- 一个显式连接 `TemporalDoor` 的 `TemporalPressurePlate`。
+- 一扇 `source_plates` 显式绑定压力板的 `TemporalDoor` 接线样例。
 - 主场景内联 `PresentHub`，内含按 `E` 交互的 NPC、`current_room` 自动对话、首次/回访剧情、全房环状冲击波、三座延迟台和 `RoomDepartureVfx`。
 - 场景内的 `BranchProgressionDevice` 与 `BranchPersistentGate` 只作为永久进度接线样例；正式谜题仍由本关脚本在条件完成时调用 `activate()`，二者素材与 checkpoint 分离。
 - `MemoryShardA/B/C` 使用 `TemporalCollectible`，只演示槽位持久化收集物，不引入背包。
@@ -156,8 +169,9 @@ EchoTimeline.reset_timeline(saved_past_delay_seconds, saved_delay_switch_id)
 1. 先只实例化 Player，确认 Autoload `EchoTimeline` 的过去体会在默认 3 秒后沿历史路径出现。
 2. 加一台记录器，确认 `L` 后世界回到锚点且新未来体回放。
 3. 加第二台记录器，确认旧未来体恢复锚点进度且两台独立释放。
-4. 加一个压力板与门，确认未来体结束后门立即关闭。
-5. 最后才加 `1/3/5s` 延迟台组合。
+4. 加两块压力板与一扇门，分别确认 Momentary 释放关闭、Latched 首次全满足后保持开启。
+5. 加一个绑定当前 Recorder 的凝固屏障，确认录制不触发、回放触发、Future 释放立即解体。
+6. 最后才加 `1/3/5s` 延迟台组合。
 
 在每一步都从干净检查点重试。若路径回放不对，先检查 `EchoTimeline` Autoload、玩家注册和关卡的 `World` 碰撞层，不要通过修改路径算法或动态复制节点掩盖场景错误。
 
@@ -165,4 +179,4 @@ EchoTimeline.reset_timeline(saved_past_delay_seconds, saved_delay_switch_id)
 
 `GameAudio` 是唯一公开音频入口，Autoload 指向 `Scenes/Autoload/game_audio.tscn`。两台 Music 播放器负责 crossfade，三台固定 UI 播放器负责菜单确认、游戏内确认和取消音；`SettingsModule` 只保存并广播音量值，Bus 应用全部由 `GameAudio` 完成。菜单调用 `play_music("menu", ...)`，玩法入口调用 `play_music("echo_chase_gameplay", ...)`，因此切场景不会继续沿用菜单曲。`ShaderButton` 的 `SelectAudio` 继续负责悬停音，按钮按下只读取 `ui_sound_kind` 元数据，不再注入旧按键音播放器或 fallback。
 
-自动检查只覆盖路径回放、现在房边界、永久进度和明确的行为回归。不要添加把节点层级、Prefab 数量、颜色、动画时长、房间坐标或 Inspector 参数锁死的测试；这些内容以作者当前的场景与 Inspector 调整为准。
+自动检查只覆盖路径回放、门的多板语义、Future/屏障生命周期、Future 碰撞回 dash 与单格上限、现在房边界、永久进度和明确的行为回归。不要添加把正式地图节点层级、Prefab 数量、颜色、动画时长、房间坐标或 Inspector 参数锁死的测试；这些内容以作者当前的场景与 Inspector 调整为准。

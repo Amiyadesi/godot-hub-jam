@@ -4,6 +4,8 @@ extends Area2D
 
 @onready var dialogue_npc: DialogueNpc = %DialogueNpc
 @onready var room_departure_vfx: TemporalDepartureVfx = %RoomDepartureVfx
+@onready var ambient_glow: Polygon2D = $AmbientGlow
+@onready var ambient_particles: GPUParticles2D = $AmbientParticles
 
 var _player_inside := false
 
@@ -17,6 +19,16 @@ func _ready() -> void:
 	dialogue_npc.dialogue_finished.connect(_on_dialogue_finished)
 	if LevelModule.instance != null and LevelModule.instance.is_present_hub_unlocked():
 		dialogue_npc.dialogue_title = "return"
+	_apply_present_ambient()
+
+
+# Shows the central-room field only after its permanent conversion is complete.
+func _apply_present_ambient() -> void:
+	var active := LevelModule.instance != null and LevelModule.instance.is_present_hub_unlocked()
+	ambient_glow.visible = active
+	ambient_particles.emitting = active
+	if active:
+		ambient_particles.restart()
 
 
 # Lets the first Past enter; unlocked returns clear the room immediately.
@@ -52,5 +64,6 @@ func _on_dialogue_finished() -> void:
 	if not SaveSystem.save_slot(1):
 		push_error("PresentRoom failed to save slot 1 after unlocking")
 	dialogue_npc.dialogue_title = "return"
+	_apply_present_ambient()
 	if EchoTimeline.enter_present_room():
 		room_departure_vfx.play_room_departure()
