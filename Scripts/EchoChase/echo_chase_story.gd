@@ -3,12 +3,52 @@ extends Node
 ## Orchestrates memory pickups, Keeper disclosures, routes, and ending persistence.
 
 const MEMORY_SEQUENCES := {
-	"memory_t_minus_5": {"title": "memory_t_minus_5", "tag": "STORY_MEMORY_MINUS_5"},
-	"memory_t_minus_3": {"title": "memory_t_minus_3", "tag": "STORY_MEMORY_MINUS_3"},
-	"memory_t_minus_1": {"title": "memory_t_minus_1", "tag": "STORY_MEMORY_MINUS_1"},
-	"memory_after": {"title": "memory_after", "tag": "STORY_MEMORY_AFTER"},
+	"memory_t_minus_5": {
+		"tag": "STORY_MEMORY_MINUS_5",
+		"lines": [
+			"STORY_MEMORY_MINUS_5_LINE_1",
+			"STORY_MEMORY_MINUS_5_LINE_2",
+			"STORY_MEMORY_MINUS_5_LINE_3",
+			"STORY_MEMORY_MINUS_5_LINE_4",
+		],
+	},
+	"memory_t_minus_3": {
+		"tag": "STORY_MEMORY_MINUS_3",
+		"lines": [
+			"STORY_MEMORY_MINUS_3_LINE_1",
+			"STORY_MEMORY_MINUS_3_LINE_2",
+			"STORY_MEMORY_MINUS_3_LINE_3",
+		],
+	},
+	"memory_t_minus_1": {
+		"tag": "STORY_MEMORY_MINUS_1",
+		"lines": [
+			"STORY_MEMORY_MINUS_1_LINE_1",
+			"STORY_MEMORY_MINUS_1_LINE_2",
+		],
+	},
+	"memory_after": {
+		"tag": "STORY_MEMORY_AFTER",
+		"lines": [
+			"STORY_MEMORY_AFTER_LINE_1",
+			"STORY_MEMORY_AFTER_LINE_2",
+			"STORY_MEMORY_AFTER_LINE_3",
+			"STORY_MEMORY_AFTER_LINE_4",
+			"STORY_MEMORY_AFTER_LINE_5",
+			"STORY_MEMORY_AFTER_LINE_6",
+		],
+	},
 }
+const COMPLETE_MEMORY_LINES := [
+	"STORY_MEMORY_COMPLETE_LINE_1",
+	"STORY_MEMORY_COMPLETE_LINE_2",
+	"STORY_MEMORY_COMPLETE_LINE_3",
+	"STORY_MEMORY_COMPLETE_LINE_4",
+	"STORY_MEMORY_COMPLETE_LINE_5",
+]
 const BRANCH_DEVICE_IDS := ["delay1s", "delay3s", "delay5s"]
+const SEQUENCE_MEMORY := &"memory"
+const SEQUENCE_KEEPER := &"keeper"
 const FLAG_NORMAL_ENDING_SEEN := "normal_ending_seen"
 const FLAG_TRUE_ENDING_SEEN := "true_ending_seen"
 const FLAG_COUNTDOWN_CONFESSION_SEEN := "countdown_confession_seen"
@@ -24,6 +64,7 @@ const FLAG_COUNTDOWN_CONFESSION_SEEN := "countdown_confession_seen"
 var _story_queue: Array[Dictionary] = []
 var _story_playing := false
 var _ending_active := false
+var _normal_ending_pending := false
 
 
 # Connects authored story components and restores no transient cinematic state.
@@ -49,18 +90,18 @@ func _ready() -> void:
 	true_ending_route.true_ending_requested.connect(_on_true_ending_requested)
 
 
-# Queues one self-contained shard memory plus the two permitted Keeper reactions.
+# Queues one red-text shard memory plus the two permitted Keeper reactions.
 func _on_memory_collected(item_id: StringName) -> void:
 	var memory_id := String(item_id)
 	if not MEMORY_SEQUENCES.has(memory_id):
 		return
 	var sequence: Dictionary = MEMORY_SEQUENCES[memory_id]
-	_enqueue_story(String(sequence["title"]), String(sequence["tag"]))
+	_enqueue_memory(sequence["lines"] as Array, String(sequence["tag"]))
 	var memory_count := _memory_count()
 	if memory_count == 1:
-		_enqueue_story("keeper_first_memory")
+		_enqueue_keeper_dialogue("keeper_first_memory")
 	elif memory_count == MEMORY_SEQUENCES.size():
-		_enqueue_story("keeper_all_memories")
+		_enqueue_keeper_dialogue("keeper_all_memories")
 
 
 # Persists and queues the false-deadline confession exactly once per slot.
@@ -68,18 +109,21 @@ func _on_run_countdown_expired() -> void:
 	if NarrativeSlotModule.instance.has_flag(FLAG_COUNTDOWN_CONFESSION_SEEN):
 		return
 	_set_narrative_flag(FLAG_COUNTDOWN_CONFESSION_SEEN)
-	_enqueue_story("countdown_confession")
+	_enqueue_keeper_dialogue("countdown_confession")
 
 
 # Queues the fixed chronological reconstruction and arms the true-ending action.
 func _on_memory_reassembly_requested() -> void:
-	_enqueue_story("memory_complete", "STORY_MEMORY_REASSEMBLED")
+	_enqueue_memory(COMPLETE_MEMORY_LINES, "STORY_MEMORY_REASSEMBLED")
 	true_ending_route.arm_knowledge_lock()
 
 
-# Starts the silent loop ending when all three branch devices are complete.
+# Starts the staged loop ending when all three branch devices are complete.
 func _on_normal_ending_body_entered(body: Node2D) -> void:
 	if _ending_active or body != player or not _branches_complete():
+		return
+	if _story_playing:
+		_normal_ending_pending = true
 		return
 	_ending_active = true
 	EchoTimeline.set_gameplay_active(false)
@@ -106,23 +150,41 @@ func _on_true_ending_requested() -> void:
 	SceneManager.change_scene_to_file(menu_scene_path)
 
 
-# Appends one dialogue title and starts the single serialized playback loop.
-func _enqueue_story(title: String, time_tag_key := "") -> void:
-	_story_queue.append({"title": title, "time_tag": time_tag_key})
+# Appends one authored red-text memory and starts the serialized playback loop.
+func _enqueue_memory(line_keys: Array, time_tag_key: String) -> void:
+	_story_queue.append({
+		"kind": SEQUENCE_MEMORY,
+		"lines": line_keys,
+		"time_tag": time_tag_key,
+	})
 	if not _story_playing:
 		_drain_story_queue()
 
 
-# Plays queued flashbacks and Keeper lines without overlapping pause ownership.
+# Appends one Keeper balloon sourced from the existing Present Hub dialogue file.
+func _enqueue_keeper_dialogue(title: String) -> void:
+	_story_queue.append({"kind": SEQUENCE_KEEPER, "title": title})
+	if not _story_playing:
+		_drain_story_queue()
+
+
+# Plays queued red-text memories and Keeper balloons without overlapping pause ownership.
 func _drain_story_queue() -> void:
 	_story_playing = true
 	while not _story_queue.is_empty():
 		var sequence: Dictionary = _story_queue.pop_front()
-		await narrative_presenter.play_dialogue(
-			String(sequence["title"]),
-			String(sequence["time_tag"])
-		)
+		match StringName(sequence["kind"]):
+			SEQUENCE_MEMORY:
+				await narrative_presenter.play_memory_sequence(
+					sequence["lines"] as Array,
+					String(sequence["time_tag"])
+				)
+			SEQUENCE_KEEPER:
+				await narrative_presenter.play_keeper_dialogue(String(sequence["title"]))
 	_story_playing = false
+	if _normal_ending_pending:
+		_normal_ending_pending = false
+		_on_normal_ending_body_entered(player)
 
 
 # Counts only the four stable story IDs stored by LevelModule.

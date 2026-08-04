@@ -381,3 +381,180 @@ msgstr "This time, we run together."
 
 msgid "跑吧。"
 msgstr "Run."
+
+msgid "TUTORIAL_MOVE"
+msgstr "{left} / {right}  MOVE"
+
+msgid "TUTORIAL_JUMP"
+msgstr "{jump}  JUMP"
+
+msgid "TUTORIAL_DASH"
+msgstr "{dash} + DIRECTION  DASH"
+
+msgid "STORY_MEMORY_MINUS_5_LINE_1"
+msgstr "Lia: I'll stay and shut it down. You go first."
+
+msgid "STORY_MEMORY_MINUS_5_LINE_2"
+msgstr "He: Emilia-"
+
+msgid "STORY_MEMORY_MINUS_5_LINE_3"
+msgstr "Lia: Don't use my full name. Run."
+
+msgid "STORY_MEMORY_MINUS_5_LINE_4"
+msgstr "Lia: I'll catch up with you."
+
+msgid "STORY_MEMORY_MINUS_3_LINE_1"
+msgstr "He: I won't leave alone."
+
+msgid "STORY_MEMORY_MINUS_3_LINE_2"
+msgstr "He: I won't leave Lia here."
+
+msgid "STORY_MEMORY_MINUS_3_LINE_3"
+msgstr "Lia: It wasn't you..."
+
+msgid "STORY_MEMORY_MINUS_1_LINE_1"
+msgstr "Lia: RUN-"
+
+msgid "STORY_MEMORY_MINUS_1_LINE_2"
+msgstr "The memory breaks here."
+
+msgid "STORY_MEMORY_AFTER_LINE_1"
+msgstr "He: I ran."
+
+msgid "STORY_MEMORY_AFTER_LINE_2"
+msgstr "He: I got Lia killed."
+
+msgid "STORY_MEMORY_AFTER_LINE_3"
+msgstr "Rift: What do you want me to take?"
+
+msgid "STORY_MEMORY_AFTER_LINE_4"
+msgstr "He: My past. My future. The part of me she would hate."
+
+msgid "STORY_MEMORY_AFTER_LINE_5"
+msgstr "Rift: I only reflect the wish you bring me."
+
+msgid "STORY_MEMORY_AFTER_LINE_6"
+msgstr "He: Take all of it."
+
+msgid "STORY_MEMORY_COMPLETE_LINE_1"
+msgstr "Lia: You did not leave me behind."
+
+msgid "STORY_MEMORY_COMPLETE_LINE_2"
+msgstr "Lia: I chose to stay."
+
+msgid "STORY_MEMORY_COMPLETE_LINE_3"
+msgstr "Lia: RUN."
+
+msgid "STORY_MEMORY_COMPLETE_LINE_4"
+msgstr "Lia: I love you."
+
+msgid "STORY_MEMORY_COMPLETE_LINE_5"
+msgstr "Lia: I will catch up with you."
+
+msgid "ENDING_NORMAL_KEEPER_1"
+msgstr "Keeper: At last... the handoff is complete."
+
+msgid "ENDING_NORMAL_KEEPER_2"
+msgstr "Keeper: Thirty minutes. Three paths. One person willing to remain in my place."
+
+msgid "ENDING_NORMAL_KEEPER_3"
+msgstr "Keeper: Now I can leave."
+
+msgid "ENDING_NORMAL_RIFT_1"
+msgstr "Rift: He deceived you, but not me."
+
+msgid "ENDING_NORMAL_RIFT_2"
+msgstr "Rift: He only forgot that he once stood where you stand."
+
+msgid "ENDING_NORMAL_RIFT_3"
+msgstr "Rift: The past that chased, the present that fled, the future left blank, the Keeper who waited-"
+
+msgid "ENDING_NORMAL_RIFT_4"
+msgstr "Rift: They were always the same man."
+
+msgid "ENDING_NORMAL_RIFT_5"
+msgstr "Rift: You asked me to take your past and future."
+
+msgid "ENDING_NORMAL_RIFT_6"
+msgstr "Rift: I reflect your wish. Now, forget. Once more."
+
+msgid "ENDING_TRUE_ACCEPTANCE_1"
+msgstr "Rift: At last, you have stopped running."
+
+msgid "ENDING_TRUE_ACCEPTANCE_2"
+msgstr "He: I did not defeat the past."
+
+msgid "ENDING_TRUE_ACCEPTANCE_3"
+msgstr "He: I finally let her finish speaking."
+
+msgid "ENDING_TRUE_ACCEPTANCE_4"
+msgstr "Rift: Acceptance is not revision. Understanding cannot undo what happened."
+
+msgid "ENDING_TRUE_ACCEPTANCE_5"
+msgstr "He: I know. I will not ask you to erase her choice."
+
+msgid "ENDING_TRUE_ACCEPTANCE_6"
+msgstr "He: Send the future I recorded back. To that cry of RUN."
+
+msgid "ENDING_TRUE_ACCEPTANCE_7"
+msgstr "Rift: A wish can only open a path. You must run the rest together."
+
+msgid "ENDING_TRUE_TRACE_1"
+msgstr "Rift: For the first time, past, present, and future point the same way."
+
+msgid "ENDING_TRUE_TRACE_2"
+msgstr "Rift: A path that never existed now exists because you carried it here."
+
+msgid "ENDING_TRUE_REUNION_1"
+msgstr "He: Lia."
+
+msgid "ENDING_TRUE_REUNION_2"
+msgstr "Lia: You remember?"
+
+msgid "ENDING_TRUE_REUNION_3"
+msgstr "He: Everything. Even the words you never got to finish."
+
+msgid "ENDING_TRUE_REUNION_4"
+msgstr "He: This time, we run together."
+
+msgid "ENDING_TRUE_REUNION_5"
+msgstr "Lia: Then keep up."
+
+msgid "ENDING_TRUE_EPILOGUE_1"
+msgstr "RUN. I will catch up with you."
+
+msgid "ENDING_TRUE_EPILOGUE_2"
+msgstr "This time, neither of them had to run alone."
+
+msgid "如果你有什么想知道的，可以来问我"
+msgstr "Ask me if there is anything you want to know."
+
+msgid "在倒计时结束之前离去，否则就只能被永恒的困在这里"
+msgstr "Leave before the countdown ends, or be trapped here for eternity."
+
+msgid "在你探索试炼之路的路上自然会发现封锁的出口"
+msgstr "As you explore the trials, you will find the sealed exit."
+
+msgid "激活每条路上的装置就可以解开封印"
+msgstr "Activate the device on each path to break the seal."
+
+msgid "希望你能通过试炼[]然后替代我[]"
+msgstr "I hope you pass the trial[]and take my place[]."
+
+msgid "希望你能通过试炼[secret]然后替代我"
+msgstr "I hope you pass the trial[secret]and take my place."
+
+msgid "那些爱心是什么？"
+msgstr "What are those hearts?"
+
+msgid "...不知道，毕竟这个地方如此诡异"
+msgstr "...I don't know. This place is strange enough."
+
+msgid "你也没必要收集这些，在倒计时前通过试炼"
+msgstr "You do not need them. Finish the trial before the countdown ends."
+
+msgid "这才是离开的正确方式"
+msgstr "That is the proper way to leave."
+
+msgid "……那些爱心不属于试炼。别被它们拖住。"
+msgstr "...Those hearts are not part of the trial. Do not let them slow you down."

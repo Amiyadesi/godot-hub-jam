@@ -1,0 +1,65 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://Scripts/EchoChase/UI/echo_chase_onboarding.gd" id="1_script"]
+[ext_resource type="Theme" path="res://resources/main_theme.tres" id="2_theme"]
+
+[node name="EchoChaseOnboarding" type="CanvasLayer"]
+process_mode = 3
+layer = 45
+visible = false
+script = ExtResource("1_script")
+
+[node name="Root" type="Control" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("2_theme")
+mouse_filter = 2
+
+[node name="PromptColumn" type="VBoxContainer" parent="Root"]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -360.0
+offset_top = -190.0
+offset_right = 360.0
+offset_bottom = -54.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_constants/separation = 8
+mouse_filter = 2
+
+[node name="MovePrompt" type="Label" parent="Root/PromptColumn"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.82, 0.96, 1, 1)
+theme_override_colors/font_outline_color = Color(0.005, 0.012, 0.014, 0.96)
+theme_override_constants/outline_size = 5
+theme_override_font_sizes/font_size = 24
+text = "TUTORIAL_MOVE"
+horizontal_alignment = 1
+
+[node name="JumpPrompt" type="Label" parent="Root/PromptColumn"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.82, 0.96, 1, 1)
+theme_override_colors/font_outline_color = Color(0.005, 0.012, 0.014, 0.96)
+theme_override_constants/outline_size = 5
+theme_override_font_sizes/font_size = 24
+text = "TUTORIAL_JUMP"
+horizontal_alignment = 1
+
+[node name="DashPrompt" type="Label" parent="Root/PromptColumn"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.78, 0.28, 1)
+theme_override_colors/font_outline_color = Color(0.005, 0.012, 0.014, 0.96)
+theme_override_constants/outline_size = 5
+theme_override_font_sizes/font_size = 24
+text = "TUTORIAL_DASH"
+horizontal_alignment = 1

@@ -1,13 +1,59 @@
 class_name EchoChaseNarrativePresenter
 extends Node
-## Owns the authored flashback overlay and the two compact ending tableaux.
+## Owns red-text memories, Keeper balloons, and the two ending tableaux.
 
-@export var dialogue_resource: DialogueResource
+const NORMAL_KEEPER_LINES := [
+	"ENDING_NORMAL_KEEPER_1",
+	"ENDING_NORMAL_KEEPER_2",
+	"ENDING_NORMAL_KEEPER_3",
+]
+const NORMAL_RIFT_LINES := [
+	"ENDING_NORMAL_RIFT_1",
+	"ENDING_NORMAL_RIFT_2",
+	"ENDING_NORMAL_RIFT_3",
+	"ENDING_NORMAL_RIFT_4",
+	"ENDING_NORMAL_RIFT_5",
+	"ENDING_NORMAL_RIFT_6",
+]
+const TRUE_ACCEPTANCE_LINES := [
+	"ENDING_TRUE_ACCEPTANCE_1",
+	"ENDING_TRUE_ACCEPTANCE_2",
+	"ENDING_TRUE_ACCEPTANCE_3",
+	"ENDING_TRUE_ACCEPTANCE_4",
+	"ENDING_TRUE_ACCEPTANCE_5",
+	"ENDING_TRUE_ACCEPTANCE_6",
+	"ENDING_TRUE_ACCEPTANCE_7",
+]
+const TRUE_TRACE_LINES := [
+	"ENDING_TRUE_TRACE_1",
+	"ENDING_TRUE_TRACE_2",
+]
+const TRUE_REUNION_LINES := [
+	"ENDING_TRUE_REUNION_1",
+	"ENDING_TRUE_REUNION_2",
+	"ENDING_TRUE_REUNION_3",
+	"ENDING_TRUE_REUNION_4",
+	"ENDING_TRUE_REUNION_5",
+]
+const TRUE_EPILOGUE_LINES := [
+	"ENDING_TRUE_EPILOGUE_1",
+	"ENDING_TRUE_EPILOGUE_2",
+]
+
+@export var keeper_dialogue_resource: DialogueResource
+@export_group("Text Timing")
+@export_range(0.05, 1.0, 0.05) var text_fade_seconds := 0.22
+@export_range(0.2, 3.0, 0.05) var memory_hold_seconds := 0.9
+@export_range(0.2, 3.0, 0.05) var ending_hold_seconds := 1.15
 
 @onready var memory_layer: CanvasLayer = %MemoryLayer
 @onready var memory_tag: Label = %MemoryTag
+@onready var memory_text: Label = %MemoryText
 @onready var story_balloon: ModularBalloon = %StoryBalloon
 @onready var ending_layer: CanvasLayer = %EndingLayer
+@onready var ending_flash: ColorRect = %EndingFlash
+@onready var normal_ending_text: Label = %NormalEndingText
+@onready var true_ending_text: Label = %TrueEndingText
 @onready var normal_group: Node2D = %NormalGroup
 @onready var loop_player: Sprite2D = %LoopPlayer
 @onready var loop_replacement_keeper: Sprite2D = %LoopReplacementKeeper
@@ -41,59 +87,77 @@ extends Node
 @onready var lia_exit_target: Marker2D = %LiaExitTarget
 @onready var true_return_button: Button = %TrueReturnButton
 
-var _dialogue_active := false
+var _sequence_active := false
 
 
 # Hides all authored story surfaces until a sequence explicitly owns the screen.
 func _ready() -> void:
-	if dialogue_resource == null:
-		push_error("EchoChaseNarrativePresenter requires a dialogue_resource")
+	if keeper_dialogue_resource == null:
+		push_error("EchoChaseNarrativePresenter requires keeper_dialogue_resource")
 	memory_layer.visible = false
 	ending_layer.visible = false
+	memory_text.hide()
+	normal_ending_text.hide()
+	true_ending_text.hide()
+	ending_flash.hide()
 	normal_continue_button.hide()
 	true_return_button.hide()
 
 
-# Pauses gameplay and plays one Dialogue Manager title over the memory surface.
-func play_dialogue(title: String, time_tag_key := "", show_backdrop := true) -> void:
-	if _dialogue_active:
-		push_error("EchoChaseNarrativePresenter cannot overlap dialogue sequences")
+# Pauses play and flashes a memory as centered red text instead of a dialogue balloon.
+func play_memory_sequence(line_keys: Array, time_tag_key: String) -> void:
+	if _sequence_active:
+		push_error("EchoChaseNarrativePresenter cannot overlap story sequences")
 		return
-	if title.is_empty() or dialogue_resource == null:
-		push_error("EchoChaseNarrativePresenter requires a valid dialogue title")
+	if line_keys.is_empty():
+		push_error("EchoChaseNarrativePresenter requires memory line keys")
 		return
-	_dialogue_active = true
-	var was_paused := get_tree().paused
-	get_tree().paused = true
-	EchoTimeline.pause_run_countdown()
-	memory_tag.text = tr(time_tag_key) if not time_tag_key.is_empty() else ""
-	memory_layer.visible = show_backdrop
-	story_balloon.start(dialogue_resource, title, [self])
-	await story_balloon.dialogue_ended
+	_sequence_active = true
+	var was_paused := _pause_world()
+	memory_tag.text = tr(time_tag_key)
+	memory_layer.visible = true
+	await _play_lines(memory_text, line_keys, memory_hold_seconds)
 	memory_layer.visible = false
-	get_tree().paused = was_paused
-	if not was_paused:
-		EchoTimeline.resume_run_countdown()
-	_dialogue_active = false
+	_restore_world(was_paused)
+	_sequence_active = false
 
 
-# Plays the silent Keeper handoff loop and waits for the authored Continue command.
+# Plays only Keeper reactions through the existing Present Hub dialogue resource.
+func play_keeper_dialogue(title: String) -> void:
+	if _sequence_active:
+		push_error("EchoChaseNarrativePresenter cannot overlap story sequences")
+		return
+	if title.is_empty() or keeper_dialogue_resource == null:
+		push_error("EchoChaseNarrativePresenter requires a valid Keeper dialogue title")
+		return
+	_sequence_active = true
+	var was_paused := _pause_world()
+	story_balloon.start(keeper_dialogue_resource, title, [self])
+	await story_balloon.dialogue_ended
+	_restore_world(was_paused)
+	_sequence_active = false
+
+
+# Plays the Keeper's false escape, the Rift's reveal, and the memory-wipe loop.
 func play_normal_ending() -> void:
-	var was_paused := _begin_ending()
+	var was_paused := _pause_world()
 	_reset_normal_tableau()
 	ending_layer.visible = true
 	normal_group.show()
-	var exit_tween := _new_ending_tween()
-	exit_tween.tween_interval(0.35)
+	await _play_lines(normal_ending_text, NORMAL_KEEPER_LINES, ending_hold_seconds)
+	var exit_tween := _new_cinematic_tween()
+	exit_tween.tween_interval(0.25)
 	exit_tween.set_parallel(true)
 	exit_tween.tween_property(loop_old_keeper, "position", loop_exit_target.position, 1.2)
 	exit_tween.tween_property(loop_old_keeper, "modulate:a", 0.0, 1.2)
-	exit_tween.tween_property(loop_player, "modulate:a", 0.0, 0.8).set_delay(0.35)
-	exit_tween.tween_property(loop_replacement_keeper, "modulate:a", 1.0, 0.8).set_delay(0.35)
+	exit_tween.tween_property(loop_player, "modulate:a", 0.0, 0.8).set_delay(0.3)
+	exit_tween.tween_property(loop_replacement_keeper, "modulate:a", 1.0, 0.8).set_delay(0.3)
 	await exit_tween.finished
+	await _play_lines(normal_ending_text, NORMAL_RIFT_LINES, ending_hold_seconds)
+	await _play_memory_wash()
 	loop_reborn_player.show()
 	loop_run_label.show()
-	var rebirth_tween := _new_ending_tween()
+	var rebirth_tween := _new_cinematic_tween()
 	rebirth_tween.set_parallel(true)
 	rebirth_tween.tween_property(loop_reborn_player, "modulate:a", 1.0, 0.55)
 	rebirth_tween.tween_property(loop_run_label, "modulate:a", 1.0, 0.55)
@@ -102,61 +166,90 @@ func play_normal_ending() -> void:
 	normal_continue_button.grab_focus()
 	await normal_continue_button.pressed
 	ending_layer.visible = false
-	_finish_ending(was_paused)
+	_restore_world(was_paused)
 
 
-# Plays convergence, backward Future Trace, reunion, and the third-path exit.
+# Plays acceptance, the backward Future Trace, reunion, and the third-path escape.
 func play_true_ending() -> void:
-	var was_paused := _begin_ending()
+	var was_paused := _pause_world()
 	_reset_true_tableau()
 	ending_layer.visible = true
 	true_group.show()
-	var merge_tween := _new_ending_tween()
+	var merge_tween := _new_cinematic_tween()
 	merge_tween.set_parallel(true)
 	for figure in [past_figure, present_figure, future_figure, keeper_figure]:
 		merge_tween.tween_property(figure, "position", merge_target.position, 1.0)
 		merge_tween.tween_property(figure, "modulate:a", 0.0, 1.0)
 	await merge_tween.finished
 	merged_figure.show()
-	var merged_tween := _new_ending_tween()
+	var merged_tween := _new_cinematic_tween()
 	merged_tween.tween_property(merged_figure, "modulate:a", 1.0, 0.35)
 	await merged_tween.finished
+	await _play_lines(true_ending_text, TRUE_ACCEPTANCE_LINES, ending_hold_seconds)
 	future_trace.show()
 	true_run_label.show()
-	var trace_tween := _new_ending_tween()
+	var trace_tween := _new_cinematic_tween()
 	trace_tween.set_parallel(true)
 	trace_tween.tween_property(future_trace, "scale:x", 1.0, 1.0)
 	trace_tween.tween_property(true_run_label, "modulate:a", 1.0, 0.45)
 	await trace_tween.finished
+	await _play_lines(true_ending_text, TRUE_TRACE_LINES, ending_hold_seconds)
 	merged_figure.hide()
 	rewritten_hero.show()
 	lia_figure.show()
-	await play_dialogue("true_ending", "", false)
+	await _play_lines(true_ending_text, TRUE_REUNION_LINES, ending_hold_seconds)
 	third_path.show()
-	var escape_tween := _new_ending_tween()
+	var escape_tween := _new_cinematic_tween()
 	escape_tween.set_parallel(true)
 	escape_tween.tween_property(rewritten_hero, "position", true_exit_target.position, 1.4)
 	escape_tween.tween_property(lia_figure, "position", lia_exit_target.position, 1.4)
 	escape_tween.tween_property(rewritten_hero, "modulate:a", 0.0, 1.4)
 	escape_tween.tween_property(lia_figure, "modulate:a", 0.0, 1.4)
 	await escape_tween.finished
+	await _play_lines(true_ending_text, TRUE_EPILOGUE_LINES, ending_hold_seconds)
 	true_return_button.show()
 	true_return_button.grab_focus()
 	await true_return_button.pressed
 	ending_layer.visible = false
-	_finish_ending(was_paused)
+	_restore_world(was_paused)
 
 
-# Freezes the world while keeping this PROCESS_MODE_ALWAYS component animated.
-func _begin_ending() -> bool:
+# Serializes translated lines through one centered label with a short fade rhythm.
+func _play_lines(label: Label, line_keys: Array, hold_seconds: float) -> void:
+	for line_key in line_keys:
+		label.text = tr(String(line_key))
+		_set_alpha(label, 0.0)
+		label.show()
+		var tween := _new_cinematic_tween()
+		tween.tween_property(label, "modulate:a", 1.0, text_fade_seconds)
+		tween.tween_interval(hold_seconds)
+		tween.tween_property(label, "modulate:a", 0.0, text_fade_seconds)
+		await tween.finished
+	label.hide()
+
+
+# Flashes the authored pale surface once as the Rift clears both surviving selves.
+func _play_memory_wash() -> void:
+	ending_flash.show()
+	_set_alpha(ending_flash, 0.0)
+	var tween := _new_cinematic_tween()
+	tween.tween_property(ending_flash, "modulate:a", 0.92, 0.16)
+	tween.tween_interval(0.12)
+	tween.tween_property(ending_flash, "modulate:a", 0.0, 0.55)
+	await tween.finished
+	ending_flash.hide()
+
+
+# Freezes gameplay and the false deadline while a story surface owns the screen.
+func _pause_world() -> bool:
 	var was_paused := get_tree().paused
 	get_tree().paused = true
 	EchoTimeline.pause_run_countdown()
 	return was_paused
 
 
-# Restores the exact pause state that existed before the ending sequence.
-func _finish_ending(was_paused: bool) -> void:
+# Restores the exact pause and countdown state that preceded the story sequence.
+func _restore_world(was_paused: bool) -> void:
 	get_tree().paused = was_paused
 	if not was_paused:
 		EchoTimeline.resume_run_countdown()
@@ -167,6 +260,9 @@ func _reset_normal_tableau() -> void:
 	true_group.hide()
 	normal_group.show()
 	normal_continue_button.hide()
+	normal_ending_text.hide()
+	true_ending_text.hide()
+	ending_flash.hide()
 	loop_player.position = loop_player_start.position
 	loop_replacement_keeper.position = loop_player_start.position
 	loop_old_keeper.position = loop_keeper_start.position
@@ -188,6 +284,9 @@ func _reset_true_tableau() -> void:
 	normal_group.hide()
 	true_group.show()
 	true_return_button.hide()
+	normal_ending_text.hide()
+	true_ending_text.hide()
+	ending_flash.hide()
 	past_figure.position = past_start.position
 	present_figure.position = present_start.position
 	future_figure.position = future_start.position
@@ -212,7 +311,7 @@ func _reset_true_tableau() -> void:
 
 
 # Creates one pause-safe tween bound to the authored presenter.
-func _new_ending_tween() -> Tween:
+func _new_cinematic_tween() -> Tween:
 	return create_tween().set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
 
 

@@ -31,7 +31,8 @@
 [ext_resource type="PackedScene" uid="uid://0hn7v00wyjhs" path="res://Scenes/UIorgan/floating_text.tscn" id="36_run_text"]
 [ext_resource type="PackedScene" path="res://Scenes/EchoChase/UI/echo_chase_narrative_presenter.tscn" id="37_narrative_presenter"]
 [ext_resource type="PackedScene" path="res://Scenes/EchoChase/Prefabs/true_ending_route.tscn" id="38_true_ending_route"]
-[ext_resource type="Script" path="res://Scripts/EchoChase/echo_chase_story.gd" id="39_story"]
+[ext_resource type="Script" uid="uid://cc7ae53mgb36i" path="res://Scripts/EchoChase/echo_chase_story.gd" id="39_story"]
+[ext_resource type="PackedScene" path="res://Scenes/EchoChase/UI/echo_chase_onboarding.tscn" id="40_onboarding"]
 
 [sub_resource type="Resource" id="PhantomCameraTween_room"]
 script = ExtResource("25_pcam_tween")
@@ -56,9 +57,6 @@ size = Vector2(480, 270)
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_present_room"]
 size = Vector2(473, 251)
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_normal_ending"]
-size = Vector2(64, 96)
-
 [sub_resource type="ParticleProcessMaterial" id="Particle_present_room_ambient"]
 particle_flag_disable_z = true
 emission_shape = 3
@@ -71,6 +69,9 @@ gravity = Vector3(0, -4, 0)
 scale_min = 0.55
 scale_max = 1.4
 color = Color(0.27, 0.82, 1, 0.34)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_normal_ending"]
+size = Vector2(64, 96)
 
 [node name="EchoChaseStart" type="Node2D" unique_id=1352532759]
 
@@ -824,24 +825,24 @@ required_device_id = &"delay3s"
 position = Vector2(2282, 1102)
 required_device_id = &"delay5s"
 
-[node name="TrueEndingRoute" parent="World/Finnal" instance=ExtResource("38_true_ending_route")]
+[node name="TrueEndingRoute" parent="World/Finnal" unique_id=749620334 instance=ExtResource("38_true_ending_route")]
 position = Vector2(2744, 1072)
 
-[node name="NormalExit" type="Area2D" parent="World/Finnal"]
+[node name="NormalExit" type="Area2D" parent="World/Finnal" unique_id=2027863700]
 position = Vector2(2860, 1070)
 collision_layer = 0
 collision_mask = 2
 monitorable = false
 
-[node name="Portal" type="Line2D" parent="World/Finnal/NormalExit"]
+[node name="Portal" type="Line2D" parent="World/Finnal/NormalExit" unique_id=1076137713]
 points = PackedVector2Array(0, -48, 0, 48)
 width = 8.0
 default_color = Color(0.62, 0.92, 1, 0.86)
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="World/Finnal/NormalExit"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="World/Finnal/NormalExit" unique_id=2133525916]
 shape = SubResource("RectangleShape2D_normal_ending")
 
-[node name="FinalReturnPoint" type="Marker2D" parent="World/Finnal"]
+[node name="FinalReturnPoint" type="Marker2D" parent="World/Finnal" unique_id=72642556]
 position = Vector2(2740, 1070)
 
 [node name="UI" type="CanvasLayer" parent="." unique_id=2042448453]
@@ -851,7 +852,6 @@ player = NodePath("../../World/EchoPlayer")
 
 [node name="PauseScreen" parent="UI" unique_id=948210252 instance=ExtResource("8_wwiui")]
 visible = false
-color = Color(0, 0, 0, 0.42)
 modal_offset = Vector2(0, 0.08)
 
 [node name="SettingScreen" parent="UI" unique_id=992903176 instance=ExtResource("10_hg02a")]
@@ -862,9 +862,12 @@ size_flags_vertical = 3
 color = Color(0, 0, 0, 0.68)
 modal_offset = Vector2(0, 0.08)
 
-[node name="NarrativePresenter" parent="." instance=ExtResource("37_narrative_presenter")]
+[node name="NarrativePresenter" parent="." unique_id=176848342 instance=ExtResource("37_narrative_presenter")]
 
-[node name="StoryController" type="Node" parent="." node_paths=PackedStringArray("gameplay_world", "player", "narrative_presenter", "true_ending_route", "normal_ending_trigger", "final_return_point")]
+[node name="Onboarding" parent="." unique_id=810025189 node_paths=PackedStringArray("player") instance=ExtResource("40_onboarding")]
+player = NodePath("../World/EchoPlayer")
+
+[node name="StoryController" type="Node" parent="." unique_id=926052509 node_paths=PackedStringArray("gameplay_world", "player", "narrative_presenter", "true_ending_route", "normal_ending_trigger", "final_return_point")]
 process_mode = 3
 script = ExtResource("39_story")
 gameplay_world = NodePath("../World")
@@ -875,7 +878,7 @@ normal_ending_trigger = NodePath("../World/Finnal/NormalExit")
 final_return_point = NodePath("../World/Finnal/FinalReturnPoint")
 menu_scene_path = "res://Scenes/UI/Menu/menu.tscn"
 
-[node name="SceneController" type="Node" parent="." unique_id=1768837849 node_paths=PackedStringArray("player", "gameplay_world", "spawn_point", "present_room", "pause_screen", "setting_screen", "reset_audio")]
+[node name="SceneController" type="Node" parent="." unique_id=1768837849 node_paths=PackedStringArray("player", "gameplay_world", "spawn_point", "present_room", "pause_screen", "setting_screen", "onboarding", "reset_audio")]
 process_mode = 3
 script = ExtResource("12_pasgv")
 checkpoint_scene_path = "res://Scenes/EchoChase/echo_chase_start.tscn"
@@ -886,6 +889,7 @@ spawn_point = NodePath("../World/SpawnPoint")
 present_room = NodePath("../World/PresentHub")
 pause_screen = NodePath("../UI/PauseScreen")
 setting_screen = NodePath("../UI/SettingScreen")
+onboarding = NodePath("../Onboarding")
 reset_audio = NodePath("ResetAudio")
 gameplay_music = ExtResource("14_gameplay_music")
 present_entry_transition = ExtResource("20_present_entry")

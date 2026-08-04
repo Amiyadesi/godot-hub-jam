@@ -18,6 +18,7 @@ const CURRENT_ROOM_CHECKPOINT_ID := &"current_room"
 @export var present_room: PresentRoom
 @export var pause_screen: PauseScreen
 @export var setting_screen: SettingScreen
+@export var onboarding: EchoChaseOnboarding
 @export var reset_audio: AudioStreamPlayer
 @export var gameplay_music: AudioStream
 @export var present_entry_transition: SceneTransition
@@ -35,11 +36,15 @@ var _respawn_delay_switch_id := EchoTimeline.DEFAULT_DELAY_SWITCH_ID
 var _reset_in_progress := false
 var _entry_intro_active := false
 var _entry_tween: Tween
+var _show_onboarding_on_entry := true
 
 
 # 收集当前场景实际摆放的机关，并接通存档、失败和暂停信号。
 func _ready() -> void:
 	EchoTimeline.set_gameplay_active(false)
+	if onboarding == null:
+		push_error("EchoChaseStart requires the authored onboarding component")
+		return
 	if gameplay_music == null:
 		push_error("EchoChaseStart requires gameplay_music")
 	else:
@@ -132,6 +137,7 @@ func _on_run_countdown_changed(remaining_seconds: float, _maximum_seconds: float
 
 # 新游戏使用默认3秒台；Continue 恢复坐标、延迟台和干净时间线。
 func _restore_entry_position() -> void:
+	_show_onboarding_on_entry = true
 	_respawn_position = spawn_point.global_position
 	_respawn_past_delay_seconds = EchoTimeline.DEFAULT_PAST_DELAY
 	_respawn_delay_switch_id = EchoTimeline.DEFAULT_DELAY_SWITCH_ID
@@ -162,6 +168,7 @@ func _restore_entry_position() -> void:
 	_respawn_position = checkpoint.get("position", active_checkpoint.get_respawn_position()) as Vector2
 	_respawn_past_delay_seconds = saved_delay
 	_respawn_delay_switch_id = saved_switch_id
+	_show_onboarding_on_entry = false
 	active_checkpoint.set_active(true, false)
 	player.reset_player(_respawn_position)
 	EchoTimeline.reset_timeline(_respawn_past_delay_seconds, _respawn_delay_switch_id)
@@ -195,6 +202,8 @@ func _finish_entry_intro() -> void:
 	EchoTimeline.set_gameplay_active(true)
 	EchoTimeline.resume_run_countdown()
 	_entry_intro_active = false
+	if _show_onboarding_on_entry:
+		onboarding.start()
 
 
 # 识别键盘、手柄和鼠标的离散跳过输入。
