@@ -11,6 +11,7 @@ const MATERIALIZE_PREVIEW_SECONDS := 0.35
 @onready var outline_visual: AnimatedSprite2D = %OutlineVisual
 @onready var history_trail: AnimatedSprite2D = %HistoryTrail
 @onready var history_trail_far: AnimatedSprite2D = %HistoryTrailFar
+@onready var motion_trail: GPUParticles2D = %MotionTrail
 @onready var pixel_burst: GPUParticles2D = %PixelBurst
 @onready var vfx_animation_player: AnimationPlayer = %VfxAnimationPlayer
 @onready var departure_vfx: TemporalDepartureVfx = %DepartureVfx
@@ -64,6 +65,7 @@ func begin_phase_shift() -> void:
 	_phase_shifting = true
 	_materializing = false
 	_active = false
+	motion_trail.emitting = false
 	collision_shape.set_deferred("disabled", true)
 	if visible:
 		departure_vfx.play_from_sprites(visual, outline_visual, _last_velocity)
@@ -109,6 +111,7 @@ func reset_echo() -> void:
 	outline_visual.play(&"idle")
 	history_trail.play(&"idle")
 	history_trail_far.play(&"idle")
+	motion_trail.emitting = false
 	pixel_burst.emitting = false
 	departure_vfx.reset_vfx()
 	_last_velocity = Vector2.ZERO
@@ -129,6 +132,7 @@ func dissipate() -> void:
 	outline_visual.visible = false
 	history_trail.visible = false
 	history_trail_far.visible = false
+	motion_trail.emitting = false
 	pixel_burst.emitting = false
 	collision_shape.set_deferred("disabled", true)
 
@@ -151,6 +155,8 @@ func is_materializing() -> bool:
 
 # 不改历史路径，只切换该区域的玩法存在状态。
 func _set_active(value: bool) -> void:
+	if not value:
+		motion_trail.emitting = false
 	if _active == value:
 		return
 	_active = value
@@ -185,6 +191,8 @@ func _apply_frame_visual(frame: TemporalFrame) -> void:
 	var trail_direction := frame.velocity.normalized() if not frame.velocity.is_zero_approx() else Vector2(frame.facing, 0.0)
 	history_trail.position = -trail_direction * 5.0 + Vector2(0.0, 1.0)
 	history_trail_far.position = -trail_direction * 10.0 + Vector2(0.0, 2.0)
+	motion_trail.amount_ratio = 0.35 if _uses_low_flash_mode() else 1.0
+	motion_trail.emitting = _active and frame.velocity.length_squared() > 36.0
 
 
 # 只抓取不在相位期的当前玩家。
@@ -224,6 +232,7 @@ func _begin_materialization(frame: TemporalFrame) -> void:
 func _on_setting_changed(key: String, _value: Variant) -> void:
 	if key != "low_flash_mode":
 		return
+	motion_trail.amount_ratio = 0.35 if _uses_low_flash_mode() else 1.0
 	if _uses_low_flash_mode():
 		pixel_burst.emitting = false
 	match vfx_animation_player.current_animation:

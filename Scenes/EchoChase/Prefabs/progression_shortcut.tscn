@@ -1,9 +1,52 @@
-[gd_scene load_steps=7 format=3]
+[gd_scene load_steps=11 format=3]
 
 [ext_resource type="Script" path="res://Scripts/EchoChase/progression_shortcut.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/echo_chase/vfx/temporal_particle.svg" id="2_particle"]
 
 [sub_resource type="RectangleShape2D" id="Shape_shortcut"]
 size = Vector2(32, 64)
+
+[sub_resource type="ParticleProcessMaterial" id="Particle_scatter"]
+particle_flag_disable_z = true
+direction = Vector3(0, -1, 0)
+spread = 180.0
+initial_velocity_min = 4.0
+initial_velocity_max = 14.0
+damping_min = 1.0
+damping_max = 3.0
+scale_min = 0.3
+scale_max = 0.75
+color = Color(0.34, 0.92, 1, 0.58)
+emission_shape = 3
+emission_box_extents = Vector3(20, 36, 1)
+
+[sub_resource type="ParticleProcessMaterial" id="Particle_condense"]
+particle_flag_disable_z = true
+direction = Vector3(0, 0, 0)
+spread = 180.0
+initial_velocity_min = 0.0
+initial_velocity_max = 4.0
+radial_accel_min = -240.0
+radial_accel_max = -160.0
+scale_min = 0.45
+scale_max = 0.95
+color = Color(0.58, 0.98, 1, 0.92)
+emission_shape = 3
+emission_box_extents = Vector3(22, 38, 1)
+
+[sub_resource type="ParticleProcessMaterial" id="Particle_release"]
+particle_flag_disable_z = true
+direction = Vector3(1, 0, 0)
+spread = 180.0
+initial_velocity_min = 24.0
+initial_velocity_max = 52.0
+damping_min = 2.0
+damping_max = 6.0
+scale_min = 0.35
+scale_max = 0.85
+color = Color(0.3, 0.9, 1, 0.88)
+emission_shape = 1
+emission_sphere_radius = 8.0
 
 [sub_resource type="Animation" id="Animation_closed"]
 resource_name = "closed"
@@ -114,6 +157,42 @@ polygon = PackedVector2Array(-5, -27, 5, -27, 5, 27, -5, 27)
 points = PackedVector2Array(-16, -32, 16, -32, 16, 32, -16, 32, -16, -32)
 width = 2.0
 default_color = Color(0.38, 0.94, 1, 0.96)
+
+[node name="ScatterParticles" type="GPUParticles2D" parent="."]
+unique_name_in_owner = true
+show_behind_parent = true
+amount = 28
+texture = ExtResource("2_particle")
+lifetime = 1.15
+preprocess = 0.8
+randomness = 0.72
+visibility_rect = Rect2(-48, -64, 96, 128)
+local_coords = true
+process_material = SubResource("Particle_scatter")
+
+[node name="CondenseParticles" type="GPUParticles2D" parent="."]
+unique_name_in_owner = true
+emitting = false
+amount = 42
+texture = ExtResource("2_particle")
+lifetime = 0.32
+one_shot = true
+explosiveness = 1.0
+visibility_rect = Rect2(-56, -72, 112, 144)
+local_coords = true
+process_material = SubResource("Particle_condense")
+
+[node name="ReleaseParticles" type="GPUParticles2D" parent="."]
+unique_name_in_owner = true
+emitting = false
+amount = 46
+texture = ExtResource("2_particle")
+lifetime = 0.42
+one_shot = true
+explosiveness = 1.0
+visibility_rect = Rect2(-80, -96, 160, 192)
+local_coords = false
+process_material = SubResource("Particle_release")
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="."]
 unique_name_in_owner = true

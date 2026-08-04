@@ -1,4 +1,4 @@
-[gd_scene load_steps=19 format=3]
+[gd_scene load_steps=20 format=3]
 
 [ext_resource type="Script" path="res://Scripts/EchoChase/future_echo.gd" id="1_script"]
 [ext_resource type="SpriteFrames" path="res://assets/echo_chase/character/echo_character_frames.tres" id="2_frames"]
@@ -36,6 +36,20 @@ scale_max = 1.5
 color = Color(1, 0.7, 0.2, 0.92)
 emission_shape = 1
 emission_sphere_radius = 7.0
+
+[sub_resource type="ParticleProcessMaterial" id="Particle_future_motion"]
+particle_flag_disable_z = true
+direction = Vector3(-1, 0, 0)
+spread = 180.0
+initial_velocity_min = 4.0
+initial_velocity_max = 16.0
+damping_min = 3.0
+damping_max = 7.0
+scale_min = 0.28
+scale_max = 0.72
+color = Color(1, 0.72, 0.18, 0.6)
+emission_shape = 1
+emission_sphere_radius = 3.0
 
 [sub_resource type="Animation" id="Animation_reset"]
 resource_name = "RESET"
@@ -174,6 +188,19 @@ animation = &"idle"
 [node name="DepartureVfx" parent="." instance=ExtResource("8_departure")]
 unique_name_in_owner = true
 temporal_color = Color(1, 0.7, 0.2, 1)
+
+[node name="MotionTrail" type="GPUParticles2D" parent="."]
+unique_name_in_owner = true
+show_behind_parent = true
+emitting = false
+amount = 16
+texture = ExtResource("5_particle")
+lifetime = 0.55
+preprocess = 0.25
+randomness = 0.62
+visibility_rect = Rect2(-48, -48, 96, 96)
+local_coords = false
+process_material = SubResource("Particle_future_motion")
 
 [node name="PixelBurst" type="GPUParticles2D" parent="."]
 unique_name_in_owner = true

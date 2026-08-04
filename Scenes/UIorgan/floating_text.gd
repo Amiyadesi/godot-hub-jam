@@ -5,39 +5,52 @@ extends Node2D
 
 @onready var label: Label = $Label
 
+var _base_position := Vector2.ZERO
+var _base_scale := Vector2.ONE
+var _base_label_modulate := Color.WHITE
+var _float_tween: Tween
+
 
 # Starts authored one-shot labels such as the spawn-point Run cue.
 func _ready() -> void:
+	_base_position = global_position
+	_base_scale = scale
+	_base_label_modulate = label.modulate
+	label.hide()
 	if not auto_start_text.is_empty():
-		start(auto_start_text)
+		start(tr(auto_start_text))
 
 # Starts the floating label with raw text for existing callers.
 func start(text: String) -> void:
+	label.modulate = _base_label_modulate
+	scale = _base_scale
 	show_float(text)
 
 
 # Starts a formatted numeric damage label with up to two decimals.
 func start_damage(amount: float, tint: Color = Color(1.0, 0.87, 0.48, 1.0), scale_boost: float = 1.0) -> void:
 	label.modulate = tint
-	#scale = Vector2.ONE * scale_boost
+	scale = _base_scale * scale_boost
 	show_float(_format_damage(amount))
 
 
-# Animates the label upward, then frees the scene.
+# Holds the authored text in world space, then lets it drift away.
 func show_float(text: String) -> void:
+	if _float_tween != null and _float_tween.is_valid():
+		_float_tween.kill()
+	global_position = _base_position
+	modulate.a = 1.0
 	label.text = text
-	var tween = create_tween()
-	tween.set_parallel()
-	tween.tween_property(self, "global_position", global_position + Vector2(0.0, -120.0), 0.55)\
+	label.show()
+	_float_tween = create_tween()
+	_float_tween.tween_property(self, "global_position", _base_position + Vector2(0.0, -20.0), 0.28)\
 		.set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_CUBIC)
-	tween.tween_property(self, "modulate:a", 0.0, 0.55)\
+	_float_tween.tween_interval(1.2)
+	_float_tween.tween_property(self, "global_position", _base_position + Vector2(0.0, -64.0), 0.55)\
 		.set_ease(Tween.EASE_IN).set_trans(Tween.TRANS_CUBIC)
-
-	var scale_tween = create_tween()
-	scale_tween.tween_property(self, "scale", Vector2.ONE * 1.3, 0.15).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_CUBIC)
-	scale_tween.tween_property(self, "scale", Vector2.ONE, 0.15).set_ease(Tween.EASE_IN).set_trans(Tween.TRANS_CUBIC)
-	tween.chain()
-	tween.tween_callback(queue_free)
+	_float_tween.parallel().tween_property(self, "modulate:a", 0.0, 0.55)\
+		.set_ease(Tween.EASE_IN).set_trans(Tween.TRANS_CUBIC)
+	_float_tween.tween_callback(label.hide)
 
 
 # Formats floating damage with at most two decimal places and no tail zeroes.

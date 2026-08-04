@@ -7,8 +7,12 @@ extends StaticBody2D
 @onready var collision_shape: CollisionShape2D = %CollisionShape2D
 @onready var visual: Node2D = %Visual
 @onready var animation_player: AnimationPlayer = %AnimationPlayer
+@onready var scatter_particles: GPUParticles2D = %ScatterParticles
+@onready var condense_particles: GPUParticles2D = %CondenseParticles
+@onready var release_particles: GPUParticles2D = %ReleaseParticles
 
 var _open := false
+var _release_tween: Tween
 
 
 # 从槽位恢复状态，并监听唯一绑定的支路装置。
@@ -40,6 +44,39 @@ func _set_open(value: bool, play_feedback: bool) -> void:
 		return
 	_open = value
 	collision_shape.set_deferred("disabled", value)
+	_update_particles(value, play_feedback)
 	animation_player.play(&"open" if value else &"closed")
 	if value and not play_feedback:
 		animation_player.seek(animation_player.current_animation_length, true)
+
+
+# Converts the closed field into a brief inward pull, then an outward release.
+func _update_particles(value: bool, play_feedback: bool) -> void:
+	if _release_tween != null and _release_tween.is_valid():
+		_release_tween.kill()
+	scatter_particles.emitting = not value
+	condense_particles.emitting = false
+	release_particles.emitting = false
+	if not value or not play_feedback or _uses_low_flash_mode():
+		return
+	condense_particles.restart()
+	condense_particles.emitting = true
+	_release_tween = create_tween()
+	_release_tween.tween_interval(0.16)
+	_release_tween.tween_callback(_emit_release_particles)
+
+
+# Emits the final outward burst only while the shortcut remains open.
+func _emit_release_particles() -> void:
+	if not _open or _uses_low_flash_mode():
+		return
+	release_particles.restart()
+	release_particles.emitting = true
+
+
+# Reads the existing accessibility setting before one-shot transition bursts.
+func _uses_low_flash_mode() -> bool:
+	return (
+		SettingsModule.instance != null
+		and bool(SettingsModule.instance.get_value("low_flash_mode", false))
+	)

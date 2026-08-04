@@ -11,6 +11,7 @@ signal active_changed(active: bool)
 @onready var outline_visual: AnimatedSprite2D = %OutlineVisual
 @onready var outer_outline_visual: AnimatedSprite2D = %OuterOutlineVisual
 @onready var prediction_visual: AnimatedSprite2D = %PredictionVisual
+@onready var motion_trail: GPUParticles2D = %MotionTrail
 @onready var pixel_burst: GPUParticles2D = %PixelBurst
 @onready var vfx_animation_player: AnimationPlayer = %VfxAnimationPlayer
 @onready var departure_vfx: TemporalDepartureVfx = %DepartureVfx
@@ -131,6 +132,7 @@ func restore_playback_state(state: Dictionary) -> void:
 	outline_visual.visible = true
 	outer_outline_visual.visible = true
 	prediction_visual.visible = true
+	motion_trail.emitting = false
 	pixel_burst.emitting = false
 	departure_vfx.reset_vfx()
 	vfx_animation_player.play(&"solid")
@@ -158,6 +160,7 @@ func reset_echo() -> void:
 	outline_visual.play(&"idle")
 	outer_outline_visual.play(&"idle")
 	prediction_visual.play(&"idle")
+	motion_trail.emitting = false
 	pixel_burst.emitting = false
 	departure_vfx.reset_vfx()
 	vfx_animation_player.play(&"RESET")
@@ -189,12 +192,15 @@ func _apply_frame_visual(frame: TemporalFrame) -> void:
 	prediction_visual.flip_h = visual.flip_h
 	var prediction_direction := frame.velocity.normalized() if not frame.velocity.is_zero_approx() else Vector2(frame.facing, 0.0)
 	prediction_visual.position = prediction_direction * 6.0
+	motion_trail.amount_ratio = 0.35 if _uses_low_flash_mode() else 1.0
+	motion_trail.emitting = _active and frame.velocity.length_squared() > 36.0
 
 
 # 先移除碰撞，让压力板在视觉尾帧结束前释放。
 func _release_slot() -> void:
 	if not _active:
 		return
+	motion_trail.emitting = false
 	departure_vfx.play_from_sprites(visual, outline_visual, _last_velocity)
 	_set_active(false)
 	collision_shape.set_deferred("disabled", true)
@@ -224,6 +230,7 @@ func _on_departure_finished() -> void:
 func _on_setting_changed(key: String, _value: Variant) -> void:
 	if key != "low_flash_mode":
 		return
+	motion_trail.amount_ratio = 0.35 if _uses_low_flash_mode() else 1.0
 	if _uses_low_flash_mode():
 		pixel_burst.emitting = false
 	match vfx_animation_player.current_animation:

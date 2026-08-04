@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=3]
+[gd_scene load_steps=15 format=3]
 
 [ext_resource type="Script" path="res://Scripts/EchoChase/echo_chase_narrative_presenter.gd" id="1_script"]
 [ext_resource type="Resource" path="res://Dialogue/EchoChase/present_hub.zh.dialogue" id="2_dialogue_zh"]
@@ -8,6 +8,7 @@
 [ext_resource type="Texture2D" path="res://assets/echo_chase/character/present_keeper_idle.png" id="5_keeper"]
 [ext_resource type="Theme" path="res://resources/main_theme.tres" id="6_theme"]
 [ext_resource type="Script" path="res://addons/richtext2/richer_text_label.gd" id="7_richer_text"]
+[ext_resource type="Texture2D" path="res://assets/echo_chase/vfx/temporal_particle.svg" id="8_particle"]
 
 [sub_resource type="AtlasTexture" id="Atlas_player"]
 atlas = ExtResource("4_player")
@@ -16,6 +17,62 @@ region = Rect2(0, 0, 16, 16)
 [sub_resource type="AtlasTexture" id="Atlas_keeper"]
 atlas = ExtResource("5_keeper")
 region = Rect2(0, 0, 16, 16)
+
+[sub_resource type="ParticleProcessMaterial" id="Particle_exit_stream"]
+particle_flag_disable_z = true
+direction = Vector3(1, 0, 0)
+spread = 22.0
+initial_velocity_min = 70.0
+initial_velocity_max = 130.0
+damping_min = 2.0
+damping_max = 5.0
+scale_min = 0.45
+scale_max = 1.05
+color = Color(1, 1, 1, 0.82)
+emission_shape = 3
+emission_box_extents = Vector3(8, 180, 1)
+
+[sub_resource type="ParticleProcessMaterial" id="Particle_merge_trail"]
+particle_flag_disable_z = true
+direction = Vector3(0, -1, 0)
+spread = 180.0
+initial_velocity_min = 5.0
+initial_velocity_max = 18.0
+damping_min = 2.0
+damping_max = 6.0
+scale_min = 0.45
+scale_max = 1.05
+color = Color(1, 1, 1, 0.72)
+emission_shape = 1
+emission_sphere_radius = 6.0
+
+[sub_resource type="ParticleProcessMaterial" id="Particle_ending_burst"]
+particle_flag_disable_z = true
+direction = Vector3(1, 0, 0)
+spread = 180.0
+initial_velocity_min = 42.0
+initial_velocity_max = 98.0
+damping_min = 2.0
+damping_max = 5.0
+scale_min = 0.55
+scale_max = 1.35
+color = Color(1, 1, 1, 0.92)
+emission_shape = 1
+emission_sphere_radius = 10.0
+
+[sub_resource type="ParticleProcessMaterial" id="Particle_golden_path"]
+particle_flag_disable_z = true
+direction = Vector3(1, -0.08, 0)
+spread = 18.0
+initial_velocity_min = 48.0
+initial_velocity_max = 92.0
+damping_min = 1.0
+damping_max = 3.0
+scale_min = 0.35
+scale_max = 0.9
+color = Color(1, 0.78, 0.24, 0.82)
+emission_shape = 3
+emission_box_extents = Vector3(390, 30, 1)
 
 [node name="EchoChaseNarrativePresenter" type="Node"]
 process_mode = 3
@@ -127,6 +184,20 @@ points = PackedVector2Array(1510, 330, 1510, 740)
 width = 14.0
 default_color = Color(0.72, 0.92, 1, 0.78)
 
+[node name="NormalExitParticles" type="GPUParticles2D" parent="EndingLayer/EndingRoot/NormalGroup"]
+unique_name_in_owner = true
+show_behind_parent = true
+position = Vector2(1510, 535)
+emitting = false
+amount = 80
+texture = ExtResource("8_particle")
+lifetime = 1.15
+preprocess = 0.8
+randomness = 0.62
+visibility_rect = Rect2(-80, -230, 280, 460)
+local_coords = true
+process_material = SubResource("Particle_exit_stream")
+
 [node name="LoopPlayerStart" type="Marker2D" parent="EndingLayer/EndingRoot/NormalGroup"]
 unique_name_in_owner = true
 position = Vector2(760, 600)
@@ -155,6 +226,19 @@ modulate = Color(1, 1, 1, 0)
 position = Vector2(760, 600)
 scale = Vector2(8, 8)
 texture = SubResource("Atlas_keeper")
+
+[node name="IdentityPulseParticles" type="GPUParticles2D" parent="EndingLayer/EndingRoot/NormalGroup"]
+unique_name_in_owner = true
+position = Vector2(760, 600)
+emitting = false
+amount = 64
+texture = ExtResource("8_particle")
+lifetime = 0.72
+one_shot = true
+explosiveness = 1.0
+visibility_rect = Rect2(-140, -140, 280, 280)
+local_coords = true
+process_material = SubResource("Particle_ending_burst")
 
 [node name="LoopOldKeeper" type="Sprite2D" parent="EndingLayer/EndingRoot/NormalGroup"]
 unique_name_in_owner = true
@@ -253,6 +337,72 @@ position = Vector2(1330, 350)
 scale = Vector2(7, 7)
 texture = SubResource("Atlas_keeper")
 
+[node name="PastMergeTrail" type="GPUParticles2D" parent="EndingLayer/EndingRoot/TrueGroup"]
+unique_name_in_owner = true
+modulate = Color(1, 0.2, 0.32, 1)
+position = Vector2(590, 350)
+emitting = false
+amount = 40
+texture = ExtResource("8_particle")
+lifetime = 0.82
+randomness = 0.7
+visibility_rect = Rect2(-480, -360, 960, 720)
+local_coords = false
+process_material = SubResource("Particle_merge_trail")
+
+[node name="PresentMergeTrail" type="GPUParticles2D" parent="EndingLayer/EndingRoot/TrueGroup"]
+unique_name_in_owner = true
+modulate = Color(0.54, 0.94, 1, 1)
+position = Vector2(650, 735)
+emitting = false
+amount = 40
+texture = ExtResource("8_particle")
+lifetime = 0.82
+randomness = 0.7
+visibility_rect = Rect2(-480, -360, 960, 720)
+local_coords = false
+process_material = SubResource("Particle_merge_trail")
+
+[node name="FutureMergeTrail" type="GPUParticles2D" parent="EndingLayer/EndingRoot/TrueGroup"]
+unique_name_in_owner = true
+modulate = Color(1, 0.72, 0.18, 1)
+position = Vector2(1270, 735)
+emitting = false
+amount = 40
+texture = ExtResource("8_particle")
+lifetime = 0.82
+randomness = 0.7
+visibility_rect = Rect2(-480, -360, 960, 720)
+local_coords = false
+process_material = SubResource("Particle_merge_trail")
+
+[node name="KeeperMergeTrail" type="GPUParticles2D" parent="EndingLayer/EndingRoot/TrueGroup"]
+unique_name_in_owner = true
+modulate = Color(0.78, 0.82, 0.84, 1)
+position = Vector2(1330, 350)
+emitting = false
+amount = 40
+texture = ExtResource("8_particle")
+lifetime = 0.82
+randomness = 0.7
+visibility_rect = Rect2(-480, -360, 960, 720)
+local_coords = false
+process_material = SubResource("Particle_merge_trail")
+
+[node name="MergeBurstParticles" type="GPUParticles2D" parent="EndingLayer/EndingRoot/TrueGroup"]
+unique_name_in_owner = true
+modulate = Color(1, 0.84, 0.34, 1)
+position = Vector2(960, 530)
+emitting = false
+amount = 110
+texture = ExtResource("8_particle")
+lifetime = 0.9
+one_shot = true
+explosiveness = 1.0
+visibility_rect = Rect2(-220, -220, 440, 440)
+local_coords = true
+process_material = SubResource("Particle_ending_burst")
+
 [node name="MergedFigure" type="Sprite2D" parent="EndingLayer/EndingRoot/TrueGroup"]
 unique_name_in_owner = true
 visible = false
@@ -270,12 +420,40 @@ points = PackedVector2Array(0, 0, -150, 18, -310, 34, -510, 76)
 width = 10.0
 default_color = Color(1, 0.72, 0.16, 0.94)
 
+[node name="TracePulseParticles" type="GPUParticles2D" parent="EndingLayer/EndingRoot/TrueGroup"]
+unique_name_in_owner = true
+position = Vector2(865, 570)
+rotation = 3.02
+emitting = false
+amount = 84
+texture = ExtResource("8_particle")
+lifetime = 0.72
+one_shot = true
+explosiveness = 0.88
+visibility_rect = Rect2(-480, -120, 960, 240)
+local_coords = true
+process_material = SubResource("Particle_golden_path")
+
 [node name="ThirdPath" type="Line2D" parent="EndingLayer/EndingRoot/TrueGroup"]
 unique_name_in_owner = true
 visible = false
 points = PackedVector2Array(540, 650, 820, 615, 1120, 565, 1520, 500)
 width = 12.0
 default_color = Color(1, 0.72, 0.16, 0.9)
+
+[node name="ThirdPathParticles" type="GPUParticles2D" parent="EndingLayer/EndingRoot/TrueGroup"]
+unique_name_in_owner = true
+position = Vector2(1030, 575)
+rotation = -0.13
+emitting = false
+amount = 92
+texture = ExtResource("8_particle")
+lifetime = 1.2
+preprocess = 0.8
+randomness = 0.58
+visibility_rect = Rect2(-500, -120, 1000, 240)
+local_coords = true
+process_material = SubResource("Particle_golden_path")
 
 [node name="RewrittenHero" type="Sprite2D" parent="EndingLayer/EndingRoot/TrueGroup"]
 unique_name_in_owner = true

@@ -82,7 +82,7 @@
 | 存档点 | `Scenes/EchoChase/Prefabs/echo_checkpoint.tscn` | 唯一 `checkpoint_id` | 玩家触碰后保存稳定状态 |
 | 收集物 | `Scenes/EchoChase/Prefabs/temporal_collectible.tscn` | 唯一 `item_id` | 记忆碎片；不阻挡普通出口，只显现真结局路线 |
 | 真结局路线 | `Scenes/EchoChase/Prefabs/true_ending_route.tscn` | 场景内 authored 子节点 | 四碎片后显现，包含重组触发、Recorder 与 KnowledgeLock |
-| 开场引导 | `Scenes/EchoChase/UI/echo_chase_narrative_presenter.tscn` + `Scenes/EchoChase/UI/echo_chase_onboarding.tscn` | `player`、当前 locale | 新游戏先显示黑屏红字 `跑/RUN`，再读取当前键位；移动、跳跃、冲刺完成后逐项淡出 |
+| 开场引导 | `Scenes/EchoChase/UI/echo_chase_narrative_presenter.tscn` + `Scenes/EchoChase/UI/echo_chase_onboarding.tscn` + `World/BeforeHub/FloatText` | `player`、`floating_text` | 新游戏先显示黑屏红字 `跑/RUN`；接近 authored 世界位置后，以手写飘字显示当前跳跃与方向冲刺键位 |
 | 剧情演出 | `Scenes/EchoChase/UI/echo_chase_narrative_presenter.tscn` | `present_hub.zh.dialogue` / `present_hub.en.dialogue` 仅供 Keeper 事件对白 | RichText2 抖动红字记忆、普通结局真相/洗忆、金字真结局与 tableau |
 
 标准门接线：在 `TemporalDoor.source_plates` 中按状态格从左到右拖入对应压力板。凝固屏障必须直接绑定本题的 `FutureRecorder`，不要绑定全局 Future。
@@ -406,6 +406,70 @@ Present：    P → ==== → |G| X
 6. 装置 ID：`delay5s`。装置后开回 Hub 的单向捷径。
 
 验收：玩家能解释“Past 替我关闭了 Future”，且不会误认为 Future 自然到时消失。
+
+## 试玩后候选谜题库（默认不施工）
+
+这六题只用于替换重复题或强化支路身份，不是扩容清单。先完成至少三次无提示试玩；每条支路最多采用一个候选。采用后仍遵守 ITC、One New Thing、入口 checkpoint、`5s` 内重试和现有组件语法，不新增机关类。
+
+### `1s` 候选 A：擦肩回充
+
+- **目标**：第一次 dash 穿过窄窗口触碰移动中的 Future，立即取回 dash，再越过第二段缺口。
+- **难度/目标解时**：中等，`1–2min`。
+- **唯一变化**：Future 不再是静止补给点；玩家要在 Past 约 `1s` 后抵达同一交叉口前完成接力。
+- **组件**：一台 Recorder、一个 Future、两段普通 dash 缺口、入口 checkpoint；不放新门或新按钮。
+- **重置**：落坑或被 Past 抓到只回本题入口，清空当前录像与 Future；关键操作距 checkpoint 不超过 `4s`。
+- **失败反馈**：Future 被 Past 先撞散时必须全程可见，金色碎散与空的 dash 菱晶同时说明“补给被抢走”；玩家碰到 Future 时菱晶立刻亮起。
+- **采用条件**：只在现有 `1B` 过于静态、玩家已经理解回充但没有感到 `1s` 压迫时替换 `1B`。
+
+### `1s` 候选 B：先送达，再粉碎
+
+- **目标**：让 Future 在 Past 撞散它之前踩中一块锁存板，永久打开出口门。
+- **难度/目标解时**：中等，`1.5–2.5min`。
+- **唯一变化**：Future 的销毁不必视为失败；只要它先完成可锁存的工作即可。
+- **组件**：一台 Recorder、一块压力板、一扇 `LATCHED_ALL` 门、入口 checkpoint。
+- **重置**：失败后重置本题时间线和未锁存门；成功锁存后不再因 Future 消散回退。
+- **失败反馈**：门状态格在 Future 到板时永久亮起；若 Past 先撞到 Future，碎散发生在板前且状态格保持熄灭。
+- **采用条件**：只在玩家把“Future 被 Past 撞散”机械理解为绝对失败时，用它替换一个重复的竞速题。
+
+### `3s` 候选 A：双 Future 消耗顺序
+
+- **目标**：先保留 `F1` 维持金桥通过，再接触 `F2` 拆除出口金墙，最后离开。
+- **难度/目标解时**：中等偏难，`2–3min`。
+- **唯一变化**：两台现有 Recorder 同时占槽，难点是识别哪个 Future 该保留、哪个该消耗，不增加新规则。
+- **组件**：两台 Recorder、`F1` 绑定横向金桥、`F2` 绑定竖直金墙、入口 checkpoint。
+- **重置**：任一关键 Future 被误碰后提供近处安全落点或快速回退，重录两条路线不超过 `20s`。
+- **失败反馈**：桥与墙分别紧邻对应 Recorder 的同色轮廓；误碰 `F1` 时桥在眼前解体，误留 `F2` 时金墙保持凝固。
+- **采用条件**：只在试玩者已经稳定理解单 Future 的“保留/消耗”，且 `3s` 支路缺少资源顺序判断时采用。
+
+### `3s` 候选 B：三态交叉接班
+
+- **目标**：Past 压 A 打开 Future 的通道；Future 随后压 B 打开 Present 的通道；Present 到 C 锁存出口。
+- **难度/目标解时**：中等，`2–3min`。
+- **唯一变化**：三态不是同时压板，而是按 `Past → Future → Present` 顺序接班。
+- **组件**：一台 Recorder、A/B/C 三块板、两扇 `MOMENTARY_ALL` 门、一扇最终锁存门、入口 checkpoint。
+- **重置**：任一接班失败时回到同一入口，所有 momentary 门和录像清空；不重置已完成支路进度。
+- **失败反馈**：A、B、C 与对应门保持同镜或观察窗对应；状态格逐段亮起，让玩家能指出链条断在哪一步。
+- **采用条件**：只在现有 `3C` 的三板同时窗口过于执行化时，用本题替换它。
+
+### `5s` 候选 A：逆向连续开闸
+
+- **目标**：先沿上层依次走过 A/B/C 写下历史，再在下层反向通过 Past 依次开启的 D3/D2/D1。
+- **难度/目标解时**：中等偏难，`2–3min`。
+- **唯一变化**：玩家要把一条旧路线当作未来五秒的“门控时间表”，而不是只等一个远端板。
+- **组件**：三块压力板、三扇各绑定单板的 `MOMENTARY_ALL` 门、入口 checkpoint。
+- **重置**：下层每扇门后都有安全格；错过窗口可从近处回到入口重写历史，完整重试不超过 `15s`。
+- **失败反馈**：上层 Past 与下层门始终可同时观察；门状态格明确显示玩家是早到还是晚到，而不是让玩家猜隐藏计时。
+- **采用条件**：只在现有 `5B` 没有形成“旧路线就是时间表”的 aha 时替换 `5B`。
+
+### `5s` 候选 B：长延迟交汇桥
+
+- **目标**：Future 维持金桥供 Present 通过；五秒后的 Past 在桥后压 A 打开出口门，并且不能在过桥前撞散 Future。
+- **难度/目标解时**：较难，`2.5–3.5min`。
+- **唯一变化**：把长延迟 Past 的远端开门与已学会的 Future 金桥放进同一可读交汇，不引入新机关。
+- **组件**：一台 Recorder、横向凝固桥、一块压力板、一扇 `MOMENTARY_ALL` 门、入口 checkpoint。
+- **重置**：桥下快速回到入口；Past 过早撞散 Future 或错过门窗后，单次重试不超过 `12s`。
+- **失败反馈**：交汇点 J、桥、A 和出口门至少通过一个观察窗同时可见；Future 过早碎散显示桥消失，Past 晚到则门状态格保持熄灭。
+- **采用条件**：只在 `5s` 支路的 Past 与 Future 仍像两套独立机制、缺少一次真正交汇时采用。
 
 ## 终点与知识锁
 

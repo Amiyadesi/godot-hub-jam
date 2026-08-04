@@ -16,6 +16,7 @@
 [ext_resource type="PackedScene" path="res://Scenes/EchoChase/UI/temporal_recording_hud.tscn" id="19_recording_hud"]
 [ext_resource type="Resource" path="res://resources/scene_transitions/echo_entry_present_fade.tres" id="20_present_entry"]
 [ext_resource type="Resource" path="res://resources/scene_transitions/echo_entry_past_fade.tres" id="21_past_entry"]
+[ext_resource type="PackedScene" path="res://Scenes/EchoChase/Prefabs/progression_shortcut.tscn" id="21_q42uv"]
 [ext_resource type="Script" uid="uid://bd046eokvcnu2" path="res://addons/phantom_camera/scripts/phantom_camera_host/phantom_camera_host.gd" id="23_pcam_host"]
 [ext_resource type="Script" uid="uid://bhexx6mj1xv3q" path="res://addons/phantom_camera/scripts/phantom_camera/phantom_camera_2d.gd" id="24_pcam_2d"]
 [ext_resource type="Script" uid="uid://8umksf8e80fw" path="res://addons/phantom_camera/scripts/resources/tween_resource.gd" id="25_pcam_tween"]
@@ -24,11 +25,12 @@
 [ext_resource type="PackedScene" uid="uid://dc66gryhxv0e0" path="res://Scenes/EchoChase/Prefabs/progression_device.tscn" id="28_progression_device"]
 [ext_resource type="PackedScene" path="res://Scenes/EchoChase/Prefabs/persistent_gate.tscn" id="29_persistent_gate"]
 [ext_resource type="PackedScene" uid="uid://c04c1tep0dsdd" path="res://Scenes/EchoChase/Prefabs/dialogue_npc.tscn" id="30_dialogue_npc"]
-[ext_resource type="Resource" path="res://Dialogue/EchoChase/present_hub.zh.dialogue" id="31_present_dialogue_zh"]
-[ext_resource type="Resource" path="res://Dialogue/EchoChase/present_hub.en.dialogue" id="31_present_dialogue_en"]
+[ext_resource type="Resource" uid="uid://ro5r7rbvvjnr" path="res://Dialogue/EchoChase/present_hub.en.dialogue" id="31_present_dialogue_en"]
+[ext_resource type="Resource" uid="uid://dmfk0nnapdll1" path="res://Dialogue/EchoChase/present_hub.zh.dialogue" id="31_present_dialogue_zh"]
 [ext_resource type="PackedScene" uid="uid://c228e1fi1rg1t" path="res://Scenes/EchoChase/Prefabs/temporal_departure_vfx.tscn" id="33_room_departure"]
 [ext_resource type="PackedScene" path="res://Scenes/EchoChase/Prefabs/temporal_collectible.tscn" id="34_collectible"]
 [ext_resource type="Texture2D" uid="uid://cvfu3k8hdr2x5" path="res://assets/echo_chase/vfx/temporal_particle.svg" id="35_hub_particle"]
+[ext_resource type="PackedScene" uid="uid://0hn7v00wyjhs" path="res://Scenes/UIorgan/floating_text.tscn" id="36_run_text"]
 [ext_resource type="PackedScene" path="res://Scenes/EchoChase/UI/echo_chase_narrative_presenter.tscn" id="37_narrative_presenter"]
 [ext_resource type="PackedScene" path="res://Scenes/EchoChase/Prefabs/true_ending_route.tscn" id="38_true_ending_route"]
 [ext_resource type="Script" uid="uid://cc7ae53mgb36i" path="res://Scripts/EchoChase/echo_chase_story.gd" id="39_story"]
@@ -70,6 +72,19 @@ scale_min = 0.55
 scale_max = 1.4
 color = Color(0.27, 0.82, 1, 0.34)
 
+[sub_resource type="ParticleProcessMaterial" id="Particle_world_dust"]
+particle_flag_disable_z = true
+emission_shape = 3
+emission_box_extents = Vector3(1500, 900, 0)
+direction = Vector3(0, -1, 0)
+spread = 180.0
+initial_velocity_min = 2.0
+initial_velocity_max = 7.0
+gravity = Vector3(0, -1, 0)
+scale_min = 0.35
+scale_max = 0.85
+color = Color(0.58, 0.76, 0.74, 0.14)
+
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_normal_ending"]
 size = Vector2(64, 96)
 
@@ -90,6 +105,18 @@ color = Color(0.018, 0.055, 0.06, 1)
 [node name="World" type="Node2D" parent="." unique_id=1334494193]
 process_mode = 1
 position = Vector2(0, -399)
+
+[node name="TemporalDust" type="GPUParticles2D" parent="World" unique_id=2065150310]
+z_index = -1
+position = Vector2(1500, 900)
+amount = 120
+texture = ExtResource("35_hub_particle")
+lifetime = 7.0
+preprocess = 7.0
+randomness = 0.9
+visibility_rect = Rect2(-1550, -950, 3100, 1900)
+local_coords = true
+process_material = SubResource("Particle_world_dust")
 
 [node name="Platform" type="TileMapLayer" parent="World" unique_id=1022236242]
 position = Vector2(192, 880)
@@ -558,14 +585,14 @@ local_coords = true
 process_material = SubResource("Particle_present_room_ambient")
 
 [node name="Label" type="Label" parent="World/PresentHub" unique_id=574734010]
-offset_left = -72.0
-offset_top = -98.0
-offset_right = 63.0
-offset_bottom = -56.0
+offset_left = -104.0
+offset_top = -112.0
+offset_right = 104.0
+offset_bottom = -52.0
 theme_override_colors/font_color = Color(0.62, 0.92, 1, 1)
 theme_override_colors/font_outline_color = Color(0.01, 0.04, 0.05, 0.95)
 theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 20
+theme_override_font_sizes/font_size = 32
 text = "30:00"
 horizontal_alignment = 1
 vertical_alignment = 1
@@ -611,7 +638,7 @@ position = Vector2(115, 872)
 checkpoint_id = &"start_checkpoint"
 
 [node name="EchoCheckpoint2" parent="World/BeforeHub" unique_id=1740812870 instance=ExtResource("6_smevq")]
-position = Vector2(115, 648)
+position = Vector2(240, 535)
 checkpoint_id = &"start_checkpoint2"
 
 [node name="EchoCheckpoint3" parent="World/BeforeHub" unique_id=705178839 instance=ExtResource("6_smevq")]
@@ -635,6 +662,9 @@ item_id = &"memory_after"
 [node name="FutureCondensationBarrier" parent="World/BeforeHub" unique_id=1852494915 node_paths=PackedStringArray("source_recorder") instance=ExtResource("18_kpeju")]
 position = Vector2(553, 832)
 source_recorder = NodePath("../FutureRecorder2")
+
+[node name="FloatText" parent="World/BeforeHub" unique_id=639449919 instance=ExtResource("36_run_text")]
+position = Vector2(428, 858)
 
 [node name="Delay1s" type="Node2D" parent="World" unique_id=1969831831]
 
@@ -720,6 +750,10 @@ source_recorder = NodePath("../FutureRecorder3")
 position = Vector2(518, 1458)
 item_id = &"memory_t_minus_1"
 
+[node name="ProgressionShortcut" parent="World/Delay1s" unique_id=735247115 instance=ExtResource("21_q42uv")]
+position = Vector2(954, 1327)
+required_device_id = &"delay1s"
+
 [node name="Delay3s" type="Node2D" parent="World" unique_id=186399569]
 
 [node name="FutureRecorder6" parent="World/Delay3s" unique_id=795249349 instance=ExtResource("16_recorder")]
@@ -797,14 +831,14 @@ item_id = &"memory_t_minus_5"
 [node name="Finnal" type="Node2D" parent="World" unique_id=1435246247]
 
 [node name="Label" type="Label" parent="World/Finnal" unique_id=1716312669]
-offset_left = 1944.0
-offset_top = 941.0
-offset_right = 2083.0
-offset_bottom = 989.0
+offset_left = 1910.0
+offset_top = 930.0
+offset_right = 2118.0
+offset_bottom = 990.0
 theme_override_colors/font_color = Color(0.62, 0.92, 1, 1)
 theme_override_colors/font_outline_color = Color(0.01, 0.04, 0.05, 0.95)
 theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 20
+theme_override_font_sizes/font_size = 32
 text = "30:00"
 horizontal_alignment = 1
 vertical_alignment = 1
@@ -860,8 +894,9 @@ modal_offset = Vector2(0, 0.08)
 
 [node name="NarrativePresenter" parent="." unique_id=176848342 instance=ExtResource("37_narrative_presenter")]
 
-[node name="Onboarding" parent="." unique_id=810025189 node_paths=PackedStringArray("player") instance=ExtResource("40_onboarding")]
+[node name="Onboarding" parent="." unique_id=810025189 node_paths=PackedStringArray("player", "floating_text") instance=ExtResource("40_onboarding")]
 player = NodePath("../World/EchoPlayer")
+floating_text = NodePath("../World/BeforeHub/FloatText")
 
 [node name="StoryController" type="Node" parent="." unique_id=926052509 node_paths=PackedStringArray("gameplay_world", "player", "narrative_presenter", "true_ending_route", "normal_ending_trigger", "final_return_point")]
 process_mode = 3

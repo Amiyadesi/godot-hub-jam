@@ -154,7 +154,7 @@ EchoTimeline.reset_timeline(saved_past_delay_seconds, saved_delay_switch_id)
 - 场景内的 `BranchProgressionDevice` 与 `BranchPersistentGate` 只作为支路进度接线样例；正式谜题仍由本关脚本在条件完成时调用 `activate()`，二者素材与 checkpoint 分离。
 - `MemoryShardA/B/C` 使用 `TemporalCollectible`，只演示槽位持久化收集物，不引入背包。
 - 一个 `TemporalRecordingHUD`：玩家金色轮廓、屏幕金边、无数字进度条和实时回传键。
-- 一个 `EchoChaseOnboarding`：新游戏的黑屏红字 `跑/RUN` 结束后，读取当前绑定并显示移动、跳跃、方向冲刺；实际完成动作后逐项淡出，Continue 不重复播放。
+- 一个 `EchoChaseOnboarding`：新游戏的黑屏红字 `跑/RUN` 结束后，玩家接近 `World/BeforeHub/FloatText` 时读取当前跳跃和方向冲刺绑定，用世界内手写飘字显示一次；Continue 不重复播放。
 - 一个 `EchoChaseNarrativePresenter`：开场与记忆共用全黑红字、倾斜字体和 RichText2 抖动序列；Keeper 事件对白按当前语言读取 `present_hub.zh.dialogue` 或 `present_hub.en.dialogue`；普通结局与真结局分别使用青白、金色文本和 authored tableau。
 - 两套 authored 入场淡出资源：新游戏使用青白，Continue 使用洋红；淡出期间冻结 World，不再摆三人 Overlay。
 - `PauseScreen` 与 `SettingScreen`；Hint 永久禁用。

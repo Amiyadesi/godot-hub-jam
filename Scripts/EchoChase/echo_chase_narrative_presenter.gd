@@ -58,6 +58,8 @@ const MEMORY_JITTER_BBCODE := "[jit2 scale=2.0 freq=18.0]%s[]"
 @onready var normal_ending_text: Label = %NormalEndingText
 @onready var true_ending_text: Label = %TrueEndingText
 @onready var normal_group: Node2D = %NormalGroup
+@onready var normal_exit_particles: GPUParticles2D = %NormalExitParticles
+@onready var identity_pulse_particles: GPUParticles2D = %IdentityPulseParticles
 @onready var loop_player: Sprite2D = %LoopPlayer
 @onready var loop_replacement_keeper: Sprite2D = %LoopReplacementKeeper
 @onready var loop_old_keeper: Sprite2D = %LoopOldKeeper
@@ -73,11 +75,18 @@ const MEMORY_JITTER_BBCODE := "[jit2 scale=2.0 freq=18.0]%s[]"
 @onready var present_figure: Sprite2D = %PresentFigure
 @onready var future_figure: Sprite2D = %FutureFigure
 @onready var keeper_figure: Sprite2D = %KeeperFigure
+@onready var past_merge_trail: GPUParticles2D = %PastMergeTrail
+@onready var present_merge_trail: GPUParticles2D = %PresentMergeTrail
+@onready var future_merge_trail: GPUParticles2D = %FutureMergeTrail
+@onready var keeper_merge_trail: GPUParticles2D = %KeeperMergeTrail
+@onready var merge_burst_particles: GPUParticles2D = %MergeBurstParticles
 @onready var merged_figure: Sprite2D = %MergedFigure
 @onready var rewritten_hero: Sprite2D = %RewrittenHero
 @onready var lia_figure: Sprite2D = %LiaFigure
 @onready var future_trace: Line2D = %FutureTrace
+@onready var trace_pulse_particles: GPUParticles2D = %TracePulseParticles
 @onready var third_path: Line2D = %ThirdPath
+@onready var third_path_particles: GPUParticles2D = %ThirdPathParticles
 @onready var true_run_label: Label = %TrueRunLabel
 @onready var past_start: Marker2D = %PastStart
 @onready var present_start: Marker2D = %PresentStart
@@ -169,14 +178,22 @@ func play_normal_ending() -> void:
 	ending_layer.visible = true
 	normal_group.show()
 	await _play_lines(normal_ending_text, NORMAL_KEEPER_LINES, ending_hold_seconds)
+	normal_exit_particles.amount_ratio = 0.25 if _uses_low_flash_mode() else 1.0
+	normal_exit_particles.restart()
+	normal_exit_particles.emitting = true
+	loop_replacement_keeper.scale = Vector2(6.2, 6.2)
+	if not _uses_low_flash_mode():
+		identity_pulse_particles.restart()
+		identity_pulse_particles.emitting = true
 	var exit_tween := _new_cinematic_tween()
 	exit_tween.tween_interval(0.25)
-	exit_tween.set_parallel(true)
 	exit_tween.tween_property(loop_old_keeper, "position", loop_exit_target.position, 1.2)
-	exit_tween.tween_property(loop_old_keeper, "modulate:a", 0.0, 1.2)
-	exit_tween.tween_property(loop_player, "modulate:a", 0.0, 0.8).set_delay(0.3)
-	exit_tween.tween_property(loop_replacement_keeper, "modulate:a", 1.0, 0.8).set_delay(0.3)
+	exit_tween.parallel().tween_property(loop_old_keeper, "modulate:a", 0.0, 1.2)
+	exit_tween.parallel().tween_property(loop_player, "modulate:a", 0.0, 0.8).set_delay(0.3)
+	exit_tween.parallel().tween_property(loop_replacement_keeper, "modulate:a", 1.0, 0.8).set_delay(0.3)
+	exit_tween.parallel().tween_property(loop_replacement_keeper, "scale", Vector2(8.0, 8.0), 0.8).set_delay(0.3)
 	await exit_tween.finished
+	normal_exit_particles.emitting = false
 	await _play_lines(normal_ending_text, NORMAL_RIFT_LINES, ending_hold_seconds)
 	await _play_memory_wash()
 	loop_reborn_player.show()
@@ -190,6 +207,7 @@ func play_normal_ending() -> void:
 	normal_continue_button.grab_focus()
 	await normal_continue_button.pressed
 	ending_layer.visible = false
+	normal_exit_particles.emitting = false
 	_restore_world(was_paused)
 
 
@@ -199,12 +217,31 @@ func play_true_ending() -> void:
 	_reset_true_tableau()
 	ending_layer.visible = true
 	true_group.show()
+	var merge_figures: Array[Sprite2D] = [past_figure, present_figure, future_figure, keeper_figure]
+	var merge_trails: Array[GPUParticles2D] = [
+		past_merge_trail,
+		present_merge_trail,
+		future_merge_trail,
+		keeper_merge_trail,
+	]
 	var merge_tween := _new_cinematic_tween()
 	merge_tween.set_parallel(true)
-	for figure in [past_figure, present_figure, future_figure, keeper_figure]:
+	for index in range(merge_figures.size()):
+		var figure := merge_figures[index]
+		var trail := merge_trails[index]
+		trail.amount_ratio = 0.25 if _uses_low_flash_mode() else 1.0
+		trail.restart()
+		trail.emitting = true
 		merge_tween.tween_property(figure, "position", merge_target.position, 1.0)
 		merge_tween.tween_property(figure, "modulate:a", 0.0, 1.0)
+		merge_tween.tween_property(trail, "position", merge_target.position, 1.0)
 	await merge_tween.finished
+	for trail in merge_trails:
+		trail.emitting = false
+	if not _uses_low_flash_mode():
+		merge_burst_particles.restart()
+		merge_burst_particles.emitting = true
+	await _play_ending_flash(Color(1.0, 0.78, 0.24, 1.0), 0.72)
 	merged_figure.show()
 	var merged_tween := _new_cinematic_tween()
 	merged_tween.tween_property(merged_figure, "modulate:a", 1.0, 0.35)
@@ -212,6 +249,9 @@ func play_true_ending() -> void:
 	await _play_lines(true_ending_text, TRUE_ACCEPTANCE_LINES, ending_hold_seconds)
 	future_trace.show()
 	true_run_label.show()
+	if not _uses_low_flash_mode():
+		trace_pulse_particles.restart()
+		trace_pulse_particles.emitting = true
 	var trace_tween := _new_cinematic_tween()
 	trace_tween.set_parallel(true)
 	trace_tween.tween_property(future_trace, "scale:x", 1.0, 1.0)
@@ -223,6 +263,16 @@ func play_true_ending() -> void:
 	lia_figure.show()
 	await _play_lines(true_ending_text, TRUE_REUNION_LINES, ending_hold_seconds)
 	third_path.show()
+	third_path_particles.amount_ratio = 0.25 if _uses_low_flash_mode() else 1.0
+	third_path_particles.restart()
+	third_path_particles.emitting = true
+	var path_tween := _new_cinematic_tween()
+	path_tween.set_parallel(true)
+	path_tween.tween_property(future_trace, "modulate:a", 0.0, 0.55)
+	path_tween.tween_property(third_path, "modulate:a", 1.0, 0.55)
+	path_tween.tween_property(third_path, "width", 12.0, 0.55)
+	await path_tween.finished
+	future_trace.hide()
 	var escape_tween := _new_cinematic_tween()
 	escape_tween.set_parallel(true)
 	escape_tween.tween_property(rewritten_hero, "position", true_exit_target.position, 1.4)
@@ -235,6 +285,7 @@ func play_true_ending() -> void:
 	true_return_button.grab_focus()
 	await true_return_button.pressed
 	ending_layer.visible = false
+	third_path_particles.emitting = false
 	_restore_world(was_paused)
 
 
@@ -268,12 +319,20 @@ func _play_memory_lines(line_keys: Array, hold_seconds: float) -> void:
 
 # Flashes the authored pale surface once as the Rift clears both surviving selves.
 func _play_memory_wash() -> void:
+	await _play_ending_flash(Color(0.78, 0.94, 1.0, 1.0), 0.92)
+
+
+# Flashes one authored surface with a reduced peak and slower rhythm in low-flash mode.
+func _play_ending_flash(color: Color, alpha: float) -> void:
+	ending_flash.color = color
 	ending_flash.show()
 	_set_alpha(ending_flash, 0.0)
+	var reduced := _uses_low_flash_mode()
+	var peak_alpha := minf(alpha, 0.28) if reduced else alpha
 	var tween := _new_cinematic_tween()
-	tween.tween_property(ending_flash, "modulate:a", 0.92, 0.16)
-	tween.tween_interval(0.12)
-	tween.tween_property(ending_flash, "modulate:a", 0.0, 0.55)
+	tween.tween_property(ending_flash, "modulate:a", peak_alpha, 0.28 if reduced else 0.16)
+	tween.tween_interval(0.05 if reduced else 0.12)
+	tween.tween_property(ending_flash, "modulate:a", 0.0, 0.72 if reduced else 0.55)
 	await tween.finished
 	ending_flash.hide()
 
@@ -305,6 +364,9 @@ func _reset_normal_tableau() -> void:
 	loop_replacement_keeper.position = loop_player_start.position
 	loop_old_keeper.position = loop_keeper_start.position
 	loop_reborn_player.position = loop_rebirth_target.position
+	loop_replacement_keeper.scale = Vector2(8.0, 8.0)
+	normal_exit_particles.emitting = false
+	identity_pulse_particles.emitting = false
 	_set_alpha(loop_player, 1.0)
 	_set_alpha(loop_replacement_keeper, 0.0)
 	_set_alpha(loop_old_keeper, 1.0)
@@ -333,6 +395,10 @@ func _reset_true_tableau() -> void:
 	merged_figure.position = merge_target.position
 	rewritten_hero.position = rewritten_hero_start.position
 	lia_figure.position = lia_start.position
+	past_merge_trail.position = past_start.position
+	present_merge_trail.position = present_start.position
+	future_merge_trail.position = future_start.position
+	keeper_merge_trail.position = keeper_start.position
 	for figure in [past_figure, present_figure, future_figure, keeper_figure]:
 		figure.show()
 		_set_alpha(figure, 1.0)
@@ -345,7 +411,15 @@ func _reset_true_tableau() -> void:
 	rewritten_hero.hide()
 	lia_figure.hide()
 	future_trace.scale.x = 0.0
+	_set_alpha(future_trace, 1.0)
 	future_trace.hide()
+	for trail in [past_merge_trail, present_merge_trail, future_merge_trail, keeper_merge_trail]:
+		trail.emitting = false
+	merge_burst_particles.emitting = false
+	trace_pulse_particles.emitting = false
+	third_path_particles.emitting = false
+	third_path.width = 2.0
+	_set_alpha(third_path, 0.0)
 	third_path.hide()
 	true_run_label.hide()
 
@@ -360,3 +434,11 @@ func _set_alpha(item: CanvasItem, alpha: float) -> void:
 	var color := item.modulate
 	color.a = alpha
 	item.modulate = color
+
+
+# Reads the existing accessibility setting for ending flashes and dense particle bursts.
+func _uses_low_flash_mode() -> bool:
+	return (
+		SettingsModule.instance != null
+		and bool(SettingsModule.instance.get_value("low_flash_mode", false))
+	)
