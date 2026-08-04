@@ -197,3 +197,24 @@ msgstr "键盘、鼠标或手柄"
 
 msgid "KEY_CAPTURE_INPUTS_NO_MOUSE"
 msgstr "键盘或手柄"
+
+msgid "STORY_MEMORY_MINUS_5"
+msgstr "-5s"
+
+msgid "STORY_MEMORY_MINUS_3"
+msgstr "-3s"
+
+msgid "STORY_MEMORY_MINUS_1"
+msgstr "-1s"
+
+msgid "STORY_MEMORY_AFTER"
+msgstr "事后"
+
+msgid "STORY_MEMORY_REASSEMBLED"
+msgstr "记忆重组"
+
+msgid "ENDING_CONTINUE"
+msgstr "继续"
+
+msgid "ENDING_RETURN_TITLE"
+msgstr "返回标题"

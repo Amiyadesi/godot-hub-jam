@@ -89,11 +89,21 @@ Jam 首次通关目标为 `25–35min`。当前只锁定谜题动作链，不锁
 - Hub 前依次教学 Past 追逐、Past/Present 双板锁存、Recorder/Recall/Future 基础。三题只教已有原语，不使用金色结构。
 - PresentHub 的 NPC 只说明世界规律：“可能性存在时，金色的结构会凝固。”“撞碎可能性，冲刺会回到你身上。”“一秒逼近，三秒会合，五秒把结果留到更远处。”不讲按键或答案。
 - Hub 后三支路同时开放、自由顺序、全部必做：`1s` 是贴身追逐与空中回充，`3s` 是金桥/金墙和三态同步，`5s` 是跨空间预埋因果。每路按“展示 → 变化 → 装置压轴”推进。
-- 支路装置 ID 为 `branch_delay_1`、`branch_delay_3`、`branch_delay_5`。它们永久打开终点前三扇 `PersistentGate`，也可接 authored 回流捷径。
-- 终局以 `5s` 建锚、录像中切 `1s` 主动撞 Past 自动提交、Recall 恢复 `5s`，再先利用 Future 金桥、后空中撞散 Future 解金墙并恢复 dash，最后用第二次 dash 到终点。
+- 支路装置 ID 为 `delay1s`、`delay3s`、`delay5s`。它们永久打开终点前三扇 `PersistentGate`，也可接 authored 回流捷径。
+- 三门后正前方始终是普通出口。四枚记忆碎片集齐后，终点额外显现一条需要玩家主动回头进入的实体金色路线；普通出口不被知识锁替换或阻挡。
 - `docs/echo-chase-puzzle-atlas.md` 保存动作链和验收；旧 HTML 不再是设计依据且不继续维护。本轮不新增 HTML，也不把动作链自动摆进地图。
 
-永久世界进度与稳定 checkpoint 分开保存。`activated_progression_device_ids`、`collected_item_ids`、`opened_latched_door_ids` 和 `present_hub_unlocked` 跨退出保留。BranchProgressionDevice 触碰激活后立即写入当前槽位；MemoryShard 与 Latched ALL 门只在内存中更新，直到玩家触碰 checkpoint 才统一落盘。checkpoint 仍只由玩家触碰激活，且同一时刻只有一个生效。各房谜题脚本只在条件完成时调用对应装置的 `activate()`。
+永久世界进度与稳定 checkpoint 分开保存。`activated_progression_device_ids`、`collected_item_ids`、`opened_latched_door_ids` 和 `present_hub_unlocked` 跨退出保留。BranchProgressionDevice、MemoryShard 与知识锁完成后立即写入当前槽位；checkpoint 仍只由玩家触碰激活，且同一时刻只有一个生效。`NarrativeSlotModule` 另存普通结局、真结局和倒计时坦白是否看过。
+
+## 剧情定案与双结局
+
+- 主角保持无名，英文代词为 `he`。恋人全名为 `Emilia / 艾米莉娅`，昵称统一为 `Lia / 莉娅`。
+- Lia 自愿留下并让主角先走；主角只记得 `RUN`，误以为自己逃跑害死了她，于是请求中立裂隙拿走过去和未来。
+- 裂隙将同一人拆成 Past、Present、Future 与 Keeper。Keeper 真心相信完成交接便能离开，不知道玩家也是自己。
+- 四枚碎片分别是 `memory_t_minus_5`、`memory_t_minus_3`、`memory_t_minus_1`、`memory_after`。拾取时暂停玩法与倒计时，只播放数秒短闪回；终点才重组为：“不是你把我留下。是我选择留下。RUN. 我爱你。我会追上你。”
+- `30:00` 是 Keeper 编造的催促。归零无惩罚，只触发一次：“……不会发生什么。我只是等得太久了。”
+- 普通结局中玩家接替 Keeper，旧 Keeper 清除记忆后在开场点醒来，现有 `Run` 再次出现。全程无解释对白，Continue 回到终点岔路并保留进度。
+- 真结局知识锁只要求一个已教学动作：在绑定 Recorder 的录像中主动让 Past 追上 Present。该 Future Trace 被裂隙送回原本的 `RUN` 时刻，过去的主角保留试炼记忆，与 Lia 沿金色第三条路共同逃生。
 
 ## 两个灰盒止损门
 

@@ -1,0 +1,16 @@
+[remap]
+
+importer="dialogue_manager"
+importer_version=15
+type="Resource"
+uid="uid://cyxbv0vhsous4"
+path="res://.godot/imported/story_sequences.dialogue-482672633d1ab9249e8052fb36595c53.tres"
+
+[deps]
+
+source_file="res://Dialogue/EchoChase/story_sequences.dialogue"
+dest_files=["res://.godot/imported/story_sequences.dialogue-482672633d1ab9249e8052fb36595c53.tres"]
+
+[params]
+
+defaults=true

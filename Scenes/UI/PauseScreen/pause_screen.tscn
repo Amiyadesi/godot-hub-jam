@@ -13,7 +13,7 @@ grow_horizontal = 2
 grow_vertical = 2
 theme = ExtResource("3_theme")
 script = ExtResource("1_script")
-color = Color(0, 0, 0, 0.58)
+color = Color(0, 0, 0, 0.42)
 close_modal_on_clicked = false
 modal_offset_unit = 2
 modal_offset = Vector2(0, 0)
@@ -32,7 +32,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-color = Color(0, 0, 0, 0.3)
+color = Color(0, 0, 0, 0.2)
 
 [node name="RailShade" type="ColorRect" parent="PanelRoot"]
 layout_mode = 1
@@ -41,7 +41,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-color = Color(0.012, 0.012, 0.011, 0.96)
+color = Color(0.012, 0.012, 0.011, 0.64)
 
 [node name="Title" type="Label" parent="PanelRoot"]
 layout_mode = 1
@@ -53,6 +53,22 @@ grow_horizontal = 2
 grow_vertical = 2
 theme_override_font_sizes/font_size = 50
 text = "PAUSE_TITLE"
+vertical_alignment = 1
+
+[node name="RunCountdownLabel" type="Label" parent="PanelRoot"]
+unique_name_in_owner = true
+layout_mode = 1
+anchor_left = 0.055
+anchor_top = 0.195
+anchor_right = 0.31
+anchor_bottom = 0.255
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(0.62, 0.92, 1, 1)
+theme_override_colors/font_outline_color = Color(0.01, 0.04, 0.05, 0.95)
+theme_override_constants/outline_size = 3
+theme_override_font_sizes/font_size = 30
+text = "30:00"
 vertical_alignment = 1
 
 [node name="RouteLine" type="ColorRect" parent="PanelRoot"]

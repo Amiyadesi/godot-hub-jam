@@ -1,0 +1,223 @@
+class_name EchoChaseNarrativePresenter
+extends Node
+## Owns the authored flashback overlay and the two compact ending tableaux.
+
+@export var dialogue_resource: DialogueResource
+
+@onready var memory_layer: CanvasLayer = %MemoryLayer
+@onready var memory_tag: Label = %MemoryTag
+@onready var story_balloon: ModularBalloon = %StoryBalloon
+@onready var ending_layer: CanvasLayer = %EndingLayer
+@onready var normal_group: Node2D = %NormalGroup
+@onready var loop_player: Sprite2D = %LoopPlayer
+@onready var loop_replacement_keeper: Sprite2D = %LoopReplacementKeeper
+@onready var loop_old_keeper: Sprite2D = %LoopOldKeeper
+@onready var loop_reborn_player: Sprite2D = %LoopRebornPlayer
+@onready var loop_run_label: Label = %LoopRunLabel
+@onready var loop_player_start: Marker2D = %LoopPlayerStart
+@onready var loop_keeper_start: Marker2D = %LoopKeeperStart
+@onready var loop_exit_target: Marker2D = %LoopExitTarget
+@onready var loop_rebirth_target: Marker2D = %LoopRebirthTarget
+@onready var normal_continue_button: Button = %NormalContinueButton
+@onready var true_group: Node2D = %TrueGroup
+@onready var past_figure: Sprite2D = %PastFigure
+@onready var present_figure: Sprite2D = %PresentFigure
+@onready var future_figure: Sprite2D = %FutureFigure
+@onready var keeper_figure: Sprite2D = %KeeperFigure
+@onready var merged_figure: Sprite2D = %MergedFigure
+@onready var rewritten_hero: Sprite2D = %RewrittenHero
+@onready var lia_figure: Sprite2D = %LiaFigure
+@onready var future_trace: Line2D = %FutureTrace
+@onready var third_path: Line2D = %ThirdPath
+@onready var true_run_label: Label = %TrueRunLabel
+@onready var past_start: Marker2D = %PastStart
+@onready var present_start: Marker2D = %PresentStart
+@onready var future_start: Marker2D = %FutureStart
+@onready var keeper_start: Marker2D = %KeeperStart
+@onready var merge_target: Marker2D = %MergeTarget
+@onready var rewritten_hero_start: Marker2D = %RewrittenHeroStart
+@onready var lia_start: Marker2D = %LiaStart
+@onready var true_exit_target: Marker2D = %TrueExitTarget
+@onready var lia_exit_target: Marker2D = %LiaExitTarget
+@onready var true_return_button: Button = %TrueReturnButton
+
+var _dialogue_active := false
+
+
+# Hides all authored story surfaces until a sequence explicitly owns the screen.
+func _ready() -> void:
+	if dialogue_resource == null:
+		push_error("EchoChaseNarrativePresenter requires a dialogue_resource")
+	memory_layer.visible = false
+	ending_layer.visible = false
+	normal_continue_button.hide()
+	true_return_button.hide()
+
+
+# Pauses gameplay and plays one Dialogue Manager title over the memory surface.
+func play_dialogue(title: String, time_tag_key := "", show_backdrop := true) -> void:
+	if _dialogue_active:
+		push_error("EchoChaseNarrativePresenter cannot overlap dialogue sequences")
+		return
+	if title.is_empty() or dialogue_resource == null:
+		push_error("EchoChaseNarrativePresenter requires a valid dialogue title")
+		return
+	_dialogue_active = true
+	var was_paused := get_tree().paused
+	get_tree().paused = true
+	EchoTimeline.pause_run_countdown()
+	memory_tag.text = tr(time_tag_key) if not time_tag_key.is_empty() else ""
+	memory_layer.visible = show_backdrop
+	story_balloon.start(dialogue_resource, title, [self])
+	await story_balloon.dialogue_ended
+	memory_layer.visible = false
+	get_tree().paused = was_paused
+	if not was_paused:
+		EchoTimeline.resume_run_countdown()
+	_dialogue_active = false
+
+
+# Plays the silent Keeper handoff loop and waits for the authored Continue command.
+func play_normal_ending() -> void:
+	var was_paused := _begin_ending()
+	_reset_normal_tableau()
+	ending_layer.visible = true
+	normal_group.show()
+	var exit_tween := _new_ending_tween()
+	exit_tween.tween_interval(0.35)
+	exit_tween.set_parallel(true)
+	exit_tween.tween_property(loop_old_keeper, "position", loop_exit_target.position, 1.2)
+	exit_tween.tween_property(loop_old_keeper, "modulate:a", 0.0, 1.2)
+	exit_tween.tween_property(loop_player, "modulate:a", 0.0, 0.8).set_delay(0.35)
+	exit_tween.tween_property(loop_replacement_keeper, "modulate:a", 1.0, 0.8).set_delay(0.35)
+	await exit_tween.finished
+	loop_reborn_player.show()
+	loop_run_label.show()
+	var rebirth_tween := _new_ending_tween()
+	rebirth_tween.set_parallel(true)
+	rebirth_tween.tween_property(loop_reborn_player, "modulate:a", 1.0, 0.55)
+	rebirth_tween.tween_property(loop_run_label, "modulate:a", 1.0, 0.55)
+	await rebirth_tween.finished
+	normal_continue_button.show()
+	normal_continue_button.grab_focus()
+	await normal_continue_button.pressed
+	ending_layer.visible = false
+	_finish_ending(was_paused)
+
+
+# Plays convergence, backward Future Trace, reunion, and the third-path exit.
+func play_true_ending() -> void:
+	var was_paused := _begin_ending()
+	_reset_true_tableau()
+	ending_layer.visible = true
+	true_group.show()
+	var merge_tween := _new_ending_tween()
+	merge_tween.set_parallel(true)
+	for figure in [past_figure, present_figure, future_figure, keeper_figure]:
+		merge_tween.tween_property(figure, "position", merge_target.position, 1.0)
+		merge_tween.tween_property(figure, "modulate:a", 0.0, 1.0)
+	await merge_tween.finished
+	merged_figure.show()
+	var merged_tween := _new_ending_tween()
+	merged_tween.tween_property(merged_figure, "modulate:a", 1.0, 0.35)
+	await merged_tween.finished
+	future_trace.show()
+	true_run_label.show()
+	var trace_tween := _new_ending_tween()
+	trace_tween.set_parallel(true)
+	trace_tween.tween_property(future_trace, "scale:x", 1.0, 1.0)
+	trace_tween.tween_property(true_run_label, "modulate:a", 1.0, 0.45)
+	await trace_tween.finished
+	merged_figure.hide()
+	rewritten_hero.show()
+	lia_figure.show()
+	await play_dialogue("true_ending", "", false)
+	third_path.show()
+	var escape_tween := _new_ending_tween()
+	escape_tween.set_parallel(true)
+	escape_tween.tween_property(rewritten_hero, "position", true_exit_target.position, 1.4)
+	escape_tween.tween_property(lia_figure, "position", lia_exit_target.position, 1.4)
+	escape_tween.tween_property(rewritten_hero, "modulate:a", 0.0, 1.4)
+	escape_tween.tween_property(lia_figure, "modulate:a", 0.0, 1.4)
+	await escape_tween.finished
+	true_return_button.show()
+	true_return_button.grab_focus()
+	await true_return_button.pressed
+	ending_layer.visible = false
+	_finish_ending(was_paused)
+
+
+# Freezes the world while keeping this PROCESS_MODE_ALWAYS component animated.
+func _begin_ending() -> bool:
+	var was_paused := get_tree().paused
+	get_tree().paused = true
+	EchoTimeline.pause_run_countdown()
+	return was_paused
+
+
+# Restores the exact pause state that existed before the ending sequence.
+func _finish_ending(was_paused: bool) -> void:
+	get_tree().paused = was_paused
+	if not was_paused:
+		EchoTimeline.resume_run_countdown()
+
+
+# Restores every normal-ending figure from authored marker positions.
+func _reset_normal_tableau() -> void:
+	true_group.hide()
+	normal_group.show()
+	normal_continue_button.hide()
+	loop_player.position = loop_player_start.position
+	loop_replacement_keeper.position = loop_player_start.position
+	loop_old_keeper.position = loop_keeper_start.position
+	loop_reborn_player.position = loop_rebirth_target.position
+	_set_alpha(loop_player, 1.0)
+	_set_alpha(loop_replacement_keeper, 0.0)
+	_set_alpha(loop_old_keeper, 1.0)
+	_set_alpha(loop_reborn_player, 0.0)
+	_set_alpha(loop_run_label, 0.0)
+	loop_player.show()
+	loop_replacement_keeper.show()
+	loop_old_keeper.show()
+	loop_reborn_player.hide()
+	loop_run_label.hide()
+
+
+# Restores every true-ending figure and path from authored marker positions.
+func _reset_true_tableau() -> void:
+	normal_group.hide()
+	true_group.show()
+	true_return_button.hide()
+	past_figure.position = past_start.position
+	present_figure.position = present_start.position
+	future_figure.position = future_start.position
+	keeper_figure.position = keeper_start.position
+	merged_figure.position = merge_target.position
+	rewritten_hero.position = rewritten_hero_start.position
+	lia_figure.position = lia_start.position
+	for figure in [past_figure, present_figure, future_figure, keeper_figure]:
+		figure.show()
+		_set_alpha(figure, 1.0)
+	_set_alpha(merged_figure, 0.0)
+	_set_alpha(rewritten_hero, 1.0)
+	_set_alpha(lia_figure, 1.0)
+	_set_alpha(true_run_label, 0.0)
+	merged_figure.hide()
+	rewritten_hero.hide()
+	lia_figure.hide()
+	future_trace.scale.x = 0.0
+	future_trace.hide()
+	third_path.hide()
+	true_run_label.hide()
+
+
+# Creates one pause-safe tween bound to the authored presenter.
+func _new_ending_tween() -> Tween:
+	return create_tween().set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
+
+
+# Changes only opacity while preserving each authored tint.
+func _set_alpha(item: CanvasItem, alpha: float) -> void:
+	var color := item.modulate
+	color.a = alpha
+	item.modulate = color

@@ -31,11 +31,13 @@ func _ready() -> void:
 
 # Stores the item once, then plays authored pickup feedback.
 func _on_body_entered(body: Node2D) -> void:
-	if _collected or body != EchoTimeline.player:
+	if _collected or body != EchoTimeline.player or EchoTimeline.is_future_recording():
 		return
 	if not LevelModule.instance.collect_item(String(item_id)):
 		return
 	_collected = true
+	if not SaveSystem.save_slot(1):
+		push_error("TemporalCollectible failed to save slot 1 after collecting '%s'" % item_id)
 	collision_shape.set_deferred("disabled", true)
 	collected.emit(item_id)
 	collect_audio.play()

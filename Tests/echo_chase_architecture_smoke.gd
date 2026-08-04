@@ -37,7 +37,12 @@ func _test_start_scene_camera_layout() -> void:
 	var root := scene.instantiate()
 	var run_label := root.get_node("World/SpawnPoint/RunLabel") as Node2D
 	_expect(run_label.get("auto_start_text") == "Run", "spawn point should author the Run floating cue")
-	_expect(root.get_node_or_null("UI/RunCountdownHUD") is RunCountdownHUD, "scene should author the whole-run countdown HUD")
+	var present_time_label := root.get_node("World/PresentHub/Label") as Label
+	var final_time_label := root.get_node("World/Finnal/Label") as Label
+	var pause_time_label := root.get_node("UI/PauseScreen/PanelRoot/RunCountdownLabel") as Label
+	_expect(present_time_label.text == "30:00", "PresentHub should author the run countdown label")
+	_expect(final_time_label.text == "30:00", "Finnal should author the run countdown label")
+	_expect(pause_time_label.text == "30:00", "pause screen should author the run countdown label")
 	var cameras := root.get_node("World/RoomCameras") as Node2D
 	var triggers := root.get_node("World/RoomCameraTriggers") as Node2D
 	_expect(cameras.get_child_count() > 0, "scene should author at least one room camera")

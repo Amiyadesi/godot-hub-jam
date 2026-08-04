@@ -11,6 +11,8 @@ signal future_recording_finished
 signal future_recording_rejected
 signal present_room_changed(active: bool)
 signal run_countdown_changed(remaining_seconds: float, maximum_seconds: float)
+signal run_countdown_expired
+signal future_recording_committed_by_past(recorder: FutureRecorder)
 
 const DEFAULT_PAST_DELAY := 3.0
 const DEFAULT_DELAY_SWITCH_ID := &"delay_3s"
@@ -45,6 +47,7 @@ var _present_room_active := false
 var _run_countdown_remaining := RUN_TIME_LIMIT_SECONDS
 var _run_countdown_session_active := false
 var _run_countdown_paused := true
+var _run_countdown_expired_emitted := false
 
 # 初始化全局过去体；玩家与记录器由各自 prefab 进入场景时注册。
 func _ready() -> void:
@@ -116,6 +119,7 @@ func start_run_countdown() -> void:
 	_run_countdown_remaining = RUN_TIME_LIMIT_SECONDS
 	_run_countdown_session_active = true
 	_run_countdown_paused = true
+	_run_countdown_expired_emitted = false
 	_emit_run_countdown_changed()
 
 
@@ -463,6 +467,7 @@ func _advance_run_countdown(delta: float) -> void:
 		or _run_countdown_paused
 		or player == null
 		or _present_room_active
+		or is_zero_approx(_run_countdown_remaining)
 	):
 		return
 	_set_run_countdown_remaining(_run_countdown_remaining - delta)
@@ -470,8 +475,12 @@ func _advance_run_countdown(delta: float) -> void:
 
 # Clamps and publishes the whole-run limit for the global HUD.
 func _set_run_countdown_remaining(value: float) -> void:
+	var was_above_zero := _run_countdown_remaining > 0.0
 	_run_countdown_remaining = clampf(value, 0.0, RUN_TIME_LIMIT_SECONDS)
 	_emit_run_countdown_changed()
+	if was_above_zero and is_zero_approx(_run_countdown_remaining) and not _run_countdown_expired_emitted:
+		_run_countdown_expired_emitted = true
+		run_countdown_expired.emit()
 
 
 # Publishes both the live value and its authored maximum.
@@ -487,6 +496,7 @@ func _on_future_slot_released(_future_echo: FutureEcho) -> void:
 # 录制中把抓捕转为回传；普通状态才进入 checkpoint 失败流程。
 func _on_past_echo_caught_player() -> void:
 	if is_future_recording():
+		future_recording_committed_by_past.emit(_recording_recorder)
 		commit_future_recording()
 		return
 	player.receive_past_catch()

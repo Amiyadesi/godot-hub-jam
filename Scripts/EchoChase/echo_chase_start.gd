@@ -23,6 +23,9 @@ const CURRENT_ROOM_CHECKPOINT_ID := &"current_room"
 @export var present_entry_transition: SceneTransition
 @export var past_entry_transition: SceneTransition
 
+@onready var present_hub_time_label: Label = $"../World/PresentHub/Label"
+@onready var final_time_label: Label = $"../World/Finnal/Label"
+
 var _checkpoints: Array[EchoCheckpoint] = []
 var _delay_switches: Array[DelayPickup] = []
 var _default_delay_switch: DelayPickup
@@ -46,6 +49,7 @@ func _ready() -> void:
 	_connect_gameplay_signals()
 	_configure_ui()
 	_restore_entry_position()
+	_on_run_countdown_changed(EchoTimeline.get_run_countdown_remaining(), 0.0)
 	_play_entry_intro()
 
 
@@ -100,6 +104,7 @@ func _resolve_delay_switches() -> void:
 func _connect_gameplay_signals() -> void:
 	EchoTimeline.player_caught.connect(_on_player_caught)
 	player.failure_requested.connect(_on_player_failure_requested)
+	EchoTimeline.run_countdown_changed.connect(_on_run_countdown_changed)
 	for checkpoint in _checkpoints:
 		checkpoint.activation_requested.connect(_on_checkpoint_activation_requested)
 
@@ -113,6 +118,16 @@ func _configure_ui() -> void:
 	pause_screen.setting_pressed.connect(_open_settings_from_pause)
 	pause_screen.quit_pressed.connect(_return_to_menu)
 	setting_screen.return_completed.connect(_on_settings_return_completed)
+
+
+# Updates both authored world labels from the single run-limit source.
+func _on_run_countdown_changed(remaining_seconds: float, _maximum_seconds: float) -> void:
+	var total_seconds := maxi(0, ceili(remaining_seconds))
+	var minutes := int(total_seconds / 60.0)
+	var seconds := total_seconds % 60
+	var display_text := "%02d:%02d" % [minutes, seconds]
+	present_hub_time_label.text = display_text
+	final_time_label.text = display_text
 
 
 # 新游戏使用默认3秒台；Continue 恢复坐标、延迟台和干净时间线。

@@ -197,3 +197,187 @@ msgstr "KEYBOARD, MOUSE OR GAMEPAD"
 
 msgid "KEY_CAPTURE_INPUTS_NO_MOUSE"
 msgstr "KEYBOARD OR GAMEPAD"
+
+msgid "STORY_MEMORY_MINUS_5"
+msgstr "-5s"
+
+msgid "STORY_MEMORY_MINUS_3"
+msgstr "-3s"
+
+msgid "STORY_MEMORY_MINUS_1"
+msgstr "-1s"
+
+msgid "STORY_MEMORY_AFTER"
+msgstr "AFTERMATH"
+
+msgid "STORY_MEMORY_REASSEMBLED"
+msgstr "MEMORY REASSEMBLED"
+
+msgid "ENDING_CONTINUE"
+msgstr "CONTINUE"
+
+msgid "ENDING_RETURN_TITLE"
+msgstr "RETURN TO TITLE"
+
+msgctxt "dialogue"
+msgid "神秘人"
+msgstr "Keeper"
+
+msgctxt "dialogue"
+msgid "莉娅"
+msgstr "Lia"
+
+msgctxt "dialogue"
+msgid "他"
+msgstr "He"
+
+msgctxt "dialogue"
+msgid "裂隙"
+msgstr "Rift"
+
+msgid "这里只有现在，所以你不必奔逃了"
+msgstr "Only the present exists here. You no longer need to run."
+
+msgid "可能性存在时，金色的结构会凝固"
+msgstr "While a possibility exists, golden structures become solid."
+
+msgid "撞碎可能性，冲刺会回到你身上"
+msgstr "Shatter a possibility, and your dash returns to you."
+
+msgid "三条路，三枚装置。全部点亮，前方出口就会打开"
+msgstr "Three paths. Three devices. Light them all, and the exit ahead will open."
+
+msgid "只剩三十分钟。完成交接，你就能离开"
+msgstr "Only thirty minutes remain. Complete the handoff, and you can leave."
+
+msgid "如果你还有问题，可以来问我"
+msgstr "If you still have questions, ask me."
+
+msgid "...你想知道什么？"
+msgstr "...What do you want to know?"
+
+msgid "这里是哪里？"
+msgstr "Where is this?"
+
+msgid "...时间的裂隙，过去现在未来交错的试炼之地"
+msgstr "...A rift in time. A proving ground where past, present, and future intersect."
+
+msgid "恐惧过去，失去未来之人将会来到这里"
+msgstr "Those who fear the past and lose their future come here."
+
+msgid "在倒计时结束之前离去，否则就只能永远困在这里"
+msgstr "Leave before the countdown ends, or remain trapped here forever."
+
+msgid "那些红色幻影和金色幻影是什么？"
+msgstr "What are the red and golden echoes?"
+
+msgid "...红色是你延迟的过去，金色是你记录下的未来可能性"
+msgstr "...Red is your delayed past. Gold is a future possibility you recorded."
+
+msgid "在这里，过去能影响现在和未来，现在就只能影响未来"
+msgstr "Here, the past can affect the present and future. The present can only affect the future."
+
+msgid "我想要离开需要做什么？"
+msgstr "What do I need to do to leave?"
+
+msgid "...想要离开吗？这是三条试炼之路"
+msgstr "...You want to leave? There are three paths of trial."
+
+msgid "激活每条路上的装置，就能解开前方出口"
+msgstr "Activate the device on each path, and the exit ahead will open."
+
+msgid "你是谁？"
+msgstr "Who are you?"
+
+msgid "...我是试炼的失败者"
+msgstr "...I failed the trial."
+
+msgid "只剩下现在，忘记了过去也没有未来"
+msgstr "Only my present remains. I forgot my past and have no future."
+
+msgid "成为了给未来的试炼者提供消息的存在"
+msgstr "I became something that leaves guidance for future challengers."
+
+msgid "希望你能通过试炼[]然后替代我[]。这样我就能离开"
+msgstr "I hope you pass the trial[]and take my place[]so I can leave."
+
+msgid "你一开始说的话是什么意思？"
+msgstr "What did you mean at the beginning?"
+
+msgid "...未来体在被你撞碎后可以成为你的"
+msgstr "...A Future becomes yours after you shatter it."
+
+msgid "那些碎片是什么？"
+msgstr "What are those shards?"
+
+msgid "...不知道。它们不属于试炼"
+msgstr "...I don't know. They are not part of the trial."
+
+msgid "你没必要收集那些。在倒计时前通过试炼"
+msgstr "You do not need them. Finish the trial before the countdown ends."
+
+msgid "那才是离开的正确方式"
+msgstr "That is the proper way to leave."
+
+msgid "我留下关掉它。你先走。"
+msgstr "I'll stay and shut it down. You go first."
+
+msgid "艾米莉娅——"
+msgstr "Emilia-"
+
+msgid "别叫全名。跑吧。我会跟上你。"
+msgstr "Don't use my full name. Run. I'll catch up with you."
+
+msgid "我不会一个人走。我不会把莉娅留在这里。"
+msgstr "I won't leave alone. I won't leave Lia here."
+
+msgid "不是你……"
+msgstr "It wasn't you..."
+
+msgid "RUN——"
+msgstr "RUN-"
+
+msgid "……"
+msgstr "..."
+
+msgid "我跑了。"
+msgstr "I ran."
+
+msgid "我害死了莉娅。"
+msgstr "I got Lia killed."
+
+msgid "你希望我拿走什么？"
+msgstr "What do you want me to take?"
+
+msgid "过去。未来。她会恨我的那一部分。"
+msgstr "My past. My future. The part of me she would hate."
+
+msgid "我只会照见你的愿望。"
+msgstr "I only reflect the wish you bring me."
+
+msgid "全部拿走。"
+msgstr "Take all of it."
+
+msgid "……那些碎片不属于试炼。别被它们拖住。"
+msgstr "...Those shards are not part of the trial. Do not let them slow you down."
+
+msgid "……四段都在你身上？出口在前面。别再回头。"
+msgstr "...You have all four? The exit is ahead. Do not turn back."
+
+msgid "……不会发生什么。我只是等得太久了。"
+msgstr "...Nothing will happen. I have simply waited too long."
+
+msgid "不是你把我留下。是我选择留下。RUN. 我爱你。我会追上你。"
+msgstr "You did not leave me behind. I chose to stay. RUN. I love you. I will catch up with you."
+
+msgid "你亲手记录的未来，正沿着裂隙回到那一声 RUN。"
+msgstr "The future you recorded is traveling back through the rift to that cry of RUN."
+
+msgid "莉娅。"
+msgstr "Lia."
+
+msgid "这次，一起跑。"
+msgstr "This time, we run together."
+
+msgid "跑吧。"
+msgstr "Run."

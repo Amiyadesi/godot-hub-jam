@@ -22,6 +22,7 @@ func _ready() -> void:
 	_test_track_keeps_recall_until_its_exact_time()
 	_test_player_tuning_matches_authored_envelope()
 	await _test_run_countdown_lifecycle()
+	await _test_past_catch_reports_recording_source()
 	_test_dash_charge_marker_follows_player_state()
 	_test_dash_input_consumes_single_charge()
 	await _test_landing_restores_single_dash()
@@ -143,6 +144,35 @@ func _test_run_countdown_lifecycle() -> void:
 		is_equal_approx(EchoTimeline.get_run_countdown_remaining(), 1234.0),
 		"Future commit restores the recording-start run time"
 	)
+	var expiration_count: Array[int] = [0]
+	var on_expired := func() -> void:
+		expiration_count[0] += 1
+	EchoTimeline.run_countdown_expired.connect(on_expired)
+	EchoTimeline._set_run_countdown_remaining(0.0)
+	EchoTimeline._set_run_countdown_remaining(0.0)
+	_expect(expiration_count[0] == 1, "whole-run countdown expires once without failing the run")
+	EchoTimeline.run_countdown_expired.disconnect(on_expired)
+	EchoTimeline.reset_timeline()
+	recorder.free()
+	player.free()
+
+
+# 验证知识锁能识别“录像中主动被 Past 追上”的 Recorder。
+func _test_past_catch_reports_recording_source() -> void:
+	var player := PLAYER_SCENE.instantiate() as EchoPlayer
+	add_child(player)
+	player.set_physics_process(false)
+	var recorder := FUTURE_RECORDER_SCENE.instantiate() as FutureRecorder
+	add_child(recorder)
+	await get_tree().process_frame
+	var reported_recorder: Array[FutureRecorder] = [null]
+	var on_committed := func(value: FutureRecorder) -> void:
+		reported_recorder[0] = value
+	EchoTimeline.future_recording_committed_by_past.connect(on_committed)
+	_expect(EchoTimeline.start_future_recording(recorder), "Future recording starts for Past-catch reporting")
+	EchoTimeline._on_past_echo_caught_player()
+	_expect(reported_recorder[0] == recorder, "Past catch reports the recorder used by the knowledge lock")
+	EchoTimeline.future_recording_committed_by_past.disconnect(on_committed)
 	EchoTimeline.reset_timeline()
 	recorder.free()
 	player.free()

@@ -13,12 +13,15 @@ signal hint_pressed
 @onready var hint_button: ShaderButton = %HintButton
 @onready var setting_button: ShaderButton = %SettingButton
 @onready var quit_button: ShaderButton = %QuitButton
+@onready var run_countdown_label: Label = %RunCountdownLabel
 
 # 连接暂停菜单按钮并补局内确认音。
 func _ready() -> void:
 	super._ready()
 	if Engine.is_editor_hint():
 		return
+	EchoTimeline.run_countdown_changed.connect(_on_run_countdown_changed)
+	_on_run_countdown_changed(EchoTimeline.get_run_countdown_remaining(), 0.0)
 	var game_audio: Node = get_tree().root.get_node_or_null("GameAudio")
 	if game_audio != null:
 		game_audio.call("setup_ingame_shader_button", continue_button)
@@ -33,6 +36,14 @@ func _ready() -> void:
 	hint_button.pressed.connect(hint_pressed.emit)
 	setting_button.pressed.connect(setting_pressed.emit)
 	quit_button.pressed.connect(quit_pressed.emit)
+
+
+# Keeps the paused view aware of the live whole-run limit.
+func _on_run_countdown_changed(remaining_seconds: float, _maximum_seconds: float) -> void:
+	var total_seconds := maxi(0, ceili(remaining_seconds))
+	var minutes := int(total_seconds / 60.0)
+	var seconds := total_seconds % 60
+	run_countdown_label.text = "%02d:%02d" % [minutes, seconds]
 
 
 # Enables the authored hint action only when the active room defines one.
