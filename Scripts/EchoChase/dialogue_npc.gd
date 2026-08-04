@@ -5,7 +5,8 @@ extends Area2D
 signal dialogue_started_here
 signal dialogue_finished
 
-@export var dialogue_resource: DialogueResource
+@export var dialogue_resource_zh: DialogueResource
+@export var dialogue_resource_en: DialogueResource
 @export var dialogue_title := "start"
 
 @onready var interact_prompt: Label = %InteractPrompt
@@ -18,8 +19,8 @@ var _was_tree_paused := false
 
 # Connects the authored trigger and dialogue lifecycle.
 func _ready() -> void:
-	if dialogue_resource == null:
-		push_error("DialogueNpc requires a dialogue_resource")
+	if dialogue_resource_zh == null or dialogue_resource_en == null:
+		push_error("DialogueNpc requires zh and en dialogue resources")
 	body_entered.connect(_on_body_entered)
 	body_exited.connect(_on_body_exited)
 	balloon.dialogue_ended.connect(_on_dialogue_ended)
@@ -38,8 +39,9 @@ func _unhandled_input(event: InputEvent) -> void:
 func start_dialogue() -> bool:
 	if _dialogue_active:
 		return false
+	var dialogue_resource := _get_localized_dialogue_resource()
 	if dialogue_resource == null:
-		push_error("DialogueNpc cannot start without a dialogue_resource")
+		push_error("DialogueNpc cannot start without both localized dialogue resources")
 		return false
 	_dialogue_active = true
 	interact_prompt.hide()
@@ -48,6 +50,11 @@ func start_dialogue() -> bool:
 	dialogue_started_here.emit()
 	balloon.start(dialogue_resource, dialogue_title, [self])
 	return true
+
+
+# Selects the authored resource that matches the active project locale.
+func _get_localized_dialogue_resource() -> DialogueResource:
+	return dialogue_resource_zh if TranslationServer.get_locale().begins_with("zh") else dialogue_resource_en
 
 
 # Shows the interaction prompt for the current EchoPlayer only.

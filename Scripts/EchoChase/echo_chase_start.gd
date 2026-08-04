@@ -19,6 +19,7 @@ const CURRENT_ROOM_CHECKPOINT_ID := &"current_room"
 @export var pause_screen: PauseScreen
 @export var setting_screen: SettingScreen
 @export var onboarding: EchoChaseOnboarding
+@export var narrative_presenter: EchoChaseNarrativePresenter
 @export var reset_audio: AudioStreamPlayer
 @export var gameplay_music: AudioStream
 @export var present_entry_transition: SceneTransition
@@ -35,6 +36,7 @@ var _respawn_past_delay_seconds := EchoTimeline.DEFAULT_PAST_DELAY
 var _respawn_delay_switch_id := EchoTimeline.DEFAULT_DELAY_SWITCH_ID
 var _reset_in_progress := false
 var _entry_intro_active := false
+var _entry_card_playing := false
 var _entry_tween: Tween
 var _show_onboarding_on_entry := true
 
@@ -42,8 +44,8 @@ var _show_onboarding_on_entry := true
 # 收集当前场景实际摆放的机关，并接通存档、失败和暂停信号。
 func _ready() -> void:
 	EchoTimeline.set_gameplay_active(false)
-	if onboarding == null:
-		push_error("EchoChaseStart requires the authored onboarding component")
+	if onboarding == null or narrative_presenter == null:
+		push_error("EchoChaseStart requires the authored onboarding and narrative presenter")
 		return
 	if gameplay_music == null:
 		push_error("EchoChaseStart requires gameplay_music")
@@ -63,7 +65,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	if _reset_in_progress:
 		return
 	if _entry_intro_active:
-		if _is_entry_skip_event(event):
+		if not _entry_card_playing and _is_entry_skip_event(event):
 			_finish_entry_intro()
 			get_viewport().set_input_as_handled()
 		return
@@ -192,12 +194,16 @@ func _play_entry_intro() -> void:
 
 # 清掉同色遮罩并恢复正常玩法时间。
 func _finish_entry_intro() -> void:
-	if not _entry_intro_active:
+	if not _entry_intro_active or _entry_card_playing:
 		return
 	if _entry_tween != null and _entry_tween.is_valid():
 		_entry_tween.kill()
 	_entry_tween = null
 	SceneManager.transition_clear()
+	if _show_onboarding_on_entry:
+		_entry_card_playing = true
+		await narrative_presenter.play_opening_run_card()
+		_entry_card_playing = false
 	gameplay_world.process_mode = Node.PROCESS_MODE_PAUSABLE
 	EchoTimeline.set_gameplay_active(true)
 	EchoTimeline.resume_run_countdown()

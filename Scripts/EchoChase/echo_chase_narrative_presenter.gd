@@ -39,16 +39,19 @@ const TRUE_EPILOGUE_LINES := [
 	"ENDING_TRUE_EPILOGUE_1",
 	"ENDING_TRUE_EPILOGUE_2",
 ]
+const MEMORY_JITTER_BBCODE := "[jit2 scale=2.0 freq=18.0]%s[]"
 
-@export var keeper_dialogue_resource: DialogueResource
+@export var keeper_dialogue_resource_zh: DialogueResource
+@export var keeper_dialogue_resource_en: DialogueResource
 @export_group("Text Timing")
 @export_range(0.05, 1.0, 0.05) var text_fade_seconds := 0.22
+@export_range(0.2, 3.0, 0.05) var opening_hold_seconds := 1.1
 @export_range(0.2, 3.0, 0.05) var memory_hold_seconds := 0.9
 @export_range(0.2, 3.0, 0.05) var ending_hold_seconds := 1.15
 
 @onready var memory_layer: CanvasLayer = %MemoryLayer
 @onready var memory_tag: Label = %MemoryTag
-@onready var memory_text: Label = %MemoryText
+@onready var memory_text: RicherTextLabel = %MemoryText
 @onready var story_balloon: ModularBalloon = %StoryBalloon
 @onready var ending_layer: CanvasLayer = %EndingLayer
 @onready var ending_flash: ColorRect = %EndingFlash
@@ -92,8 +95,8 @@ var _sequence_active := false
 
 # Hides all authored story surfaces until a sequence explicitly owns the screen.
 func _ready() -> void:
-	if keeper_dialogue_resource == null:
-		push_error("EchoChaseNarrativePresenter requires keeper_dialogue_resource")
+	if keeper_dialogue_resource_zh == null or keeper_dialogue_resource_en == null:
+		push_error("EchoChaseNarrativePresenter requires zh and en Keeper dialogue resources")
 	memory_layer.visible = false
 	ending_layer.visible = false
 	memory_text.hide()
@@ -102,6 +105,20 @@ func _ready() -> void:
 	ending_flash.hide()
 	normal_continue_button.hide()
 	true_return_button.hide()
+
+
+# Plays the localized opening command inside the same black-red memory surface.
+func play_opening_run_card() -> void:
+	if _sequence_active:
+		push_error("EchoChaseNarrativePresenter cannot overlap story sequences")
+		return
+	_sequence_active = true
+	memory_tag.hide()
+	memory_layer.visible = true
+	await _play_memory_lines(["STORY_RUN"], opening_hold_seconds)
+	memory_layer.visible = false
+	memory_tag.show()
+	_sequence_active = false
 
 
 # Pauses play and flashes a memory as centered red text instead of a dialogue balloon.
@@ -115,8 +132,9 @@ func play_memory_sequence(line_keys: Array, time_tag_key: String) -> void:
 	_sequence_active = true
 	var was_paused := _pause_world()
 	memory_tag.text = tr(time_tag_key)
+	memory_tag.show()
 	memory_layer.visible = true
-	await _play_lines(memory_text, line_keys, memory_hold_seconds)
+	await _play_memory_lines(line_keys, memory_hold_seconds)
 	memory_layer.visible = false
 	_restore_world(was_paused)
 	_sequence_active = false
@@ -127,6 +145,7 @@ func play_keeper_dialogue(title: String) -> void:
 	if _sequence_active:
 		push_error("EchoChaseNarrativePresenter cannot overlap story sequences")
 		return
+	var keeper_dialogue_resource := _get_localized_keeper_dialogue_resource()
 	if title.is_empty() or keeper_dialogue_resource == null:
 		push_error("EchoChaseNarrativePresenter requires a valid Keeper dialogue title")
 		return
@@ -136,6 +155,11 @@ func play_keeper_dialogue(title: String) -> void:
 	await story_balloon.dialogue_ended
 	_restore_world(was_paused)
 	_sequence_active = false
+
+
+# Selects the Keeper resource at playback time so pause-menu language changes apply immediately.
+func _get_localized_keeper_dialogue_resource() -> DialogueResource:
+	return keeper_dialogue_resource_zh if TranslationServer.get_locale().begins_with("zh") else keeper_dialogue_resource_en
 
 
 # Plays the Keeper's false escape, the Rift's reveal, and the memory-wipe loop.
@@ -228,6 +252,20 @@ func _play_lines(label: Label, line_keys: Array, hold_seconds: float) -> void:
 	label.hide()
 
 
+# Serializes translated memory text through RichText2's authored jitter effect.
+func _play_memory_lines(line_keys: Array, hold_seconds: float) -> void:
+	for line_key in line_keys:
+		memory_text.bbcode = MEMORY_JITTER_BBCODE % tr(String(line_key))
+		_set_alpha(memory_text, 0.0)
+		memory_text.show()
+		var tween := _new_cinematic_tween()
+		tween.tween_property(memory_text, "modulate:a", 1.0, text_fade_seconds)
+		tween.tween_interval(hold_seconds)
+		tween.tween_property(memory_text, "modulate:a", 0.0, text_fade_seconds)
+		await tween.finished
+	memory_text.hide()
+
+
 # Flashes the authored pale surface once as the Rift clears both surviving selves.
 func _play_memory_wash() -> void:
 	ending_flash.show()
@@ -272,6 +310,7 @@ func _reset_normal_tableau() -> void:
 	_set_alpha(loop_old_keeper, 1.0)
 	_set_alpha(loop_reborn_player, 0.0)
 	_set_alpha(loop_run_label, 0.0)
+	loop_run_label.text = tr("STORY_RUN")
 	loop_player.show()
 	loop_replacement_keeper.show()
 	loop_old_keeper.show()
@@ -301,6 +340,7 @@ func _reset_true_tableau() -> void:
 	_set_alpha(rewritten_hero, 1.0)
 	_set_alpha(lia_figure, 1.0)
 	_set_alpha(true_run_label, 0.0)
+	true_run_label.text = tr("STORY_RUN")
 	merged_figure.hide()
 	rewritten_hero.hide()
 	lia_figure.hide()

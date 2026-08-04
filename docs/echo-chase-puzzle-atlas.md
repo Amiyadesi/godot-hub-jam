@@ -82,8 +82,8 @@
 | 存档点 | `Scenes/EchoChase/Prefabs/echo_checkpoint.tscn` | 唯一 `checkpoint_id` | 玩家触碰后保存稳定状态 |
 | 收集物 | `Scenes/EchoChase/Prefabs/temporal_collectible.tscn` | 唯一 `item_id` | 记忆碎片；不阻挡普通出口，只显现真结局路线 |
 | 真结局路线 | `Scenes/EchoChase/Prefabs/true_ending_route.tscn` | 场景内 authored 子节点 | 四碎片后显现，包含重组触发、Recorder 与 KnowledgeLock |
-| 开场引导 | `Scenes/EchoChase/UI/echo_chase_onboarding.tscn` | `player` | 读取当前键位；移动、跳跃、冲刺完成后逐项淡出 |
-| 剧情演出 | `Scenes/EchoChase/UI/echo_chase_narrative_presenter.tscn` | `present_hub.dialogue` 仅供 Keeper 事件对白 | 红字记忆、普通结局真相/洗忆、金字真结局与 tableau |
+| 开场引导 | `Scenes/EchoChase/UI/echo_chase_narrative_presenter.tscn` + `Scenes/EchoChase/UI/echo_chase_onboarding.tscn` | `player`、当前 locale | 新游戏先显示黑屏红字 `跑/RUN`，再读取当前键位；移动、跳跃、冲刺完成后逐项淡出 |
+| 剧情演出 | `Scenes/EchoChase/UI/echo_chase_narrative_presenter.tscn` | `present_hub.zh.dialogue` / `present_hub.en.dialogue` 仅供 Keeper 事件对白 | RichText2 抖动红字记忆、普通结局真相/洗忆、金字真结局与 tableau |
 
 标准门接线：在 `TemporalDoor.source_plates` 中按状态格从左到右拖入对应压力板。凝固屏障必须直接绑定本题的 `FutureRecorder`，不要绑定全局 Future。
 
@@ -447,7 +447,7 @@ Present：    P → ==== → |G| X
 
 - Hub 前放 `memory_after`；`1s/3s/5s` 支路分别放 `memory_t_minus_1`、`memory_t_minus_3`、`memory_t_minus_5`。
 - 四枚都必须清晰可见，不做隐藏搜寻；支路顺序自由，单片闪回必须能独立理解。
-- 拾取时暂停玩法与倒计时，黑屏后以红字逐句播放数秒闪回并立即保存；不调用普通 Dialogue Manager 气泡。Future 录像期间不能拾取，避免回传复制进度。
+- 拾取时暂停玩法与倒计时，黑屏后以不标注说话者的红色倾斜字逐句播放数秒闪回并立即保存；文字使用 RichText2 抖动效果，不调用普通 Dialogue Manager 气泡。Future 录像期间不能拾取，避免回传复制进度。
 - 碎片不控制普通出口；四枚集齐只显现真结局回头路线。完整记忆固定按 `-5s → -3s → -1s → 事后` 重组。
 
 ## Editor 搭建顺序

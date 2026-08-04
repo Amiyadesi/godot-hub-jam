@@ -1,5 +1,5 @@
 ~ start
-神秘人: 这里只存在现在，所以你不必奔逃了
+神秘人: 这里只有现在，所以你不必奔逃了
 神秘人: 可能性存在时，金色的结构会凝固
 神秘人: 撞碎可能性，冲刺会回到你身上
 神秘人: 如果你有什么想知道的，可以来问我
@@ -11,27 +11,33 @@
 	神秘人: ...时间的裂隙，过去现在未来交错的试炼之地
 	神秘人: 恐惧过去，失去未来之人将会来到这里
 	神秘人: 在倒计时结束之前离去，否则就只能被永恒的困在这里
+	=> return
 - 那些红色幻影和金色幻影是什么？
 	神秘人: ...红色是你延迟的过去，金色是你记录下的未来可能性
 	神秘人: 在这里，过去能影响现在和未来，现在就只能影响未来
+	=> return
 - 我想要离开需要做什么？
 	神秘人: ...想要离开吗？这是三条试炼之路
 	神秘人: 在你探索试炼之路的路上自然会发现封锁的出口
 	神秘人: 激活每条路上的装置就可以解开封印
-- 你是谁？ [if NarrativeSlotModule.instance.get_value("flags.askname", false) == false]
-	do NarrativeSlotModule.instance.set_value("flags.askname", true)
-	do SaveSystem.save_slot(1)
+	=> return
+- 你是谁？ [if NarrativeGlobalModule.instance.get_value("flags.askname",false) == false]
+	do NarrativeGlobalModule.instance.set_value("flags.askname",true)
 	神秘人: ...我是试炼的失败者
 	神秘人: 只剩下现在，忘记了过去也没有未来
 	神秘人: 成为了给未来的试炼者提供消息的存在
 	神秘人: 希望你能通过试炼[secret]然后替代我
+	=> return
 - 你一开始说的话是什么意思？
 	神秘人: ...未来体在被你撞碎后可以成为你的
+	=> return
 - 那些爱心是什么？ [if LevelModule.instance]
 	神秘人: ...不知道，毕竟这个地方如此诡异
 	神秘人: 你也没必要收集这些，在倒计时前通过试炼
 	神秘人: 这才是离开的正确方式
-=> END
+	=> return
+- 没什么事了
+	=> END
 
 ~ keeper_first_memory
 神秘人: ……那些爱心不属于试炼。别被它们拖住。

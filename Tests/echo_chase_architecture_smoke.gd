@@ -35,8 +35,6 @@ func _ready() -> void:
 func _test_start_scene_camera_layout() -> void:
 	var scene := load("res://Scenes/EchoChase/echo_chase_start.tscn") as PackedScene
 	var root := scene.instantiate()
-	var run_label := root.get_node("World/SpawnPoint/RunLabel") as Node2D
-	_expect(run_label.get("auto_start_text") == "Run", "spawn point should author the Run floating cue")
 	var present_time_label := root.get_node("World/PresentHub/Label") as Label
 	var final_time_label := root.get_node("World/Finnal/Label") as Label
 	var pause_time_label := root.get_node("UI/PauseScreen/PanelRoot/RunCountdownLabel") as Label

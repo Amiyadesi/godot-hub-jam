@@ -1,0 +1,16 @@
+[remap]
+
+importer="dialogue_manager"
+importer_version=15
+type="Resource"
+uid="uid://ro5r7rbvvjnr"
+path="res://.godot/imported/present_hub.en.dialogue-21b4b55fc48905f836953bf50910375c.tres"
+
+[deps]
+
+source_file="res://Dialogue/EchoChase/present_hub.en.dialogue"
+dest_files=["res://.godot/imported/present_hub.en.dialogue-21b4b55fc48905f836953bf50910375c.tres"]
+
+[params]
+
+defaults=true

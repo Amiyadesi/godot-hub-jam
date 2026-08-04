@@ -391,65 +391,68 @@ msgstr "{jump}  JUMP"
 msgid "TUTORIAL_DASH"
 msgstr "{dash} + DIRECTION  DASH"
 
+msgid "STORY_RUN"
+msgstr "RUN"
+
 msgid "STORY_MEMORY_MINUS_5_LINE_1"
-msgstr "Lia: I'll stay and shut it down. You go first."
+msgstr "I'll stay and shut it down. You go first."
 
 msgid "STORY_MEMORY_MINUS_5_LINE_2"
-msgstr "He: Emilia-"
+msgstr "Emilia-"
 
 msgid "STORY_MEMORY_MINUS_5_LINE_3"
-msgstr "Lia: Don't use my full name. Run."
+msgstr "Don't use my full name. Run."
 
 msgid "STORY_MEMORY_MINUS_5_LINE_4"
-msgstr "Lia: I'll catch up with you."
+msgstr "I will catch up with you."
 
 msgid "STORY_MEMORY_MINUS_3_LINE_1"
-msgstr "He: I won't leave alone."
+msgstr "I won't leave alone."
 
 msgid "STORY_MEMORY_MINUS_3_LINE_2"
-msgstr "He: I won't leave Lia here."
+msgstr "I won't leave Lia here."
 
 msgid "STORY_MEMORY_MINUS_3_LINE_3"
-msgstr "Lia: It wasn't you..."
+msgstr "It wasn't you..."
 
 msgid "STORY_MEMORY_MINUS_1_LINE_1"
-msgstr "Lia: RUN-"
+msgstr "RUN-"
 
 msgid "STORY_MEMORY_MINUS_1_LINE_2"
-msgstr "The memory breaks here."
+msgstr "..."
 
 msgid "STORY_MEMORY_AFTER_LINE_1"
-msgstr "He: I ran."
+msgstr "I ran."
 
 msgid "STORY_MEMORY_AFTER_LINE_2"
-msgstr "He: I got Lia killed."
+msgstr "I got Lia killed."
 
 msgid "STORY_MEMORY_AFTER_LINE_3"
-msgstr "Rift: What do you want me to take?"
+msgstr "What do you want me to take?"
 
 msgid "STORY_MEMORY_AFTER_LINE_4"
-msgstr "He: My past. My future. The part of me she would hate."
+msgstr "My past. My future. The part of me she would hate."
 
 msgid "STORY_MEMORY_AFTER_LINE_5"
-msgstr "Rift: I only reflect the wish you bring me."
+msgstr "I only reflect the wish you bring me."
 
 msgid "STORY_MEMORY_AFTER_LINE_6"
-msgstr "He: Take all of it."
+msgstr "Take all of it."
 
 msgid "STORY_MEMORY_COMPLETE_LINE_1"
-msgstr "Lia: You did not leave me behind."
+msgstr "You did not leave me behind."
 
 msgid "STORY_MEMORY_COMPLETE_LINE_2"
-msgstr "Lia: I chose to stay."
+msgstr "I chose to stay."
 
 msgid "STORY_MEMORY_COMPLETE_LINE_3"
-msgstr "Lia: RUN."
+msgstr "RUN."
 
 msgid "STORY_MEMORY_COMPLETE_LINE_4"
-msgstr "Lia: I love you."
+msgstr "I love you."
 
 msgid "STORY_MEMORY_COMPLETE_LINE_5"
-msgstr "Lia: I will catch up with you."
+msgstr "I will catch up with you."
 
 msgid "ENDING_NORMAL_KEEPER_1"
 msgstr "Keeper: At last... the handoff is complete."

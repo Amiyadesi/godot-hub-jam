@@ -228,65 +228,68 @@ msgstr "{jump}  跳跃"
 msgid "TUTORIAL_DASH"
 msgstr "{dash} + 方向  冲刺"
 
+msgid "STORY_RUN"
+msgstr "跑"
+
 msgid "STORY_MEMORY_MINUS_5_LINE_1"
-msgstr "莉娅：我留下关掉它。你先走。"
+msgstr "我留下关掉它。你先走。"
 
 msgid "STORY_MEMORY_MINUS_5_LINE_2"
-msgstr "他：艾米莉娅——"
+msgstr "艾米莉娅——"
 
 msgid "STORY_MEMORY_MINUS_5_LINE_3"
-msgstr "莉娅：别叫全名。跑吧。"
+msgstr "别叫全名。跑。"
 
 msgid "STORY_MEMORY_MINUS_5_LINE_4"
-msgstr "莉娅：我会追上你。"
+msgstr "我会追上你。"
 
 msgid "STORY_MEMORY_MINUS_3_LINE_1"
-msgstr "他：我不会一个人走。"
+msgstr "我不会一个人走。"
 
 msgid "STORY_MEMORY_MINUS_3_LINE_2"
-msgstr "他：我不会把莉娅留在这里。"
+msgstr "我不会把莉娅留在这里。"
 
 msgid "STORY_MEMORY_MINUS_3_LINE_3"
-msgstr "莉娅：不是你……"
+msgstr "不是你……"
 
 msgid "STORY_MEMORY_MINUS_1_LINE_1"
-msgstr "莉娅：RUN——"
+msgstr "跑——"
 
 msgid "STORY_MEMORY_MINUS_1_LINE_2"
-msgstr "记忆在这里断裂。"
+msgstr "……"
 
 msgid "STORY_MEMORY_AFTER_LINE_1"
-msgstr "他：我跑了。"
+msgstr "我跑了。"
 
 msgid "STORY_MEMORY_AFTER_LINE_2"
-msgstr "他：我害死了莉娅。"
+msgstr "我害死了莉娅。"
 
 msgid "STORY_MEMORY_AFTER_LINE_3"
-msgstr "裂隙：你希望我拿走什么？"
+msgstr "你希望我拿走什么？"
 
 msgid "STORY_MEMORY_AFTER_LINE_4"
-msgstr "他：过去。未来。她会恨我的那一部分。"
+msgstr "过去。未来。她会恨我的那一部分。"
 
 msgid "STORY_MEMORY_AFTER_LINE_5"
-msgstr "裂隙：我只会照见你的愿望。"
+msgstr "我只会照见你的愿望。"
 
 msgid "STORY_MEMORY_AFTER_LINE_6"
-msgstr "他：全部拿走。"
+msgstr "全部拿走。"
 
 msgid "STORY_MEMORY_COMPLETE_LINE_1"
-msgstr "莉娅：不是你把我留下。"
+msgstr "不是你把我留下。"
 
 msgid "STORY_MEMORY_COMPLETE_LINE_2"
-msgstr "莉娅：是我选择留下。"
+msgstr "是我选择留下。"
 
 msgid "STORY_MEMORY_COMPLETE_LINE_3"
-msgstr "莉娅：RUN。"
+msgstr "跑。"
 
 msgid "STORY_MEMORY_COMPLETE_LINE_4"
-msgstr "莉娅：我爱你。"
+msgstr "我爱你。"
 
 msgid "STORY_MEMORY_COMPLETE_LINE_5"
-msgstr "莉娅：我会追上你。"
+msgstr "我会追上你。"
 
 msgid "ENDING_NORMAL_KEEPER_1"
 msgstr "神秘人：终于……交接完成了。"
@@ -331,7 +334,7 @@ msgid "ENDING_TRUE_ACCEPTANCE_5"
 msgstr "他：我知道。我不求你抹去她的选择。"
 
 msgid "ENDING_TRUE_ACCEPTANCE_6"
-msgstr "他：把我记录的未来送回去。送到那一声 RUN。"
+msgstr "他：把我记录的未来送回去。送到那一声“跑”。"
 
 msgid "ENDING_TRUE_ACCEPTANCE_7"
 msgstr "裂隙：愿望只能打开路。剩下的，要由你们一起跑完。"
@@ -358,7 +361,7 @@ msgid "ENDING_TRUE_REUNION_5"
 msgstr "莉娅：那就跟上。"
 
 msgid "ENDING_TRUE_EPILOGUE_1"
-msgstr "RUN. 我会追上你。"
+msgstr "跑。我会追上你。"
 
 msgid "ENDING_TRUE_EPILOGUE_2"
 msgstr "这一次，没有人需要独自奔逃。"
