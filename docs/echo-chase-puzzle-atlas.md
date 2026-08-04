@@ -73,7 +73,7 @@
 | 组件 | Prefab | 必填 Inspector | 用途 |
 | --- | --- | --- | --- |
 | 压力板 | `Scenes/EchoChase/Prefabs/temporal_pressure_plate.tscn` | 无 | Present、Past、Future 均可占用 |
-| 标准门 | `Scenes/EchoChase/Prefabs/temporal_door.tscn` | `mode`、`source_plates` | 最多三板；Momentary 或场景内锁存 |
+| 标准门 | `Scenes/EchoChase/Prefabs/temporal_door.tscn` | `mode`、`source_plates`、`latched_door_id`（锁存门） | 最多三板；Momentary 或可存档 Latched |
 | 记录器 | `Scenes/EchoChase/Prefabs/future_recorder.tscn` | 无 | 进入开始录像；`L` 提交；最长 `5s` |
 | 金色屏障 | `Scenes/EchoChase/Prefabs/future_condensation_barrier.tscn` | `source_recorder` | 竖放为墙，旋转 `90°` 为平台 |
 | 延迟台 | `Scenes/EchoChase/Prefabs/delay_pickup.tscn` | `delay_seconds`、唯一 `delay_switch_id` | 选择 `1s/3s/5s` |

@@ -1,6 +1,8 @@
 extends Node
 ## Headless behavior smoke for slot-scoped Echo Chase world progress.
 
+const PROGRESSION_SHORTCUT_SCENE := preload("res://Scenes/EchoChase/Prefabs/progression_shortcut.tscn")
+
 var _failures: Array[String] = []
 
 
@@ -14,6 +16,7 @@ func _ready() -> void:
 	_test_present_room_ambient_vfx()
 	_test_present_room_delay_switch_is_immediate()
 	_test_progression_device_ids_are_unique()
+	_test_progression_shortcut_follows_device()
 	_test_collectible_ids_are_unique()
 	_test_progress_round_trip()
 	_test_legacy_checkpoint_defaults_progress()
@@ -139,6 +142,24 @@ func _test_progression_device_ids_are_unique() -> void:
 	_expect(emitted_ids == ["short_route"], "device activation signal should emit once")
 
 
+# A branch shortcut starts solid and clears only for its matching device ID.
+func _test_progression_shortcut_follows_device() -> void:
+	var original_level_module := LevelModule.instance
+	var module := LevelModule.new()
+	LevelModule.instance = module
+	var shortcut := PROGRESSION_SHORTCUT_SCENE.instantiate() as ProgressionShortcut
+	shortcut.required_device_id = &"shortcut_test"
+	add_child(shortcut)
+	_expect(not shortcut.is_open(), "progression shortcut starts closed")
+	module.activate_progression_device("other_device")
+	_expect(not shortcut.is_open(), "progression shortcut ignores other device IDs")
+	module.activate_progression_device("shortcut_test")
+	_expect(shortcut.is_open(), "progression shortcut opens for its matching device")
+	_expect(shortcut.animation_player.current_animation == &"open", "progression shortcut plays its fade animation")
+	shortcut.free()
+	LevelModule.instance = original_level_module
+
+
 # One collectible ID is stored once and emits once.
 func _test_collectible_ids_are_unique() -> void:
 	var module := LevelModule.new()
@@ -168,6 +189,7 @@ func _test_progress_round_trip() -> void:
 	source.set_checkpoint("res://map.tscn", "hub", Vector2(24.0, 48.0), 5.0, "delay_5s")
 	source.activate_progression_device("long_route")
 	source.collect_item("memory_shard_a")
+	source.open_latched_door("delay_5s_latched_1")
 	_expect(source.unlock_present_hub(), "first present hub unlock should succeed")
 	_expect(not source.unlock_present_hub(), "present hub unlock should be idempotent")
 	var restored := LevelModule.new()
@@ -175,6 +197,7 @@ func _test_progress_round_trip() -> void:
 	_expect(restored.get_checkpoint().get("checkpoint_id", "") == "hub", "checkpoint should survive round-trip")
 	_expect(restored.is_progression_device_active("long_route"), "device state should survive round-trip")
 	_expect(restored.is_item_collected("memory_shard_a"), "collectible state should survive round-trip")
+	_expect(restored.is_latched_door_open("delay_5s_latched_1"), "latched door state should survive round-trip")
 	_expect(restored.is_present_hub_unlocked(), "present hub state should survive round-trip")
 
 
@@ -193,6 +216,7 @@ func _test_legacy_checkpoint_defaults_progress() -> void:
 	_expect(module.has_continue_point(), "legacy checkpoint should remain valid")
 	_expect(not module.is_progression_device_active("missing"), "legacy progress should default empty")
 	_expect(not module.is_item_collected("missing"), "legacy collectibles should default empty")
+	_expect(not module.is_latched_door_open("missing"), "legacy latched doors should default closed")
 	_expect(not module.is_present_hub_unlocked(), "legacy present hub state should default locked")
 
 
@@ -243,6 +267,8 @@ func _require_progress_api(module: LevelModule) -> bool:
 		module.has_signal("progression_device_activated")
 		and module.has_method("activate_progression_device")
 		and module.has_method("is_progression_device_active")
+		and module.has_method("open_latched_door")
+		and module.has_method("is_latched_door_open")
 		and module.has_method("unlock_present_hub")
 		and module.has_method("is_present_hub_unlocked")
 	)

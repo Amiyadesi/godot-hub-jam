@@ -64,7 +64,7 @@ Jam 首次通关目标为 `25–35min`。当前只锁定谜题动作链，不锁
    用回环、换层和侧袋改变 Past 的危险位置。追逐题先不加门，玩家直接读出“旧路线正在回来”。
 
 2. **多板标准门**
-   `TemporalDoor` 最多接三块压力板。`MOMENTARY_ALL` 要求全部板持续同时按下；`LATCHED_ALL` 首次全满足后在当前场景内保持开启。板只广播，不直接控制门。
+   `TemporalDoor` 最多接三块压力板。`MOMENTARY_ALL` 要求全部板持续同时按下；`LATCHED_ALL` 首次全满足后保持开启，填写唯一 `latched_door_id` 的门会跨读档恢复打开。板只广播，不直接控制门。
 
 3. **Future 凝固结构**
    Future 存在时可同时凝固一座金桥和一堵金墙。玩家先保持 Future 利用平台，再在正确位置消耗 Future 解除墙；同一 Future 的两种空间含义构成题目，而不是新增道具。
@@ -93,7 +93,7 @@ Jam 首次通关目标为 `25–35min`。当前只锁定谜题动作链，不锁
 - 终局以 `5s` 建锚、录像中切 `1s` 主动撞 Past 自动提交、Recall 恢复 `5s`，再先利用 Future 金桥、后空中撞散 Future 解金墙并恢复 dash，最后用第二次 dash 到终点。
 - `docs/echo-chase-puzzle-atlas.md` 保存动作链和验收；旧 HTML 不再是设计依据且不继续维护。本轮不新增 HTML，也不把动作链自动摆进地图。
 
-永久世界进度与稳定 checkpoint 分开保存。`activated_progression_device_ids`、`collected_item_ids` 和 `present_hub_unlocked` 跨退出保留；checkpoint 仍只由玩家触碰激活，且同一时刻只有一个生效。各房谜题脚本只在条件完成时调用对应装置的 `activate()`。
+永久世界进度与稳定 checkpoint 分开保存。`activated_progression_device_ids`、`collected_item_ids`、`opened_latched_door_ids` 和 `present_hub_unlocked` 跨退出保留。BranchProgressionDevice 触碰激活后立即写入当前槽位；MemoryShard 与 Latched ALL 门只在内存中更新，直到玩家触碰 checkpoint 才统一落盘。checkpoint 仍只由玩家触碰激活，且同一时刻只有一个生效。各房谜题脚本只在条件完成时调用对应装置的 `activate()`。
 
 ## 两个灰盒止损门
 

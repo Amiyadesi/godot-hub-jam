@@ -9,6 +9,7 @@ enum Mode {
 
 @export var mode: Mode = Mode.MOMENTARY_ALL
 @export var source_plates: Array[TemporalPressurePlate] = []
+@export var latched_door_id: StringName
 
 const MOMENTARY_CLOSED_COLOR := Color(0.92, 0.34, 0.32, 0.88)
 const MOMENTARY_OPEN_COLOR := Color(1.0, 0.58, 0.34, 0.44)
@@ -40,6 +41,16 @@ func _ready() -> void:
 	for plate in source_plates:
 		assert(plate != null, "TemporalDoor source_plates cannot contain null")
 		plate.pressed_changed.connect(_on_source_pressed_changed)
+	if (
+		mode == Mode.LATCHED_ALL
+		and not latched_door_id.is_empty()
+		and LevelModule.instance != null
+		and LevelModule.instance.is_latched_door_open(String(latched_door_id))
+	):
+		_latched = true
+		_update_indicators(true)
+		set_open(true, false)
+		return
 	_refresh_state()
 
 
@@ -52,9 +63,20 @@ func _on_source_pressed_changed(_is_pressed: bool) -> void:
 func _refresh_state() -> void:
 	var all_pressed := _are_all_sources_pressed()
 	if mode == Mode.LATCHED_ALL and all_pressed:
-		_latched = true
+		_latch()
 	_update_indicators(all_pressed)
 	set_open(_latched if mode == Mode.LATCHED_ALL else all_pressed)
+
+
+# Marks a Latched ALL door in memory; the current checkpoint commits it.
+func _latch() -> void:
+	if _latched:
+		return
+	_latched = true
+	if latched_door_id.is_empty() or LevelModule.instance == null:
+		return
+	if not LevelModule.instance.open_latched_door(String(latched_door_id)):
+		return
 
 
 # 只有存在来源且每块板都按下时才算满足。
@@ -80,12 +102,14 @@ func _update_indicators(all_pressed: bool) -> void:
 
 
 # 开闭物理通路、状态颜色与开关音效，并向关卡脚本暴露清晰状态。
-func set_open(value: bool) -> void:
+func set_open(value: bool, play_feedback := true) -> void:
 	var changed := _is_open != value
 	_is_open = value
-	if changed:
+	if changed and play_feedback:
 		collision_shape.set_deferred("disabled", value)
 		(open_audio if value else close_audio).play()
+	elif changed:
+		collision_shape.set_deferred("disabled", value)
 	visual.modulate = _mode_color(value)
 
 

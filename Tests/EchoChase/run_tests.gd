@@ -8,6 +8,7 @@ const TEMPORAL_DOOR_SCENE := preload("res://Scenes/EchoChase/Prefabs/temporal_do
 const FUTURE_ECHO_SCENE := preload("res://Scenes/EchoChase/Prefabs/future_echo.tscn")
 const FUTURE_RECORDER_SCENE := preload("res://Scenes/EchoChase/Prefabs/future_recorder.tscn")
 const FUTURE_BARRIER_SCENE := preload("res://Scenes/EchoChase/Prefabs/future_condensation_barrier.tscn")
+const PROGRESSION_SHORTCUT_SCENE := preload("res://Scenes/EchoChase/Prefabs/progression_shortcut.tscn")
 
 const PHYSICS_STEP := 1.0 / 60.0
 const TILE_SIZE := 16.0
@@ -26,9 +27,11 @@ func _ready() -> void:
 	_test_temporal_door_requires_all_sources()
 	_test_temporal_door_latches_after_all_sources()
 	_test_temporal_door_modes_and_indicators()
+	_test_temporal_door_latched_state_round_trip()
 	_test_temporal_pressure_plate_feedback()
 	_test_future_echo_reports_active_playback()
 	_test_future_barrier_follows_its_recorder()
+	await _test_progression_shortcut_follows_device()
 	await _test_future_collision_refills_single_dash()
 	_finish()
 
@@ -265,6 +268,39 @@ func _test_temporal_door_modes_and_indicators() -> void:
 	player.free()
 
 
+# 验证带 authored ID 的 Latched ALL 门可跨 LevelModule round-trip 恢复。
+func _test_temporal_door_latched_state_round_trip() -> void:
+	var original_level_module := LevelModule.instance
+	var module := LevelModule.new()
+	LevelModule.instance = module
+	var plate_a := PRESSURE_PLATE_SCENE.instantiate() as TemporalPressurePlate
+	var plate_b := PRESSURE_PLATE_SCENE.instantiate() as TemporalPressurePlate
+	add_child(plate_a)
+	add_child(plate_b)
+	var door := TEMPORAL_DOOR_SCENE.instantiate() as TemporalDoor
+	door.mode = TemporalDoor.Mode.LATCHED_ALL
+	door.latched_door_id = &"latched_round_trip"
+	door.source_plates = [plate_a, plate_b]
+	add_child(door)
+	var player := PLAYER_SCENE.instantiate() as EchoPlayer
+	plate_a.body_entered.emit(player)
+	plate_b.body_entered.emit(player)
+	_expect(door.is_open(), "identified Latched door opens after all sources press")
+	_expect(module.is_latched_door_open("latched_round_trip"), "identified Latched door writes checkpoint progress in memory")
+	module.activate_progression_device("runtime_branch")
+	module.collect_item("memory_shard_test")
+	var restored := LevelModule.new()
+	restored.apply_data(module.collect_data())
+	_expect(restored.is_latched_door_open("latched_round_trip"), "identified Latched door survives data round-trip")
+	_expect(restored.is_item_collected("memory_shard_test"), "MemoryShard state survives data round-trip")
+	_expect(restored.is_progression_device_active("runtime_branch"), "Branch device survives data round-trip")
+	player.free()
+	door.free()
+	plate_a.free()
+	plate_b.free()
+	LevelModule.instance = original_level_module
+
+
 # 验证压板按下与释放都切换 authored 动画，并保留两种音效资源。
 func _test_temporal_pressure_plate_feedback() -> void:
 	var plate := PRESSURE_PLATE_SCENE.instantiate() as TemporalPressurePlate
@@ -311,22 +347,47 @@ func _test_future_barrier_follows_its_recorder() -> void:
 	var track: TemporalTrack = TEMPORAL_TRACK_SCRIPT.new()
 	track.append(TEMPORAL_FRAME_SCRIPT.new(0.0, Vector2.ZERO))
 	track.append(TEMPORAL_FRAME_SCRIPT.new(1.0, Vector2(32.0, 0.0)))
+	_expect(barrier.get_visual_phase() == &"outline", "Future barrier shows an outline before recording")
 	recorder.recording_started()
 	_expect(not barrier.is_condensed(), "recording reservation does not condense a Future barrier")
+	_expect(barrier.get_visual_phase() == &"recording", "Future barrier flickers while its recorder is recording")
 	future_echo.start_playback(track, 1.0, 0.0)
 	_expect(barrier.is_condensed(), "Future playback condenses its bound barrier")
+	_expect(barrier.get_visual_phase() == &"solid", "Future playback makes its barrier solid")
 	var playback_state := future_echo.capture_playback_state()
 	future_echo.dissipate()
 	_expect(not barrier.is_condensed(), "Future collision dissipation clears its bound barrier")
+	_expect(barrier.get_visual_phase() == &"outline", "Future dissipation returns the barrier to its outline")
 	future_echo.restore_playback_state(playback_state)
 	_expect(barrier.is_condensed(), "restored Future playback restores its bound barrier")
 	future_echo.reset_echo()
+
+
 	_expect(not barrier.is_condensed(), "timeline reset clears its bound barrier")
 	future_echo.start_playback(track, 1.0, 0.0)
 	future_echo.advance(1.0)
 	_expect(not barrier.is_condensed(), "natural Future completion clears its bound barrier")
 	barrier.free()
 	recorder.free()
+
+
+# 验证回 Hub 捷径只响应绑定装置，并在打开后关闭实体碰撞。
+func _test_progression_shortcut_follows_device() -> void:
+	var original_level_module := LevelModule.instance
+	var module := LevelModule.new()
+	LevelModule.instance = module
+	var shortcut := PROGRESSION_SHORTCUT_SCENE.instantiate() as ProgressionShortcut
+	shortcut.required_device_id = &"shortcut_test"
+	add_child(shortcut)
+	_expect(not shortcut.is_open(), "progression shortcut starts closed")
+	module.activate_progression_device("other_device")
+	_expect(not shortcut.is_open(), "progression shortcut ignores other device IDs")
+	module.activate_progression_device("shortcut_test")
+	await get_tree().process_frame
+	_expect(shortcut.is_open(), "progression shortcut opens for its matching device")
+	_expect(shortcut.collision_shape.disabled, "opened progression shortcut disables collision")
+	shortcut.free()
+	LevelModule.instance = original_level_module
 
 
 # 验证地面与空中的现在体撞散 Future 都恢复唯一一格冲刺。

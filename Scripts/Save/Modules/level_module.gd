@@ -14,8 +14,10 @@ var checkpoint_id := ""
 var checkpoint_position := Vector2.ZERO
 var past_delay_seconds := 3.0
 var delay_switch_id := ""
+# Branch devices persist immediately when activated; checkpoint-gated state is stored separately below.
 var activated_progression_device_ids: Array[String] = []
 var collected_item_ids: Array[String] = []
+var opened_latched_door_ids: Array[String] = []
 var present_hub_unlocked := false
 var _has_checkpoint_position := false
 
@@ -48,6 +50,7 @@ func collect_data() -> Dictionary:
 		"delay_switch_id": delay_switch_id,
 		"activated_progression_device_ids": activated_progression_device_ids.duplicate(),
 		"collected_item_ids": collected_item_ids.duplicate(),
+		"opened_latched_door_ids": opened_latched_door_ids.duplicate(),
 		"present_hub_unlocked": present_hub_unlocked,
 	}
 
@@ -94,6 +97,7 @@ func get_default_data() -> Dictionary:
 		"delay_switch_id": "",
 		"activated_progression_device_ids": [],
 		"collected_item_ids": [],
+		"opened_latched_door_ids": [],
 		"present_hub_unlocked": false,
 	}
 
@@ -164,7 +168,7 @@ func clear_checkpoint() -> void:
 	_has_checkpoint_position = false
 
 
-# Permanently activates one authored world device for the current save slot.
+# Activates one authored world device and immediately records it in the current slot.
 func activate_progression_device(device_id: String) -> bool:
 	var normalized_id := device_id.strip_edges()
 	if normalized_id.is_empty():
@@ -177,12 +181,29 @@ func activate_progression_device(device_id: String) -> bool:
 	return true
 
 
-# Reports whether one authored world device is permanently active.
+# Reports whether one authored world device is active in the current slot state.
 func is_progression_device_active(device_id: String) -> bool:
 	return activated_progression_device_ids.has(device_id.strip_edges())
 
 
-# Permanently stores one authored collectible for the current save slot.
+# Stores one authored Latched ALL door after it has opened.
+func open_latched_door(door_id: String) -> bool:
+	var normalized_id := door_id.strip_edges()
+	if normalized_id.is_empty():
+		push_error("LevelModule.open_latched_door requires a non-empty id")
+		return false
+	if opened_latched_door_ids.has(normalized_id):
+		return false
+	opened_latched_door_ids.append(normalized_id)
+	return true
+
+
+# Reports whether one authored Latched ALL door was restored as open.
+func is_latched_door_open(door_id: String) -> bool:
+	return opened_latched_door_ids.has(door_id.strip_edges())
+
+
+# Stores one authored collectible in memory; the current checkpoint commits it.
 func collect_item(item_id: String) -> bool:
 	var normalized_id := item_id.strip_edges()
 	if normalized_id.is_empty():
@@ -213,19 +234,20 @@ func is_present_hub_unlocked() -> bool:
 	return present_hub_unlocked
 
 
-# Clears permanent world progress only when starting a new run.
+# Clears world progress only when starting a new run.
 func clear_world_progress() -> void:
 	activated_progression_device_ids.clear()
 	collected_item_ids.clear()
+	opened_latched_door_ids.clear()
 	present_hub_unlocked = false
 
 
 # Restores optional world-progress fields without invalidating legacy checkpoints.
 func _apply_world_progress(data: Dictionary) -> void:
 	activated_progression_device_ids.clear()
-	var stored_ids: Variant = data.get("activated_progression_device_ids", [])
-	if stored_ids is Array or stored_ids is PackedStringArray:
-		for stored_id: Variant in stored_ids:
+	var stored_device_ids: Variant = data.get("activated_progression_device_ids", [])
+	if stored_device_ids is Array or stored_device_ids is PackedStringArray:
+		for stored_id: Variant in stored_device_ids:
 			var normalized_id := str(stored_id).strip_edges()
 			if not normalized_id.is_empty() and not activated_progression_device_ids.has(normalized_id):
 				activated_progression_device_ids.append(normalized_id)
@@ -236,4 +258,11 @@ func _apply_world_progress(data: Dictionary) -> void:
 			var normalized_id := str(stored_id).strip_edges()
 			if not normalized_id.is_empty() and not collected_item_ids.has(normalized_id):
 				collected_item_ids.append(normalized_id)
+	opened_latched_door_ids.clear()
+	var stored_door_ids: Variant = data.get("opened_latched_door_ids", [])
+	if stored_door_ids is Array or stored_door_ids is PackedStringArray:
+		for stored_id: Variant in stored_door_ids:
+			var normalized_id := str(stored_id).strip_edges()
+			if not normalized_id.is_empty() and not opened_latched_door_ids.has(normalized_id):
+				opened_latched_door_ids.append(normalized_id)
 	present_hub_unlocked = bool(data.get("present_hub_unlocked", false))

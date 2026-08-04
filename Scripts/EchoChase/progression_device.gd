@@ -25,7 +25,7 @@ func _ready() -> void:
 	_set_active(LevelModule.instance.is_progression_device_active(String(device_id)), false)
 
 
-# Permanently activates this device and saves the current slot once.
+# Activates this device and immediately saves the current slot.
 func activate() -> bool:
 	if _active:
 		return false
@@ -41,12 +41,12 @@ func activate() -> bool:
 	return true
 
 
-# Reports the stable authored activation state.
+# Reports the current-run activation state.
 func is_active() -> bool:
 	return _active
 
 
-# 玩家进入 authored 触发区时永久激活装置。
+# 玩家进入 authored 触发区时激活并保存装置。
 func _on_activation_area_body_entered(body: Node2D) -> void:
 	if body == EchoTimeline.player:
 		activate()

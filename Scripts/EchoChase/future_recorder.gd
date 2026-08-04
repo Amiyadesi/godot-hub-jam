@@ -5,6 +5,7 @@ extends Area2D
 signal recording_started_here
 signal recording_finished_here
 signal recording_rejected_here
+signal state_changed(state_name: StringName)
 
 enum State {
 	READY,
@@ -128,5 +129,8 @@ func _on_future_slot_released(_future_echo: FutureEcho) -> void:
 
 # 只驱动 authored 状态动画，不在脚本中拼装视觉节点。
 func _set_state(value: State) -> void:
+	var changed := _state != value
 	_state = value
 	state_animation_player.play(get_state_name())
+	if changed:
+		state_changed.emit(get_state_name())

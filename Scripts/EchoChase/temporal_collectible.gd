@@ -38,8 +38,6 @@ func _on_body_entered(body: Node2D) -> void:
 	_collected = true
 	collision_shape.set_deferred("disabled", true)
 	collected.emit(item_id)
-	if not SaveSystem.save_slot(1):
-		push_error("TemporalCollectible failed to save slot 1")
 	collect_audio.play()
 	animation_player.play(&"collect")
 
