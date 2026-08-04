@@ -5,6 +5,7 @@
 
 [node name="EchoTimeline" type="Node"]
 process_priority = -100
+process_mode = 3
 script = ExtResource("1_script")
 
 [node name="PastEcho" parent="." instance=ExtResource("2_past")]

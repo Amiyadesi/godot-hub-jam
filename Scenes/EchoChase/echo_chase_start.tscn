@@ -29,6 +29,7 @@
 [ext_resource type="PackedScene" path="res://Scenes/EchoChase/Prefabs/temporal_collectible.tscn" id="34_collectible"]
 [ext_resource type="Texture2D" uid="uid://cvfu3k8hdr2x5" path="res://assets/echo_chase/vfx/temporal_particle.svg" id="35_hub_particle"]
 [ext_resource type="PackedScene" uid="uid://0hn7v00wyjhs" path="res://Scenes/UIorgan/floating_text.tscn" id="36_run_text"]
+[ext_resource type="PackedScene" path="res://Scenes/EchoChase/UI/run_countdown_hud.tscn" id="37_run_countdown"]
 
 [sub_resource type="Resource" id="PhantomCameraTween_room"]
 script = ExtResource("25_pcam_tween")
@@ -800,6 +801,8 @@ required_device_id = &"knowledge_lock"
 
 [node name="TemporalRecordingHUD" parent="UI" unique_id=845923935 node_paths=PackedStringArray("player") instance=ExtResource("19_recording_hud")]
 player = NodePath("../../World/EchoPlayer")
+
+[node name="RunCountdownHUD" parent="UI" unique_id=845923936 instance=ExtResource("37_run_countdown")]
 
 [node name="PauseScreen" parent="UI" unique_id=948210252 instance=ExtResource("8_wwiui")]
 visible = false

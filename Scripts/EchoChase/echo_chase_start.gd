@@ -155,6 +155,7 @@ func _restore_entry_position() -> void:
 # 复用菜单满屏时态色淡入，并冻结整个 authored 玩法世界。
 func _play_entry_intro() -> void:
 	_entry_intro_active = true
+	EchoTimeline.pause_run_countdown()
 	gameplay_world.process_mode = Node.PROCESS_MODE_DISABLED
 	var temporal_state := StringName(SceneManager.get_meta(ENTRY_STATE_META, ENTRY_STATE_PRESENT))
 	if SceneManager.has_meta(ENTRY_STATE_META):
@@ -177,6 +178,7 @@ func _finish_entry_intro() -> void:
 	SceneManager.transition_clear()
 	gameplay_world.process_mode = Node.PROCESS_MODE_PAUSABLE
 	EchoTimeline.set_gameplay_active(true)
+	EchoTimeline.resume_run_countdown()
 	_entry_intro_active = false
 
 

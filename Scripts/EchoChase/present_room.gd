@@ -16,6 +16,7 @@ func _ready() -> void:
 		push_error("PresentRoom requires LevelModule")
 	body_entered.connect(_on_body_entered)
 	body_exited.connect(_on_body_exited)
+	dialogue_npc.dialogue_started_here.connect(_on_dialogue_started)
 	dialogue_npc.dialogue_finished.connect(_on_dialogue_finished)
 	if LevelModule.instance != null and LevelModule.instance.is_present_hub_unlocked():
 		dialogue_npc.dialogue_title = "return"
@@ -47,6 +48,11 @@ func _on_body_exited(body: Node2D) -> void:
 	_player_inside = false
 	if EchoTimeline.is_present_room_active():
 		EchoTimeline.leave_present_room()
+
+
+# Stops only the run limit while the NPC conversation owns the screen.
+func _on_dialogue_started() -> void:
+	EchoTimeline.pause_run_countdown()
 
 
 # Starts the same first conversation when the current-room checkpoint is touched.

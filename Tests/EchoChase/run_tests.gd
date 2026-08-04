@@ -21,6 +21,7 @@ func _ready() -> void:
 	_test_track_interpolates_continuous_motion()
 	_test_track_keeps_recall_until_its_exact_time()
 	_test_player_tuning_matches_authored_envelope()
+	await _test_run_countdown_lifecycle()
 	_test_dash_charge_marker_follows_player_state()
 	_test_dash_input_consumes_single_charge()
 	await _test_landing_restores_single_dash()
@@ -97,6 +98,53 @@ func _test_player_tuning_matches_authored_envelope() -> void:
 	_expect(is_equal_approx(full_jump_height / TILE_SIZE, 2.5), "EchoPlayer full jump reaches 2.5 tiles")
 	_expect(short_jump_height / TILE_SIZE >= 1.15 and short_jump_height / TILE_SIZE <= 1.25, "EchoPlayer short jump stays near 1.2 tiles")
 	_expect(dash_distance / TILE_SIZE >= 3.0 and dash_distance / TILE_SIZE <= 3.3, "EchoPlayer dash stays near 3.25 tiles")
+	player.free()
+
+
+# 验证整局倒计时只在 Hub 内暂停，并在 Future 提交后回到录像起点。
+func _test_run_countdown_lifecycle() -> void:
+	var player := PLAYER_SCENE.instantiate() as EchoPlayer
+	add_child(player)
+	player.set_physics_process(false)
+	await get_tree().process_frame
+	EchoTimeline.start_run_countdown()
+	EchoTimeline.resume_run_countdown()
+	var start_remaining := EchoTimeline.get_run_countdown_remaining()
+	EchoTimeline._advance_run_countdown(2.0)
+	_expect(
+		is_equal_approx(EchoTimeline.get_run_countdown_remaining(), start_remaining - 2.0),
+		"whole-run countdown decreases while gameplay is active"
+	)
+	EchoTimeline.enter_present_room()
+	var hub_remaining := EchoTimeline.get_run_countdown_remaining()
+	EchoTimeline._advance_run_countdown(2.0)
+	_expect(
+		is_equal_approx(EchoTimeline.get_run_countdown_remaining(), hub_remaining),
+		"PresentHub pauses the whole-run countdown"
+	)
+	EchoTimeline.leave_present_room()
+	EchoTimeline._advance_run_countdown(2.0)
+	_expect(
+		is_equal_approx(EchoTimeline.get_run_countdown_remaining(), hub_remaining - 2.0),
+		"leaving PresentHub resumes the whole-run countdown"
+	)
+	EchoTimeline.reset_timeline()
+	EchoTimeline.start_run_countdown()
+	EchoTimeline.resume_run_countdown()
+	EchoTimeline._set_run_countdown_remaining(1234.0)
+	var recorder := FUTURE_RECORDER_SCENE.instantiate() as FutureRecorder
+	add_child(recorder)
+	_expect(EchoTimeline.start_future_recording(recorder), "Future recording starts for countdown snapshot")
+	var recording_start_remaining := EchoTimeline.get_run_countdown_remaining()
+	EchoTimeline._physics_process(PHYSICS_STEP)
+	_expect(EchoTimeline.get_run_countdown_remaining() < recording_start_remaining, "recording consumes run time before commit")
+	_expect(EchoTimeline.commit_future_recording(), "Future recording commits for countdown restore")
+	_expect(
+		is_equal_approx(EchoTimeline.get_run_countdown_remaining(), 1234.0),
+		"Future commit restores the recording-start run time"
+	)
+	EchoTimeline.reset_timeline()
+	recorder.free()
 	player.free()
 
 

@@ -10,6 +10,7 @@ signal future_recording_progress(elapsed_seconds: float, maximum_seconds: float)
 signal future_recording_finished
 signal future_recording_rejected
 signal present_room_changed(active: bool)
+signal run_countdown_changed(remaining_seconds: float, maximum_seconds: float)
 
 const DEFAULT_PAST_DELAY := 3.0
 const DEFAULT_DELAY_SWITCH_ID := &"delay_3s"
@@ -18,6 +19,7 @@ const PAST_PHASE_WARNING_SECONDS := 0.6
 const FUTURE_MINIMUM_SECONDS := 1.0
 const FUTURE_MAXIMUM_SECONDS := 5.0
 const TEMPORAL_PHASE_SECONDS := 0.35
+const RUN_TIME_LIMIT_SECONDS := 1800.0
 
 @onready var past_echo: PastEcho = %PastEcho
 
@@ -36,9 +38,13 @@ var _recording_future_echo: FutureEcho
 var _recording_future_states: Dictionary = {}
 var _recording_started_at := 0.0
 var _recording_anchor: Dictionary = {}
+var _recording_run_countdown_remaining := -1.0
 var _future_slots_used := 0
 var _gameplay_active := false
 var _present_room_active := false
+var _run_countdown_remaining := RUN_TIME_LIMIT_SECONDS
+var _run_countdown_session_active := false
+var _run_countdown_paused := true
 
 # 初始化全局过去体；玩家与记录器由各自 prefab 进入场景时注册。
 func _ready() -> void:
@@ -53,6 +59,7 @@ func register_player(value: EchoPlayer) -> void:
 	player = value
 	_present_room_active = false
 	_gameplay_active = true
+	_ensure_run_countdown()
 	set_physics_process(true)
 	reset_timeline()
 
@@ -64,6 +71,7 @@ func unregister_player(value: EchoPlayer) -> void:
 	player = null
 	_present_room_active = false
 	_gameplay_active = false
+	_run_countdown_paused = true
 	reset_timeline()
 
 
@@ -93,6 +101,7 @@ func unregister_recorder(recorder: FutureRecorder) -> void:
 		_recording_future_echo = null
 		_recording_future_states.clear()
 		_recording_anchor = {}
+		_recording_run_countdown_remaining = -1.0
 		future_recording_finished.emit()
 	_sync_future_slot_count()
 
@@ -102,8 +111,39 @@ func set_gameplay_active(value: bool) -> void:
 	_gameplay_active = value
 
 
+# Starts a fresh whole-run time limit without touching checkpoint data.
+func start_run_countdown() -> void:
+	_run_countdown_remaining = RUN_TIME_LIMIT_SECONDS
+	_run_countdown_session_active = true
+	_run_countdown_paused = true
+	_emit_run_countdown_changed()
+
+
+# Starts a timer for direct scene entry while preserving an active Continue run.
+func _ensure_run_countdown() -> void:
+	if not _run_countdown_session_active:
+		start_run_countdown()
+
+
+# Pauses only the whole-run countdown, used by PresentHub dialogue and presence.
+func pause_run_countdown() -> void:
+	_run_countdown_paused = true
+
+
+# Resumes the whole-run countdown after entry transitions or leaving PresentHub.
+func resume_run_countdown() -> void:
+	if _run_countdown_session_active:
+		_run_countdown_paused = false
+
+
+# Returns the current unsaved whole-run time limit.
+func get_run_countdown_remaining() -> float:
+	return _run_countdown_remaining
+
+
 # 只在玩法未暂停时推进确定性回放时间。
 func _physics_process(delta: float) -> void:
+	_advance_run_countdown(delta)
 	if not _gameplay_active or _present_room_active or player == null or get_tree().paused:
 		return
 	_timeline_seconds += delta
@@ -150,6 +190,7 @@ func start_future_recording(recorder: FutureRecorder) -> bool:
 	for authored_recorder in recorders:
 		_recording_future_states[authored_recorder.get_instance_id()] = authored_recorder.get_future_echo().capture_playback_state()
 	_recording_started_at = _timeline_seconds
+	_recording_run_countdown_remaining = _run_countdown_remaining
 	_recording_anchor = player.capture_temporal_anchor(_timeline_seconds)
 	_recording_anchor["past_delay_seconds"] = _past_delay_seconds
 	_recording_anchor["pending_past_delay_seconds"] = _pending_past_delay_seconds
@@ -181,6 +222,7 @@ func commit_future_recording() -> bool:
 	var finished_recorder := _recording_recorder
 	var finished_anchor := _recording_anchor
 	var finished_future_states := _recording_future_states.duplicate()
+	var finished_run_countdown_remaining := _recording_run_countdown_remaining
 	var playback_duration := clampf(duration, FUTURE_MINIMUM_SECONDS, FUTURE_MAXIMUM_SECONDS)
 	finished_track.hold_last_frame_until(playback_duration)
 	_recording_track = null
@@ -188,6 +230,7 @@ func commit_future_recording() -> bool:
 	_recording_future_echo = null
 	_recording_future_states.clear()
 	_recording_anchor = {}
+	_recording_run_countdown_remaining = -1.0
 	_timeline_seconds = _recording_started_at
 	_run_track.trim_after(_timeline_seconds)
 	player.apply_temporal_recall(finished_anchor, TEMPORAL_PHASE_SECONDS)
@@ -199,6 +242,7 @@ func commit_future_recording() -> bool:
 		recorder.refresh_future_state()
 	future_echo.start_playback(finished_track, playback_duration, TEMPORAL_PHASE_SECONDS)
 	finished_recorder.recording_finished()
+	_set_run_countdown_remaining(finished_run_countdown_remaining)
 	_sync_future_slot_count()
 	future_recording_finished.emit()
 	return true
@@ -266,6 +310,7 @@ func reset_timeline(
 	_recording_future_echo = null
 	_recording_future_states.clear()
 	_recording_anchor = {}
+	_recording_run_countdown_remaining = -1.0
 	past_echo.reset_echo()
 	for recorder in recorders:
 		var future_echo: FutureEcho = recorder.get_future_echo()
@@ -290,6 +335,7 @@ func is_future_recording() -> bool:
 func enter_present_room() -> bool:
 	if _present_room_active:
 		return false
+	pause_run_countdown()
 	_present_room_active = true
 	_cancel_recording_for_present_room()
 	_timeline_seconds = 0.0
@@ -312,6 +358,7 @@ func leave_present_room() -> bool:
 		return false
 	_present_room_active = false
 	reset_timeline(_pending_past_delay_seconds, _pending_past_delay_switch_id)
+	resume_run_countdown()
 	present_room_changed.emit(false)
 	return true
 
@@ -388,6 +435,7 @@ func _cancel_recording_for_present_room() -> void:
 	_recording_future_echo = null
 	_recording_future_states.clear()
 	_recording_anchor = {}
+	_recording_run_countdown_remaining = -1.0
 	if cancelled_recorder != null:
 		cancelled_recorder.recording_cancelled()
 	future_recording_finished.emit()
@@ -406,6 +454,31 @@ func _sync_future_slot_count() -> void:
 		return
 	_future_slots_used = active_slots
 	future_slots_changed.emit(_future_slots_used, recorders.size())
+
+
+# Advances the unsaved whole-run limit everywhere except PresentHub.
+func _advance_run_countdown(delta: float) -> void:
+	if (
+		not _run_countdown_session_active
+		or _run_countdown_paused
+		or player == null
+		or _present_room_active
+	):
+		return
+	_set_run_countdown_remaining(_run_countdown_remaining - delta)
+
+
+# Clamps and publishes the whole-run limit for the global HUD.
+func _set_run_countdown_remaining(value: float) -> void:
+	_run_countdown_remaining = clampf(value, 0.0, RUN_TIME_LIMIT_SECONDS)
+	_emit_run_countdown_changed()
+
+
+# Publishes both the live value and its authored maximum.
+func _emit_run_countdown_changed() -> void:
+	run_countdown_changed.emit(_run_countdown_remaining, RUN_TIME_LIMIT_SECONDS)
+
+
 # 未来体停止影响玩法时只释放一个可能性槽。
 func _on_future_slot_released(_future_echo: FutureEcho) -> void:
 	_sync_future_slot_count()

@@ -135,6 +135,7 @@ func _on_start_pressed() -> void:
 			start_button.grab_focus()
 			return
 	SaveSystem.new_game(1)
+	EchoTimeline.start_run_countdown()
 	SaveSystem.save_slot(1)
 	start_requested.emit()
 	await _transition_to_game(echo_chase_entry_scene_path, ENTRY_STATE_PRESENT)
