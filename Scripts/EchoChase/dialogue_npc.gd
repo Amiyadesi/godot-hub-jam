@@ -29,11 +29,6 @@ func _ready() -> void:
 	if LevelModule.instance == null or NarrativeSlotModule.instance == null:
 		push_error("DialogueNpc requires LevelModule and NarrativeSlotModule")
 		return
-	_active_dialogue_resource = (
-		dialogue_resource_zh
-		if TranslationServer.get_locale().begins_with("zh")
-		else dialogue_resource_en
-	)
 	body_entered.connect(_on_body_entered)
 	body_exited.connect(_on_body_exited)
 	balloon.dialogue_ended.connect(_on_dialogue_ended)
@@ -42,6 +37,14 @@ func _ready() -> void:
 	interact_prompt.hide()
 	set_process(false)
 	_refresh_new_topic_indicator()
+
+
+# Locks this NPC to the language selected once by the scene controller.
+func select_dialogue_language(use_chinese: bool) -> void:
+	if _active_dialogue_resource != null:
+		push_error("DialogueNpc dialogue language was already selected")
+		return
+	_active_dialogue_resource = dialogue_resource_zh if use_chinese else dialogue_resource_en
 
 
 # Faces the current-room player while a target is assigned.
@@ -118,8 +121,8 @@ func _on_dialogue_ended() -> void:
 	_dialogue_active = false
 	get_tree().paused = _was_tree_paused
 	interact_prompt.visible = _player_inside
-	_refresh_new_topic_indicator()
 	dialogue_finished.emit()
+	_refresh_new_topic_indicator()
 
 
 # Refreshes the authored marker when collecting the first memory heart.
@@ -134,6 +137,10 @@ func _on_run_countdown_expired() -> void:
 
 # Shows a marker only for newly unlocked one-shot Keeper questions.
 func _refresh_new_topic_indicator() -> void:
+	var has_name_topic := (
+		LevelModule.instance.is_present_hub_unlocked()
+		and not NarrativeSlotModule.instance.has_flag("askname")
+	)
 	var has_heart_topic := (
 		LevelModule.instance.get_collected_item_count() >= 1
 		and not NarrativeSlotModule.instance.has_flag("askheart")
@@ -142,4 +149,6 @@ func _refresh_new_topic_indicator() -> void:
 		LevelModule.instance.has_run_countdown_expired()
 		and not NarrativeSlotModule.instance.has_flag("asktime")
 	)
-	new_topic_indicator.visible = not _dialogue_active and (has_heart_topic or has_time_topic)
+	new_topic_indicator.visible = (
+		not _dialogue_active and (has_name_topic or has_heart_topic or has_time_topic)
+	)

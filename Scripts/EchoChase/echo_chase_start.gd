@@ -45,9 +45,12 @@ var _show_onboarding_on_entry := true
 func _ready() -> void:
 	DialogueManager.translation_source = DMConstants.TranslationSource.None
 	EchoTimeline.set_gameplay_active(false)
-	if onboarding == null or narrative_presenter == null:
-		push_error("EchoChaseStart requires the authored onboarding and narrative presenter")
+	if present_room == null or onboarding == null or narrative_presenter == null:
+		push_error("EchoChaseStart requires the authored present room, onboarding, and narrative presenter")
 		return
+	var use_chinese := TranslationServer.get_locale().to_lower().begins_with("zh")
+	present_room.dialogue_npc.select_dialogue_language(use_chinese)
+	narrative_presenter.select_dialogue_language(use_chinese)
 	if gameplay_music == null:
 		push_error("EchoChaseStart requires gameplay_music")
 	else:

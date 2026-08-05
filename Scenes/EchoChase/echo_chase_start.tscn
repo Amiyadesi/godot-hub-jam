@@ -742,8 +742,8 @@ checkpoint_id = &"current_room"
 [node name="DialogueNpc" parent="World/PresentHub" unique_id=1762812357 instance=ExtResource("30_dialogue_npc")]
 unique_name_in_owner = true
 z_index = 100
-position = Vector2(-94, 86)
-scale = Vector2(1.5, 1.5)
+position = Vector2(-91, 70)
+scale = Vector2(0.25, 0.25)
 dialogue_resource_zh = ExtResource("31_present_dialogue_zh")
 dialogue_resource_en = ExtResource("31_present_dialogue_en")
 

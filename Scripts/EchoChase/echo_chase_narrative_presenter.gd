@@ -80,10 +80,6 @@ func _ready() -> void:
 	if ending_dialogue_resource_zh == null or ending_dialogue_resource_en == null:
 		push_error("EchoChaseNarrativePresenter requires zh and en ending dialogue resources")
 		return
-	_ending_uses_chinese = TranslationServer.get_locale().begins_with("zh")
-	_active_ending_dialogue_resource = (
-		ending_dialogue_resource_zh if _ending_uses_chinese else ending_dialogue_resource_en
-	)
 	memory_layer.visible = false
 	ending_layer.visible = false
 	memory_text.hide()
@@ -95,6 +91,17 @@ func _ready() -> void:
 	_set_alpha(ending_dim, 0.0)
 	normal_continue_button.hide()
 	true_return_button.hide()
+
+
+# Locks both ending tableaux to the language selected once by the scene controller.
+func select_dialogue_language(use_chinese: bool) -> void:
+	if _active_ending_dialogue_resource != null:
+		push_error("EchoChaseNarrativePresenter dialogue language was already selected")
+		return
+	_ending_uses_chinese = use_chinese
+	_active_ending_dialogue_resource = (
+		ending_dialogue_resource_zh if use_chinese else ending_dialogue_resource_en
+	)
 
 
 # Plays the localized opening command inside the same black-red memory surface.

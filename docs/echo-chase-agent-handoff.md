@@ -84,7 +84,7 @@ run_countdown_expired
 
 终点 `World/Finnal/StaticBody2D` 使用 `MemoryFloorGate`。它只统计四个稳定记忆 ID，按数量从左到右点亮 A-D；四枚齐全后禁用地块碰撞，播放一次红色闪光并持续透明闪烁，读档直接恢复。地块下方两个房间保持用户当前空白，不包含 agent 生成谜题或路线。
 
-Keeper 只在玩家主动交互时提供条件选项：爱心数 `>= 1` 且无 `askheart`、倒计时已归零且无 `asktime`、无 `askname`。问完写入 `NarrativeSlotModule` 并立即保存。Keeper 对话固定使用启动时选中的 `present_hub.zh/en.dialogue`；NarrativePresenter 同样固定使用 `endings.zh/en.dialogue`，不经过 PO 二次翻译。NarrativePresenter 不再拥有自动 Keeper 气泡；旧 `true_ending_route` 与 `KnowledgeLock` 已删除，金色全屏真结局演出仍保留供后续 authored 路线调用。
+Keeper 只在玩家主动交互时提供条件选项：爱心数 `>= 1` 且无 `askheart`、倒计时已归零且无 `asktime`、无 `askname`。失败条件选项完全隐藏；任一未读选项可用时头顶闪烁 `!`。问完写入 `NarrativeSlotModule` 并立即保存。`EchoChaseStart` 只判断一次启动 locale，并同时锁定 Keeper 的 `present_hub.zh/en.dialogue` 与 NarrativePresenter 的 `endings.zh/en.dialogue`，不经过 PO 二次翻译。NarrativePresenter 不再拥有自动 Keeper 气泡；旧 `true_ending_route` 与 `KnowledgeLock` 已删除，金色全屏真结局演出仍保留供后续 authored 路线调用。
 
 未来录像可在第一帧提交；短路径保持末帧补足到 `1s`。录制中接触过去体会提交/回传，不会触发失败。`TemporalRecordingHUD` 监听时间线与 `KeybindingModule.bindings_changed`，禁止把按键文本硬编码回 `L`。
 

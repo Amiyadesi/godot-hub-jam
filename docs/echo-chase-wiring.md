@@ -113,9 +113,9 @@ Future 与屏障共用琥珀金色。Future 自己的出现/消散音作为这�
 
 ### NPC 与中央现在房
 
-普通 NPC 使用 `dialogue_npc.tscn`，赋值 `dialogue_resource_zh`、`dialogue_resource_en` 和可选 `dialogue_title`。节点在 `_ready()` 按当前 locale 选择一次资源并整局固定使用；EchoChase 启动时关闭 Dialogue Manager 的 PO 二次翻译。玩家进入范围看到 `E`，按下后复用 `Dialogue/EchoChase/echo_dialogue_balloon.tscn`；该变体保留 Flow、Animation、TypingSound、CharacterUI 和 Responses，禁用 History、SaveModule 与 Illustration。对话期间 `SceneTree.paused = true`，结束后恢复原状态。
+普通 NPC 使用 `dialogue_npc.tscn`，赋值 `dialogue_resource_zh`、`dialogue_resource_en` 和可选 `dialogue_title`。`EchoChaseStart` 启动时只判断一次当前 locale，同时锁定 Keeper 的 `present_hub.zh/en.dialogue` 与终局的 `endings.zh/en.dialogue`，整局不再切换或经过 PO 二次翻译。玩家进入范围看到 `E`，按下后复用 `Dialogue/EchoChase/echo_dialogue_balloon.tscn`；该变体保留 Flow、Animation、TypingSound、CharacterUI 和 Responses，禁用 History、SaveModule 与 Illustration。对话期间 `SceneTree.paused = true`，结束后恢复原状态。
 
-Keeper 的 `askname`、`askheart`、`asktime` 都是玩家主动选择后才写入 `NarrativeSlotModule`。爱心选项要求收集数 `>= 1`，倒计时坦白要求 `run_countdown_expired`；每次写旗标后立即保存。NarrativePresenter 不再自动排队 Keeper 气泡。
+Keeper 的 `askname`、`askheart`、`asktime` 都是玩家主动选择后才写入 `NarrativeSlotModule`。爱心选项要求收集数 `>= 1`，倒计时坦白要求 `run_countdown_expired`；不满足条件的选项完全隐藏。任一未读的一次性选项可用时，NPC 头顶闪烁 `!`；每次写旗标后立即保存。NarrativePresenter 不再自动排队 Keeper 气泡。
 
 中央房直接在连续主场景中 authored 一个 `PresentHub (Area2D)`，不再实例化整房 prefab。其固定子节点为 `RoomShape`、`CurrentRoomCheckpoint`、`DialogueNpc` 和 `RoomDepartureVfx`；作者可在同一场景里调整边界、NPC 与出口，不需要切换房间 scene。玩家位于该 Area2D 内时，`PresentRoom` 把玩家设为 NPC 朝向目标；离开后解除目标并恢复默认朝右。
 

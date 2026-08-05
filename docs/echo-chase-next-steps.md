@@ -3,8 +3,8 @@
 ## 当前可验证基线
 
 - 新游戏按当前语言播放黑屏红字 `跑/RUN`；玩家接近 `World/BeforeHub/FloatText` 后，世界内手写飘字显示当前跳跃与方向冲刺键位；Continue 跳过开场。
-- Keeper 对话拆为 `present_hub.zh.dialogue` 与 `present_hub.en.dialogue`，启动时按 locale 选择一次并整局固定使用；现在房内 NPC 持续面向玩家，离开后恢复朝右。
-- 四段记忆使用黑屏、红色倾斜字与 RichText2 抖动，不显示说话者；双结局文本同样拆为 `endings.zh.dialogue` 与 `endings.en.dialogue`。
+- `EchoChaseStart` 启动时只判断一次 locale，同时锁定 `present_hub.zh/en.dialogue` 与 `endings.zh/en.dialogue`，整局不再重新选择或经过 PO 二次翻译；现在房内 NPC 持续面向玩家，离开后恢复朝右。
+- 四段记忆使用黑屏、红色倾斜字与 RichText2 抖动，不显示说话者；不满足条件的 Keeper 选项完全隐藏，`askname/askheart/asktime` 任一新选项可用时头顶闪烁 `!`。
 - 倒计时更大、更清晰，归零只保存状态；玩家再次主动询问 Keeper 时才出现一次坦白选项，不失败、不清档。
 - 爱心数 `>= 1` 时出现一次主动问题；终点 A-D 按数量点亮，四枚后地块闪光、透明闪烁并允许落入下方。
 - 下方两个房间保持空白，旧真结局路线与 KnowledgeLock 已删除；金色全屏真结局演出仍保留。

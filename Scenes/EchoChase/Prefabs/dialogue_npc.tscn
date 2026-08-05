@@ -6,7 +6,7 @@
 [ext_resource type="PackedScene" path="res://Dialogue/EchoChase/echo_dialogue_balloon.tscn" id="3_balloon"]
 
 [sub_resource type="RectangleShape2D" id="Shape_interaction"]
-size = Vector2(22, 34)
+size = Vector2(44, 62)
 
 [sub_resource type="Animation" id="Animation_516v2"]
 length = 0.001
@@ -108,7 +108,7 @@ monitorable = false
 script = ExtResource("1_script")
 
 [node name="InteractionShape" type="CollisionShape2D" parent="." unique_id=326762757]
-position = Vector2(0, -17)
+position = Vector2(-2, -18)
 shape = SubResource("Shape_interaction")
 
 [node name="Visual" type="Sprite2D" parent="." unique_id=1916729915]
@@ -123,10 +123,11 @@ frame = 5
 [node name="InteractPrompt" type="Label" parent="." unique_id=104259768]
 unique_name_in_owner = true
 self_modulate = Color(1, 1, 1, 0.62)
-offset_left = -18.0
-offset_top = -54.0
-offset_right = 18.0
-offset_bottom = -24.0
+offset_left = -34.0
+offset_top = -100.0
+offset_right = 2.0
+offset_bottom = -70.0
+scale = Vector2(2, 2)
 theme_override_fonts/font = ExtResource("3_516v2")
 text = "E"
 horizontal_alignment = 1
