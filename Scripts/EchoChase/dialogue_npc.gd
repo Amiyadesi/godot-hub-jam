@@ -36,6 +36,9 @@ func _ready() -> void:
 	EchoTimeline.run_countdown_expired.connect(_on_run_countdown_expired)
 	interact_prompt.hide()
 	set_process(false)
+	if KeybindingModule.instance != null:
+		KeybindingModule.instance.bindings_changed.connect(_refresh_interact_prompt)
+	_refresh_interact_prompt()
 	_refresh_new_topic_indicator()
 
 
@@ -114,6 +117,21 @@ func _on_body_exited(body: Node2D) -> void:
 		return
 	_player_inside = false
 	interact_prompt.hide()
+
+
+# Shows the touch action on mobile and the live keyboard binding on desktop.
+func _refresh_interact_prompt() -> void:
+	if OS.has_feature("mobile"):
+		interact_prompt.text = "B"
+		return
+	var events := InputMap.action_get_events(&"echo_interact")
+	if KeybindingModule.instance != null:
+		events = KeybindingModule.instance.get_action_events("echo_interact")
+	interact_prompt.text = (
+		ResourceSerializer.event_to_display_string(events[0])
+		if not events.is_empty()
+		else tr("INPUT_UNBOUND")
+	)
 
 
 # Restores the exact pause state that existed before this conversation.

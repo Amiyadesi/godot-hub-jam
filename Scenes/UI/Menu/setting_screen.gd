@@ -79,6 +79,9 @@ func _ready() -> void:
 	_connect_signals()
 	_configure_button_audio()
 	_sync_menu_only_controls()
+	if OS.has_feature("mobile"):
+		controls_tab.hide()
+		controls_page.hide()
 	refresh_from_settings()
 	_set_tab(0)
 
@@ -192,6 +195,8 @@ func _sync_toggle_labels() -> void:
 
 # Switches between general settings and keybinding pages.
 func _set_tab(index: int) -> void:
+	if OS.has_feature("mobile"):
+		index = 0
 	_current_tab = clampi(index, 0, 1)
 	general_page.visible = _current_tab == 0
 	controls_page.visible = _current_tab == 1

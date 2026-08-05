@@ -34,8 +34,10 @@ func _process(_delta: float) -> void:
 
 # Builds the two essential actions from the current remappable bindings.
 func _build_prompt_text() -> String:
-	var dash_text := tr("TUTORIAL_DASH").format({"dash": _binding_text(&"echo_dash")})
-	var jump_text := tr("TUTORIAL_JUMP").format({"jump": _binding_text(&"echo_jump")})
+	var dash_binding := "X" if OS.has_feature("mobile") else _binding_text(&"echo_dash")
+	var jump_binding := "Y" if OS.has_feature("mobile") else _binding_text(&"echo_jump")
+	var dash_text := tr("TUTORIAL_DASH").format({"dash": dash_binding})
+	var jump_text := tr("TUTORIAL_JUMP").format({"jump": jump_binding})
 	return "%s\n%s" % [dash_text, jump_text]
 
 

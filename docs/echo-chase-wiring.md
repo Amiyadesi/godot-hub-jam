@@ -26,7 +26,8 @@ YourGrayboxRoot (Node2D)
 ├── UI (CanvasLayer)
 │   ├── TemporalRecordingHUD
 │   ├── PauseScreen
-│   └── SettingScreen
+│   ├── SettingScreen
+│   └── MobileControls            [mobile only; authored touch actions]
 └── SceneController (Node, PROCESS_MODE_ALWAYS)
 ```
 
@@ -52,6 +53,23 @@ YourGrayboxRoot (Node2D)
 | `EchoChaseStart` | `present_entry_transition/past_entry_transition` | 与菜单满屏颜色一致的 `0.35s` authored 淡出资源 |
 
 `EchoChaseStart` 会收集 `gameplay_world` 下实际 authored 的 checkpoint 与延迟台；Prefab 自己负责向 `EchoTimeline` 注册和注销。漏掉必填资源、ID 或直接引用应主动报错，不要添加静默 fallback。
+
+## 手机控件
+
+`Scenes/EchoChase/UI/echo_mobile_controls.tscn` 复用参考游戏的 `gdb-xbox-2.png` Atlas，根节点挂在 `UI` CanvasLayer 下并使用 `PROCESS_MODE_ALWAYS`。每个 `TouchScreenButton` 直接填写现有 Input action，不新增或改写 `InputMap`：
+
+| 手机位置 | 图标 | 现有 action | 桌面对应 |
+| --- | --- | --- | --- |
+| 左下十字 | 上下左右 | `echo_move_up/down/left/right` | `W/S/A/D` |
+| 右下上键 | `Y` | `echo_jump` | `K` |
+| 右下左键 | `X` | `echo_dash` | `J` |
+| 右下下键 | `A` | `echo_recall` | `L` |
+| 右下右键 | `B` | `echo_interact` | `E` |
+| 左上 | `ESC` | `pause` | `ESC` |
+
+`visibility_mode = TOUCHSCREEN_ONLY` 和 `OS.has_feature("mobile")` 双重区分平台：桌面不会绘制这些按钮；手机设置页隐藏 Controls tab，不能误改桌面键位。触控按钮支持长按方向和多指组合。暂停菜单、设置页、Keeper 对话、开场和终局演出暂停世界时由 `EchoMobileControls` 自动隐藏，结束后恢复。开场飘字、录像 HUD、NPC 交互提示分别显示手机的 `X/Y`、`A`、`B`，桌面继续读取当前可重绑定按键。
+
+要调位置或大小，直接在 Godot Editor 选中 `DirectionPad`、`ActionPad` 或其中一个 `TouchScreenButton` 修改 `offset_*`、`position`、`scale`；不要在脚本里动态创建按钮，也不要把手机按键写入 `project.godot`。建议至少用 1280×720 和 640×360 横屏预览一次，确认左右两组不重叠且底部留出安全边距。
 
 ## 碰撞层合同
 

@@ -29,6 +29,9 @@ var _capture_action: StringName
 
 # 将每个固定 authored 动作行连接到共享捕获对话框。
 func _ready() -> void:
+	if OS.has_feature("mobile"):
+		hide()
+		return
 	_connect_binding_button(move_left_button, &"echo_move_left")
 	_connect_binding_button(move_right_button, &"echo_move_right")
 	_connect_binding_button(move_up_button, &"echo_move_up")

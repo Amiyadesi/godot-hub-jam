@@ -36,6 +36,7 @@
 [ext_resource type="Script" uid="uid://cc7ae53mgb36i" path="res://Scripts/EchoChase/echo_chase_story.gd" id="39_story"]
 [ext_resource type="PackedScene" path="res://Scenes/EchoChase/UI/echo_chase_onboarding.tscn" id="40_onboarding"]
 [ext_resource type="Script" uid="uid://bw6vrgkstukeg" path="res://Scripts/EchoChase/memory_floor_gate.gd" id="41_memory_floor_gate"]
+[ext_resource type="PackedScene" path="res://Scenes/EchoChase/UI/echo_mobile_controls.tscn" id="42_mobile_controls"]
 
 [sub_resource type="ParticleProcessMaterial" id="Particle_world_dust"]
 particle_flag_disable_z = true
@@ -1267,6 +1268,11 @@ size_flags_horizontal = 3
 size_flags_vertical = 3
 color = Color(0, 0, 0, 0.68)
 modal_offset = Vector2(0, 0.08)
+
+[node name="MobileControls" parent="UI" node_paths=PackedStringArray("pause_screen", "setting_screen", "dialogue_npc") instance=ExtResource("42_mobile_controls")]
+pause_screen = NodePath("../PauseScreen")
+setting_screen = NodePath("../SettingScreen")
+dialogue_npc = NodePath("../../World/PresentHub/DialogueNpc")
 
 [node name="NarrativePresenter" parent="." unique_id=176848342 instance=ExtResource("37_narrative_presenter")]
 
