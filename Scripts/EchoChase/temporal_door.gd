@@ -1,6 +1,6 @@
 class_name TemporalDoor
 extends StaticBody2D
-## 监听最多三块 authored 压力板的标准时间门。
+## 监听最多四块 authored 压力板的标准时间门。
 
 enum Mode {
 	MOMENTARY_ALL,
@@ -22,11 +22,13 @@ const LATCHED_OPEN_COLOR := Color(0.52, 0.86, 1.0, 0.38)
 	$Indicators/IndicatorA,
 	$Indicators/IndicatorB,
 	$Indicators/IndicatorC,
+	$Indicators/IndicatorD,
 ]
 @onready var indicator_fills: Array[CanvasItem] = [
 	$Indicators/IndicatorA/Fill,
 	$Indicators/IndicatorB/Fill,
 	$Indicators/IndicatorC/Fill,
+	$Indicators/IndicatorD/Fill,
 ]
 @onready var open_audio: AudioStreamPlayer2D = %OpenAudio
 @onready var close_audio: AudioStreamPlayer2D = %CloseAudio
@@ -37,7 +39,7 @@ var _latched := false
 
 # 连接显式来源，并从当前板状态应用门与指示格。
 func _ready() -> void:
-	assert(source_plates.size() <= 3, "TemporalDoor supports at most three source plates")
+	assert(source_plates.size() <= 4, "TemporalDoor supports at most four source plates")
 	for plate in source_plates:
 		assert(plate != null, "TemporalDoor source_plates cannot contain null")
 		plate.pressed_changed.connect(_on_source_pressed_changed)

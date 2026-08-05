@@ -35,7 +35,7 @@ texture = SubResource("Atlas_door")
 position = Vector2(0, -24)
 
 [node name="IndicatorA" type="Node2D" parent="Indicators" unique_id=1863588928]
-position = Vector2(-8, 0)
+position = Vector2(-9, 0)
 
 [node name="Back" type="Polygon2D" parent="Indicators/IndicatorA" unique_id=928779148]
 color = Color(0.12, 0.16, 0.18, 0.92)
@@ -59,6 +59,7 @@ volume_db = -8.0
 bus = &"SFX"
 
 [node name="IndicatorB" type="Node2D" parent="Indicators" unique_id=842653372]
+position = Vector2(-3, 0)
 
 [node name="Back" type="Polygon2D" parent="Indicators/IndicatorB" unique_id=2073883982]
 color = Color(0.12, 0.16, 0.18, 0.92)
@@ -70,13 +71,25 @@ color = Color(1, 0.72, 0.2, 1)
 polygon = PackedVector2Array(-2, -2, 2, -2, 2, 2, -2, 2)
 
 [node name="IndicatorC" type="Node2D" parent="Indicators" unique_id=173032722]
-position = Vector2(8, 0)
+position = Vector2(3, 0)
 
 [node name="Back" type="Polygon2D" parent="Indicators/IndicatorC" unique_id=890482037]
 color = Color(0.12, 0.16, 0.18, 0.92)
 polygon = PackedVector2Array(-3, -3, 3, -3, 3, 3, -3, 3)
 
 [node name="Fill" type="Polygon2D" parent="Indicators/IndicatorC" unique_id=2082892125]
+visible = false
+color = Color(1, 0.72, 0.2, 1)
+polygon = PackedVector2Array(-2, -2, 2, -2, 2, 2, -2, 2)
+
+[node name="IndicatorD" type="Node2D" parent="Indicators"]
+position = Vector2(9, 0)
+
+[node name="Back" type="Polygon2D" parent="Indicators/IndicatorD"]
+color = Color(0.12, 0.16, 0.18, 0.92)
+polygon = PackedVector2Array(-3, -3, 3, -3, 3, 3, -3, 3)
+
+[node name="Fill" type="Polygon2D" parent="Indicators/IndicatorD"]
 visible = false
 color = Color(1, 0.72, 0.2, 1)
 polygon = PackedVector2Array(-2, -2, 2, -2, 2, 2, -2, 2)

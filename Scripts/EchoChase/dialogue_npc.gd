@@ -39,6 +39,9 @@ func _unhandled_input(event: InputEvent) -> void:
 func start_dialogue() -> bool:
 	if _dialogue_active:
 		return false
+	if LevelModule.instance == null or NarrativeSlotModule.instance == null:
+		push_error("DialogueNpc requires LevelModule and NarrativeSlotModule")
+		return false
 	var dialogue_resource := _get_localized_dialogue_resource()
 	if dialogue_resource == null:
 		push_error("DialogueNpc cannot start without both localized dialogue resources")
@@ -55,6 +58,13 @@ func start_dialogue() -> bool:
 # Selects the authored resource that matches the active project locale.
 func _get_localized_dialogue_resource() -> DialogueResource:
 	return dialogue_resource_zh if TranslationServer.get_locale().begins_with("zh") else dialogue_resource_en
+
+
+# Persists one player-initiated Keeper topic after its dialogue completes.
+func mark_dialogue_seen(flag_key: String) -> void:
+	NarrativeSlotModule.instance.set_flag(flag_key)
+	if not SaveSystem.save_slot(1):
+		push_error("DialogueNpc failed to save dialogue flag '%s'" % flag_key)
 
 
 # Shows the interaction prompt for the current EchoPlayer only.

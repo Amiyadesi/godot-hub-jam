@@ -26,7 +26,7 @@
 | Hub 前 3 题 | `3–4` | `5–7min` |
 | PresentHub | `1` | `2–3min` |
 | `1s/3s/5s` 三支路 | 每路 `3` | 每路 `4–6min` |
-| 终局岔路与知识锁 | `1` | `1–2min` |
+| 终点与下方预留房 | `1–3` | 待试玩后定案 |
 
 首次通关目标：`25–35min`。超时先删重复跑酷和返程；过短先改变已有机关的空间关系，不加新机关。
 
@@ -63,7 +63,7 @@
 | Past | 洋红轮廓 | 精确重演历史；碰 Present 失败；碰 Future 令其消散 |
 | Future | 琥珀轮廓 | 重演录像；任意有效 Present 接触都会消散并恢复 dash，上限仍为 `1` |
 | 凝固结构 | 琥珀金 | 绑定的 Future 正式回放时才有碰撞 |
-| TemporalDoor | 红色门体 + `1–3` 个状态格 | 只读取显式绑定的压力板 |
+| TemporalDoor | 红色门体 + `1–4` 个状态格 | 只读取显式绑定的压力板 |
 | PersistentGate | 独立终点门素材 | 只读取永久支路装置 ID |
 
 同样外观必须始终表示同样规则。重要机关不能只靠颜色区分，还要保留不同轮廓、位置和状态格。
@@ -73,17 +73,17 @@
 | 组件 | Prefab | 必填 Inspector | 用途 |
 | --- | --- | --- | --- |
 | 压力板 | `Scenes/EchoChase/Prefabs/temporal_pressure_plate.tscn` | 无 | Present、Past、Future 均可占用 |
-| 标准门 | `Scenes/EchoChase/Prefabs/temporal_door.tscn` | `mode`、`source_plates`、`latched_door_id`（锁存门） | 最多三板；Momentary 或可存档 Latched |
+| 标准门 | `Scenes/EchoChase/Prefabs/temporal_door.tscn` | `mode`、`source_plates`、`latched_door_id`（锁存门） | 最多四板；Momentary 或可存档 Latched |
 | 记录器 | `Scenes/EchoChase/Prefabs/future_recorder.tscn` | 无 | 进入开始录像；`L` 提交；最长 `5s` |
 | 金色屏障 | `Scenes/EchoChase/Prefabs/future_condensation_barrier.tscn` | `source_recorder` | 竖放为墙，旋转 `90°` 为平台 |
 | 延迟台 | `Scenes/EchoChase/Prefabs/delay_pickup.tscn` | `delay_seconds`、唯一 `delay_switch_id` | 选择 `1s/3s/5s` |
 | 支路装置 | `Scenes/EchoChase/Prefabs/progression_device.tscn` | 唯一 `device_id` | 玩家抵达 ActivationArea 后永久激活 |
 | 永久门 | `Scenes/EchoChase/Prefabs/persistent_gate.tscn` | `required_device_id` | 读取对应支路装置 |
 | 存档点 | `Scenes/EchoChase/Prefabs/echo_checkpoint.tscn` | 唯一 `checkpoint_id` | 玩家触碰后保存稳定状态 |
-| 收集物 | `Scenes/EchoChase/Prefabs/temporal_collectible.tscn` | 唯一 `item_id` | 记忆碎片；不阻挡普通出口，只显现真结局路线 |
-| 真结局路线 | `Scenes/EchoChase/Prefabs/true_ending_route.tscn` | 场景内 authored 子节点 | 四碎片后显现，包含重组触发、Recorder 与 KnowledgeLock |
+| 收集物 | `Scenes/EchoChase/Prefabs/temporal_collectible.tscn` | 唯一 `item_id` | 记忆碎片；立即保存，不阻挡普通出口 |
+| 终点爱心门 | `World/Finnal/StaticBody2D` + `memory_floor_gate.gd` | 四个稳定记忆 ID、A-D 亮灯引用 | 按数量点灯；四枚后清除碰撞并闪烁 |
 | 开场引导 | `Scenes/EchoChase/UI/echo_chase_narrative_presenter.tscn` + `Scenes/EchoChase/UI/echo_chase_onboarding.tscn` + `World/BeforeHub/FloatText` | `player`、`floating_text` | 新游戏先显示黑屏红字 `跑/RUN`；接近 authored 世界位置后，以手写飘字显示当前跳跃与方向冲刺键位 |
-| 剧情演出 | `Scenes/EchoChase/UI/echo_chase_narrative_presenter.tscn` | `present_hub.zh.dialogue` / `present_hub.en.dialogue` 仅供 Keeper 事件对白 | RichText2 抖动红字记忆、普通结局真相/洗忆、金字真结局与 tableau |
+| 剧情演出 | `Scenes/EchoChase/UI/echo_chase_narrative_presenter.tscn` | 无 Keeper 对话资源 | RichText2 抖动红字记忆、普通结局真相/洗忆、保留的金字真结局 tableau |
 
 标准门接线：在 `TemporalDoor.source_plates` 中按状态格从左到右拖入对应压力板。凝固屏障必须直接绑定本题的 `FutureRecorder`，不要绑定全局 Future。
 
@@ -103,10 +103,10 @@ PresentHub
 							↓
 				  三扇 PersistentGate
 							├──→ 普通出口
-							└──→ 四碎片回头路线 → 知识锁 → 真结局
+							└──→ 四碎片爱心门 → 下方两个预留空房
 ```
 
-三条支路自由顺序、全部必做。每条出口应通过对应延迟台，避免玩家带错档进入后才发现题目不成立。装置激活后开放单向回流捷径，减少原路折返。四枚碎片不改变三支路或普通出口，只增加终点的主动回头选择。
+三条支路自由顺序、全部必做。每条出口应通过对应延迟台，避免玩家带错档进入后才发现题目不成立。装置激活后开放单向回流捷径，减少原路折返。四枚碎片不改变三支路或普通出口，只让终点地块可主动下落；下方房间暂不施工。
 
 ## 图例
 
@@ -471,7 +471,7 @@ Present：    P → ==== → |G| X
 - **失败反馈**：交汇点 J、桥、A 和出口门至少通过一个观察窗同时可见；Future 过早碎散显示桥消失，Past 晚到则门状态格保持熄灭。
 - **采用条件**：只在 `5s` 支路的 Past 与 Future 仍像两套独立机制、缺少一次真正交汇时采用。
 
-## 终点与知识锁
+## 终点与下方预留房间
 
 ### 三扇状态门
 
@@ -485,34 +485,23 @@ Present：    P → ==== → |G| X
 
 三门只展示支路完成状态，不附加压力板或新谜题。三门后正前方的普通出口始终存在；无论是否集齐碎片，玩家都可以进入普通结局。
 
-### F. 知识锁
+### 四枚爱心门
 
-- **目标**：停止逃跑，在录像中主动让 Past 追上 Present。
-- **难度/目标解时**：短，`1–2min`。
-- **组件**：四碎片显现的实体回头路线、Recorder、`KnowledgeLock`、真结局触发区。
+- A-D 按已收集记忆数量从左到右点亮，与具体拾取顺序无关。
+- 第四枚触发一次红色粒子闪光；地块随后持续透明闪烁并禁用碰撞。
+- 读档时直接恢复灯数和已解锁状态，不重复一次性闪光。
+- 普通出口保持可用；玩家可以选择从透明地块落入下方。
 
-```text
-普通出口  →
-		岔路点
-金色回头路 ← [重组记忆] ← [R] ← 录像中等待 Past 追上
-```
+### 下方两个房间
 
-施工：
-
-1. 未集齐四枚碎片时整条金色路线不可见、无碰撞；普通出口保持不变。
-2. 集齐后路线显现，但只有玩家主动回头进入才触发按时间排序的完整记忆重组。
-3. 重组完成后启用绑定知识锁的 Recorder。玩家开始录像，再让 Past 追上自己；该碰撞自动提交录像，不判失败。
-4. `KnowledgeLock` 只接受绑定 Recorder 的 Past-catch 提交，激活后永久打开真结局触发区。
-5. 真结局演出先以金字完成主角与裂隙的“接纳而非抹除”交流，再把玩家录出的 Future Trace 送回原本的 `RUN` 时刻，并显示 Lia 与主角沿金色第三条路共同离开。
-
-验收：普通出口仍可选择；知识锁不出现新规则。玩家应把主动被 Past 追上理解为“停止逃跑”，并看懂 Future Trace 如何改写原本结局。
+当前只保留用户 authored 的空房间，不放置 Recorder、`KnowledgeLock`、真结局触发区或任何 agent 生成路线。候选谜题继续留在本文前面的候选库中，只有完成无提示试玩并确认需要时才由用户选择一个施工。
 
 ## 记忆碎片
 
 - Hub 前放 `memory_after`；`1s/3s/5s` 支路分别放 `memory_t_minus_1`、`memory_t_minus_3`、`memory_t_minus_5`。
 - 四枚都必须清晰可见，不做隐藏搜寻；支路顺序自由，单片闪回必须能独立理解。
 - 拾取时暂停玩法与倒计时，黑屏后以不标注说话者的红色倾斜字逐句播放数秒闪回并立即保存；文字使用 RichText2 抖动效果，不调用普通 Dialogue Manager 气泡。Future 录像期间不能拾取，避免回传复制进度。
-- 碎片不控制普通出口；四枚集齐只显现真结局回头路线。完整记忆固定按 `-5s → -3s → -1s → 事后` 重组。
+- 碎片不控制普通出口；四枚集齐只打开终点可坠落地块。完整记忆与真结局触发等待下方房间定案后再接线。
 
 ## Editor 搭建顺序
 

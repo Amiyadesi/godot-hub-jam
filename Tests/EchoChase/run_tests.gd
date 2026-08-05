@@ -28,12 +28,14 @@ func _ready() -> void:
 	await _test_landing_restores_single_dash()
 	_test_temporal_door_requires_all_sources()
 	_test_temporal_door_latches_after_all_sources()
+	_test_temporal_door_supports_four_sources()
 	_test_temporal_door_modes_and_indicators()
 	_test_temporal_door_latched_state_round_trip()
 	_test_temporal_pressure_plate_feedback()
 	_test_future_echo_reports_active_playback()
 	_test_future_barrier_follows_its_recorder()
 	await _test_progression_shortcut_follows_device()
+	await _test_memory_floor_gate_follows_collected_count()
 	await _test_future_collision_refills_single_dash()
 	_finish()
 
@@ -157,7 +159,7 @@ func _test_run_countdown_lifecycle() -> void:
 	player.free()
 
 
-# 验证知识锁能识别“录像中主动被 Past 追上”的 Recorder。
+# 验证录像中被 Past 追上时仍报告实际提交的 Recorder。
 func _test_past_catch_reports_recording_source() -> void:
 	var player := PLAYER_SCENE.instantiate() as EchoPlayer
 	add_child(player)
@@ -315,6 +317,30 @@ func _test_temporal_door_latches_after_all_sources() -> void:
 	plate_c.free()
 
 
+# 验证标准门可接四块 authored 压力板，并显示第四个状态灯。
+func _test_temporal_door_supports_four_sources() -> void:
+	var plates: Array[TemporalPressurePlate] = []
+	for _index in 4:
+		var plate := PRESSURE_PLATE_SCENE.instantiate() as TemporalPressurePlate
+		plates.append(plate)
+		add_child(plate)
+	var door := TEMPORAL_DOOR_SCENE.instantiate() as TemporalDoor
+	door.source_plates = plates
+	add_child(door)
+	var player := PLAYER_SCENE.instantiate() as EchoPlayer
+	for index in 3:
+		plates[index].body_entered.emit(player)
+	_expect(not door.is_open(), "four-source TemporalDoor waits for its fourth plate")
+	plates[3].body_entered.emit(player)
+	_expect(door.is_open(), "four-source TemporalDoor opens when all four plates are pressed")
+	_expect(door.get_node("Indicators/IndicatorD").visible, "four-source TemporalDoor shows its fourth indicator")
+	_expect(door.get_node("Indicators/IndicatorD/Fill").visible, "fourth TemporalDoor indicator fills when pressed")
+	player.free()
+	door.free()
+	for plate in plates:
+		plate.free()
+
+
 # 验证两种门模式使用不同颜色，并只显示已接线的指示格。
 func _test_temporal_door_modes_and_indicators() -> void:
 	var plate_a := PRESSURE_PLATE_SCENE.instantiate() as TemporalPressurePlate
@@ -465,6 +491,47 @@ func _test_progression_shortcut_follows_device() -> void:
 	_expect(shortcut.is_open(), "progression shortcut opens for its matching device")
 	_expect(shortcut.collision_shape.disabled, "opened progression shortcut disables collision")
 	shortcut.free()
+	LevelModule.instance = original_level_module
+
+
+# 验证爱心数量从左到右点灯，并在第四枚时清除终点碰撞。
+func _test_memory_floor_gate_follows_collected_count() -> void:
+	var original_level_module := LevelModule.instance
+	var module := LevelModule.new()
+	LevelModule.instance = module
+	var start_scene := load("res://Scenes/EchoChase/echo_chase_start.tscn") as PackedScene
+	var start_root := start_scene.instantiate()
+	var final_room := start_root.get_node("World/Finnal") as Node2D
+	start_root.get_node("World").remove_child(final_room)
+	start_root.free()
+	add_child(final_room)
+	var gate := final_room.get_node("StaticBody2D") as MemoryFloorGate
+	_expect(gate.get_active_indicator_count() == 0, "memory floor starts with no active indicators")
+	module.collect_item("memory_after")
+	_expect(gate.get_active_indicator_count() == 1, "one collected heart lights exactly one indicator")
+	_expect(gate.indicator_fills[0].visible and not gate.indicator_fills[1].visible, "heart indicators fill from left to right")
+	module.collect_item("memory_t_minus_1")
+	module.collect_item("memory_t_minus_3")
+	module.collect_item("memory_t_minus_5")
+	await get_tree().process_frame
+	_expect(gate.is_unlocked(), "four collected hearts unlock the final floor")
+	_expect(gate.collision_shape.disabled, "unlocked memory floor disables collision")
+	_expect(gate.animation_player.current_animation == &"unlock", "fourth heart starts the authored unlock flash")
+	final_room.free()
+	var restored_module := LevelModule.new()
+	restored_module.apply_data(module.collect_data())
+	LevelModule.instance = restored_module
+	var restored_root := start_scene.instantiate()
+	var restored_final_room := restored_root.get_node("World/Finnal") as Node2D
+	restored_root.get_node("World").remove_child(restored_final_room)
+	restored_root.free()
+	add_child(restored_final_room)
+	var restored_gate := restored_final_room.get_node("StaticBody2D") as MemoryFloorGate
+	await get_tree().process_frame
+	_expect(restored_gate.get_active_indicator_count() == 4, "memory floor restores all four indicators from slot data")
+	_expect(restored_gate.is_unlocked() and restored_gate.collision_shape.disabled, "memory floor restores its cleared collision")
+	_expect(restored_gate.animation_player.current_animation == &"unlocked", "restored memory floor skips the one-shot unlock flash")
+	restored_final_room.free()
 	LevelModule.instance = original_level_module
 
 

@@ -19,6 +19,7 @@ var activated_progression_device_ids: Array[String] = []
 var collected_item_ids: Array[String] = []
 var opened_latched_door_ids: Array[String] = []
 var present_hub_unlocked := false
+var run_countdown_expired := false
 var _has_checkpoint_position := false
 
 
@@ -52,6 +53,7 @@ func collect_data() -> Dictionary:
 		"collected_item_ids": collected_item_ids.duplicate(),
 		"opened_latched_door_ids": opened_latched_door_ids.duplicate(),
 		"present_hub_unlocked": present_hub_unlocked,
+		"run_countdown_expired": run_countdown_expired,
 	}
 
 
@@ -99,6 +101,7 @@ func get_default_data() -> Dictionary:
 		"collected_item_ids": [],
 		"opened_latched_door_ids": [],
 		"present_hub_unlocked": false,
+		"run_countdown_expired": false,
 	}
 
 
@@ -221,6 +224,11 @@ func is_item_collected(item_id: String) -> bool:
 	return collected_item_ids.has(item_id.strip_edges())
 
 
+# Returns the number of slot-persistent authored collectibles.
+func get_collected_item_count() -> int:
+	return collected_item_ids.size()
+
+
 # Permanently marks the central room as converted into the present state.
 func unlock_present_hub() -> bool:
 	if present_hub_unlocked:
@@ -234,12 +242,26 @@ func is_present_hub_unlocked() -> bool:
 	return present_hub_unlocked
 
 
+# Marks the false run deadline as expired once for this save slot.
+func mark_run_countdown_expired() -> bool:
+	if run_countdown_expired:
+		return false
+	run_countdown_expired = true
+	return true
+
+
+# Reports whether this slot has already reached the false deadline.
+func has_run_countdown_expired() -> bool:
+	return run_countdown_expired
+
+
 # Clears world progress only when starting a new run.
 func clear_world_progress() -> void:
 	activated_progression_device_ids.clear()
 	collected_item_ids.clear()
 	opened_latched_door_ids.clear()
 	present_hub_unlocked = false
+	run_countdown_expired = false
 
 
 # Restores optional world-progress fields without invalidating legacy checkpoints.
@@ -266,3 +288,4 @@ func _apply_world_progress(data: Dictionary) -> void:
 			if not normalized_id.is_empty() and not opened_latched_door_ids.has(normalized_id):
 				opened_latched_door_ids.append(normalized_id)
 	present_hub_unlocked = bool(data.get("present_hub_unlocked", false))
+	run_countdown_expired = bool(data.get("run_countdown_expired", false))

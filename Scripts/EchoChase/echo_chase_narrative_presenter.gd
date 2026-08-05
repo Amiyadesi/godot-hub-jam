@@ -41,8 +41,6 @@ const TRUE_EPILOGUE_LINES := [
 ]
 const MEMORY_JITTER_BBCODE := "[jit2 scale=2.0 freq=18.0]%s[]"
 
-@export var keeper_dialogue_resource_zh: DialogueResource
-@export var keeper_dialogue_resource_en: DialogueResource
 @export_group("Text Timing")
 @export_range(0.05, 1.0, 0.05) var text_fade_seconds := 0.22
 @export_range(0.2, 3.0, 0.05) var opening_hold_seconds := 1.1
@@ -52,7 +50,6 @@ const MEMORY_JITTER_BBCODE := "[jit2 scale=2.0 freq=18.0]%s[]"
 @onready var memory_layer: CanvasLayer = %MemoryLayer
 @onready var memory_tag: Label = %MemoryTag
 @onready var memory_text: RicherTextLabel = %MemoryText
-@onready var story_balloon: ModularBalloon = %StoryBalloon
 @onready var ending_layer: CanvasLayer = %EndingLayer
 @onready var ending_flash: ColorRect = %EndingFlash
 @onready var normal_ending_text: Label = %NormalEndingText
@@ -104,8 +101,6 @@ var _sequence_active := false
 
 # Hides all authored story surfaces until a sequence explicitly owns the screen.
 func _ready() -> void:
-	if keeper_dialogue_resource_zh == null or keeper_dialogue_resource_en == null:
-		push_error("EchoChaseNarrativePresenter requires zh and en Keeper dialogue resources")
 	memory_layer.visible = false
 	ending_layer.visible = false
 	memory_text.hide()
@@ -147,28 +142,6 @@ func play_memory_sequence(line_keys: Array, time_tag_key: String) -> void:
 	memory_layer.visible = false
 	_restore_world(was_paused)
 	_sequence_active = false
-
-
-# Plays only Keeper reactions through the existing Present Hub dialogue resource.
-func play_keeper_dialogue(title: String) -> void:
-	if _sequence_active:
-		push_error("EchoChaseNarrativePresenter cannot overlap story sequences")
-		return
-	var keeper_dialogue_resource := _get_localized_keeper_dialogue_resource()
-	if title.is_empty() or keeper_dialogue_resource == null:
-		push_error("EchoChaseNarrativePresenter requires a valid Keeper dialogue title")
-		return
-	_sequence_active = true
-	var was_paused := _pause_world()
-	story_balloon.start(keeper_dialogue_resource, title, [self])
-	await story_balloon.dialogue_ended
-	_restore_world(was_paused)
-	_sequence_active = false
-
-
-# Selects the Keeper resource at playback time so pause-menu language changes apply immediately.
-func _get_localized_keeper_dialogue_resource() -> DialogueResource:
-	return keeper_dialogue_resource_zh if TranslationServer.get_locale().begins_with("zh") else keeper_dialogue_resource_en
 
 
 # Plays the Keeper's false escape, the Rift's reveal, and the memory-wipe loop.

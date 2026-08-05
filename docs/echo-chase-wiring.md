@@ -39,12 +39,13 @@ YourGrayboxRoot (Node2D)
 | 节点 | Inspector 字段 | 指向 |
 | --- | --- | --- |
 | `DelayPickup` | `delay_seconds/delay_switch_id/default_active` | `1/3/5`、场景内唯一 ID；恰好一个默认 `3s` 台 |
-| `TemporalDoor` | `mode/source_plates/latched_door_id` | `MOMENTARY_ALL` 或 `LATCHED_ALL`；锁存门填写唯一 ID；显式拖入最多 3 块板 |
+| `TemporalDoor` | `mode/source_plates/latched_door_id` | `MOMENTARY_ALL` 或 `LATCHED_ALL`；锁存门填写唯一 ID；显式拖入最多 4 块板 |
+| `MemoryFloorGate` | `memory_item_ids/indicator_fills` | 四个稳定记忆 ID；A-D 亮灯按画面左到右排列 |
 | `FutureCondensationBarrier` | `source_recorder` | 唯一负责该屏障的 `FutureRecorder` |
 | `ProgressionDevice` | `device_id` | 当前场景稳定且唯一的世界进度 ID；触碰激活后立即写入当前槽位 |
 | `PersistentGate` | `required_device_id` | 要监听的 `ProgressionDevice.device_id` |
 | `ProgressionShortcut` | `required_device_id` | 要监听的 `ProgressionDevice.device_id`；激活后淡出并关闭碰撞 |
-| `DialogueNpc` | `dialogue_resource/dialogue_title` | Dialogue Manager 资源与起始 title |
+| `DialogueNpc` | `dialogue_resource_zh/dialogue_resource_en/dialogue_title` | 中英文 Dialogue Manager 资源与起始 title |
 | `TemporalRecordingHUD` | `player` | 场景内玩家 |
 | `EchoChaseStart` | `player/gameplay_world/spawn_point/present_room/pause_screen/setting_screen/reset_audio` | 场景内对应 authored 节点 |
 | `EchoChaseStart` | `gameplay_music` | 进入玩法后交给 `GameAudio` crossfade 的独立循环曲 |
@@ -85,12 +86,12 @@ YourGrayboxRoot (Node2D)
 
 ### 压力板与门
 
-实例化 `temporal_door.tscn` 和所需数量的 `temporal_pressure_plate.tscn`。压力板只广播状态；在门的 `source_plates` 数组中显式拖入 1–3 块板，并选择模式：
+实例化 `temporal_door.tscn` 和所需数量的 `temporal_pressure_plate.tscn`。压力板只广播状态；在门的 `source_plates` 数组中显式拖入 1–4 块板，并选择模式：
 
 - `MOMENTARY_ALL`：全部板同时按下才保持开启，任一释放立即关闭。
 - `LATCHED_ALL`：全部板同时按下一次后保持开启；填写 `latched_door_id` 后写入槽位存档，读档直接恢复打开。未填写 ID 的原型门只保留运行时锁存。
 
-现在体、过去体和未来体都可压板。门 prefab authored 三个状态格，未接线的格子隐藏，已接线格显示当前缺少哪个输入。不要在关卡脚本中重新组合这些板，也不要用它代替 `PersistentGate`。
+现在体、过去体和未来体都可压板。门 prefab authored 四个状态格，未接线的格子隐藏，已接线格显示当前缺少哪个输入。不要在关卡脚本中重新组合这些板，也不要用它代替 `PersistentGate`。
 
 ### Future 凝固屏障
 
@@ -102,7 +103,7 @@ Future 与屏障共用琥珀金色。Future 自己的出现/消散音作为这�
 
 ### 收集物
 
-实例化 `temporal_collectible.tscn` 并填写唯一 `item_id`。玩家触碰后只在内存中记录一次，播放 authored 收集动画并移除实例；玩家随后触碰 checkpoint 时才把 `collected_item_ids` 写入当前槽位。旧存档缺少该字段时默认为空。它是可选世界进度，不是背包，也不参与主线门条件。
+实例化 `temporal_collectible.tscn` 并填写唯一 `item_id`。玩家触碰后记录一次、立即保存、播放 authored 收集动画并移除实例。旧存档缺少该字段时默认为空。终点 `MemoryFloorGate` 只读取四个稳定记忆 ID，按数量点亮 A-D；四枚后清除地块碰撞并进入透明闪烁。
 
 ### 支路装置与门
 
@@ -112,7 +113,9 @@ Future 与屏障共用琥珀金色。Future 自己的出现/消散音作为这�
 
 ### NPC 与中央现在房
 
-普通 NPC 使用 `dialogue_npc.tscn`，赋值 `dialogue_resource` 和可选 `dialogue_title`。玩家进入范围看到 `E`，按下后复用 `Dialogue/EchoChase/echo_dialogue_balloon.tscn`；该变体保留 Flow、Animation、TypingSound、CharacterUI 和 Responses，禁用 History、SaveModule 与 Illustration。对话期间 `SceneTree.paused = true`，结束后恢复原状态。
+普通 NPC 使用 `dialogue_npc.tscn`，赋值 `dialogue_resource_zh`、`dialogue_resource_en` 和可选 `dialogue_title`。玩家进入范围看到 `E`，按下后按当前 locale 复用 `Dialogue/EchoChase/echo_dialogue_balloon.tscn`；该变体保留 Flow、Animation、TypingSound、CharacterUI 和 Responses，禁用 History、SaveModule 与 Illustration。对话期间 `SceneTree.paused = true`，结束后恢复原状态。
+
+Keeper 的 `askname`、`askheart`、`asktime` 都是玩家主动选择后才写入 `NarrativeSlotModule`。爱心选项要求收集数 `>= 1`，倒计时坦白要求 `run_countdown_expired`；每次写旗标后立即保存。NarrativePresenter 不再自动排队 Keeper 气泡。
 
 中央房直接在连续主场景中 authored 一个 `PresentHub (Area2D)`，不再实例化整房 prefab。其固定子节点为 `RoomShape`、`CurrentRoomCheckpoint`、`DialogueNpc` 和 `RoomDepartureVfx`；作者可在同一场景里调整边界、NPC 与出口，不需要切换房间 scene。
 
@@ -136,7 +139,7 @@ EchoTimeline.reset_timeline(saved_past_delay_seconds, saved_delay_switch_id)
 
 先复位玩家，再清时间线。不要保存或恢复在途路径、剩余录像、未来体位置、过去体切档过程或临时压力板占用。
 
-使用 `LevelModule.set_checkpoint(scene_path, checkpoint_id, respawn_position, past_delay_seconds, delay_switch_id)` 写入干净 checkpoint。`past_delay_seconds` 与 ID 必须来自 `EchoTimeline.get_selected_past_delay_seconds()` 和 `get_selected_delay_switch_id()`，这样切档预警中的最新选择也能稳定恢复。槽位存档保存 `activated_progression_device_ids`、`collected_item_ids`、`opened_latched_door_ids` 与 `present_hub_unlocked`。BranchProgressionDevice 触碰激活后立即写入当前槽位；MemoryShard 与 Latched ALL 门先只改内存，玩家触碰 checkpoint 时由统一保存流程落盘。旧存档缺少新增字段时默认空集合和未解锁，不影响现有 checkpoint。
+使用 `LevelModule.set_checkpoint(scene_path, checkpoint_id, respawn_position, past_delay_seconds, delay_switch_id)` 写入干净 checkpoint。`past_delay_seconds` 与 ID 必须来自 `EchoTimeline.get_selected_past_delay_seconds()` 和 `get_selected_delay_switch_id()`，这样切档预警中的最新选择也能稳定恢复。槽位存档保存 `activated_progression_device_ids`、`collected_item_ids`、`opened_latched_door_ids`、`present_hub_unlocked` 与 `run_countdown_expired`。BranchProgressionDevice、MemoryShard 和倒计时归零立即写入当前槽位；旧存档缺少新增字段时默认空集合、未解锁和倒计时未结束，不影响现有 checkpoint。
 
 ## 起始施工场景
 
@@ -152,10 +155,11 @@ EchoTimeline.reset_timeline(saved_past_delay_seconds, saved_delay_switch_id)
 - 一扇 `source_plates` 显式绑定压力板的 `TemporalDoor` 接线样例。
 - 主场景内联 `PresentHub`，内含按 `E` 交互的 NPC、`current_room` 自动对话、首次/回访剧情、全房环状冲击波、三座延迟台和 `RoomDepartureVfx`。
 - 场景内的 `BranchProgressionDevice` 与 `BranchPersistentGate` 只作为支路进度接线样例；正式谜题仍由本关脚本在条件完成时调用 `activate()`，二者素材与 checkpoint 分离。
-- `MemoryShardA/B/C` 使用 `TemporalCollectible`，只演示槽位持久化收集物，不引入背包。
+- `MemoryShardA/B/C/D` 使用 `TemporalCollectible`；终点 `MemoryFloorGate` 按四枚数量点亮并打开可坠落地块。
 - 一个 `TemporalRecordingHUD`：玩家金色轮廓、屏幕金边、无数字进度条和实时回传键。
 - 一个 `EchoChaseOnboarding`：新游戏的黑屏红字 `跑/RUN` 结束后，玩家接近 `World/BeforeHub/FloatText` 时读取当前跳跃和方向冲刺绑定，用世界内手写飘字显示一次；Continue 不重复播放。
-- 一个 `EchoChaseNarrativePresenter`：开场与记忆共用全黑红字、倾斜字体和 RichText2 抖动序列；Keeper 事件对白按当前语言读取 `present_hub.zh.dialogue` 或 `present_hub.en.dialogue`；普通结局与真结局分别使用青白、金色文本和 authored tableau。
+- 一个 `EchoChaseNarrativePresenter`：开场与记忆共用全黑红字、倾斜字体和 RichText2 抖动序列；普通结局与真结局分别使用青白、金色文本和 authored tableau。Keeper 对话只由 `DialogueNpc` 主动交互触发。
+- 终点下方两个房间保持空白；旧 `true_ending_route` 与 `KnowledgeLock` 已删除，金色全屏演出仍保留。
 - 两套 authored 入场淡出资源：新游戏使用青白，Continue 使用洋红；淡出期间冻结 World，不再摆三人 Overlay。
 - `PauseScreen` 与 `SettingScreen`；Hint 永久禁用。
 - 没有敌人、正式背景或正式路线；`dark_sci_fi_sector.ogg` 只作为施工玩法占位曲。

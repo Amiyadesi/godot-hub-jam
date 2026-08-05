@@ -10,43 +10,45 @@
 - 这里是哪里？
 	神秘人: ...时间的裂隙，过去现在未来交错的试炼之地
 	神秘人: 恐惧过去，失去未来之人将会来到这里
-	神秘人: 在倒计时结束之前离去，否则就只能被永恒的困在这里
+	神秘人: 在倒计时结束之前离去，否则就只能被永恒地困在这里
 	=> return
 - 那些红色幻影和金色幻影是什么？
 	神秘人: ...红色是你延迟的过去，金色是你记录下的未来可能性
-	神秘人: 在这里，过去能影响现在和未来，现在就只能影响未来
+	神秘人: 在这里，过去能影响现在和未来，现在只能影响未来
 	=> return
 - 我想要离开需要做什么？
 	神秘人: ...想要离开吗？这是三条试炼之路
-	神秘人: 在你探索试炼之路的路上自然会发现封锁的出口
-	神秘人: 激活每条路上的装置就可以解开封印
+	神秘人: 在你探索试炼之路的路上，自然会发现封锁的出口
+	神秘人: 激活每条路上的装置，就可以解开封印
 	=> return
-- 你是谁？ [if NarrativeGlobalModule.instance.get_value("flags.askname",false) == false]
-	do NarrativeGlobalModule.instance.set_value("flags.askname",true)
+- 你是谁？ [if not NarrativeSlotModule.instance.has_flag("askname")]
 	神秘人: ...我是试炼的失败者
-	神秘人: 只剩下现在，忘记了过去也没有未来
-	神秘人: 成为了给未来的试炼者提供消息的存在
+	神秘人: 只剩下现在，忘记了过去，也没有未来
+	神秘人: 成了给未来试炼者留下消息的存在
 	神秘人: 希望你能通过试炼[secret]然后替代我
+	do mark_dialogue_seen("askname")
 	=> return
 - 你一开始说的话是什么意思？
-	神秘人: ...未来体在被你撞碎后可以成为你的
+	神秘人: ...你落脚在未来体身上，能够恢复冲刺
+	神秘人: 有些情况下会有帮助
 	=> return
-- 那些爱心是什么？ [if LevelModule.instance]
+- 那些爱心是什么？ [if LevelModule.instance.get_collected_item_count() >= 1 and not NarrativeSlotModule.instance.has_flag("askheart")]
 	神秘人: ...不知道，毕竟这个地方如此诡异
-	神秘人: 你也没必要收集这些，在倒计时前通过试炼
-	神秘人: 这才是离开的正确方式
+	神秘人: 可你带回它以后，我的脑子就开始痛
+	神秘人: 那些东西不属于试炼。别再收集了
+	神秘人: [speed=3]你不应该继续留在这里[next=auto]
+	神秘人: 快走吧。你真想一直待着吗？
+	do mark_dialogue_seen("askheart")
+	=> return
+- 倒计时结束了会怎么样？
+	神秘人: ...你不会想知道的
+	=> return
+- 已经结束了，但是好像没什么事？ [if LevelModule.instance.has_run_countdown_expired() and not NarrativeSlotModule.instance.has_flag("asktime")]
+	神秘人: ...好吧
+	神秘人: 其实这个倒计时没什么意义
+	神秘人: 只是我希望你能快点破解试炼、离开这里，用的一些小手段
+	神秘人: 我只是等得太久了
+	do mark_dialogue_seen("asktime")
 	=> return
 - 没什么事了
 	=> END
-
-~ keeper_first_memory
-神秘人: ……那些爱心不属于试炼。别被它们拖住。
-=> END
-
-~ keeper_all_memories
-神秘人: ……四段都在你身上？出口在前面。别再回头。
-=> END
-
-~ countdown_confession
-神秘人: ……不会发生什么。我只是等得太久了。
-=> END

@@ -196,6 +196,8 @@ func _test_progress_round_trip() -> void:
 	source.open_latched_door("delay_5s_latched_1")
 	_expect(source.unlock_present_hub(), "first present hub unlock should succeed")
 	_expect(not source.unlock_present_hub(), "present hub unlock should be idempotent")
+	_expect(source.mark_run_countdown_expired(), "first run countdown expiration should be stored")
+	_expect(not source.mark_run_countdown_expired(), "run countdown expiration should be idempotent")
 	var restored := LevelModule.new()
 	restored.apply_data(source.collect_data())
 	_expect(restored.get_checkpoint().get("checkpoint_id", "") == "hub", "checkpoint should survive round-trip")
@@ -203,6 +205,8 @@ func _test_progress_round_trip() -> void:
 	_expect(restored.is_item_collected("memory_shard_a"), "collectible state should survive round-trip")
 	_expect(restored.is_latched_door_open("delay_5s_latched_1"), "latched door state should survive round-trip")
 	_expect(restored.is_present_hub_unlocked(), "present hub state should survive round-trip")
+	_expect(restored.get_collected_item_count() == 1, "collected item count should survive round-trip")
+	_expect(restored.has_run_countdown_expired(), "run countdown expiration should survive round-trip")
 
 
 # Saves from the checkpoint-only schema remain valid with empty new progress.
@@ -222,6 +226,7 @@ func _test_legacy_checkpoint_defaults_progress() -> void:
 	_expect(not module.is_item_collected("missing"), "legacy collectibles should default empty")
 	_expect(not module.is_latched_door_open("missing"), "legacy latched doors should default closed")
 	_expect(not module.is_present_hub_unlocked(), "legacy present hub state should default locked")
+	_expect(not module.has_run_countdown_expired(), "legacy run countdown state should default active")
 
 
 # Present rooms suppress phase warning and keep the selected delay for the next run.
@@ -275,6 +280,9 @@ func _require_progress_api(module: LevelModule) -> bool:
 		and module.has_method("is_latched_door_open")
 		and module.has_method("unlock_present_hub")
 		and module.has_method("is_present_hub_unlocked")
+		and module.has_method("get_collected_item_count")
+		and module.has_method("mark_run_countdown_expired")
+		and module.has_method("has_run_countdown_expired")
 	)
 	_expect(available, "LevelModule permanent progression API should exist")
 	return available

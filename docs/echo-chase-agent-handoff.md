@@ -31,7 +31,8 @@ EchoChaseStart
 │   ├── DelayPickup1s / 3s / 5s
 │   ├── FutureRecorderA [内部一个 FutureEcho]
 │   ├── BranchProgressionDevice → BranchPersistentGate
-│   ├── TemporalCollectible × 3
+│   ├── TemporalCollectible × 4
+│   ├── MemoryFloorGate [终点 A-D 爱心灯与可坠落地块]
 │   └── TemporalPressurePlate → TemporalDoor
 ├── UI
 │   ├── TemporalRecordingHUD
@@ -75,9 +76,14 @@ activated_progression_device_ids
 collected_item_ids
 opened_latched_door_ids
 present_hub_unlocked
+run_countdown_expired
 ```
 
-延迟台是可重复机关，类名仍为 `DelayPickup`。每个场景必须恰好一个默认 `3s` 台，所有台使用唯一 ID；`EchoChaseStart` 从 authored `gameplay_world` 收集它们。激活 checkpoint 不清理当前时间线，但会记录当前选择并把尚未落盘的 MemoryShard/Latched ALL 状态一起保存；`BranchProgressionDevice` 则在触碰激活时立即保存。触碰 `current_room` 且尚未完成对话时会启动中央 NPC 剧情。被过去体抓到后，玩家冻结 `0.4s`，随后先恢复坐标，再用保存的延迟和台 ID 调用 `EchoTimeline.reset_timeline()`。Continue 同样建立干净时间线。
+延迟台是可重复机关，类名仍为 `DelayPickup`。每个场景必须恰好一个默认 `3s` 台，所有台使用唯一 ID；`EchoChaseStart` 从 authored `gameplay_world` 收集它们。MemoryShard、BranchProgressionDevice 和倒计时归零都会立即保存；Latched ALL 状态仍随现有存档流程持久化。触碰 `current_room` 且尚未完成对话时会启动中央 NPC 剧情。被过去体抓到后，玩家冻结 `0.4s`，随后先恢复坐标，再用保存的延迟和台 ID 调用 `EchoTimeline.reset_timeline()`。Continue 同样建立干净时间线。
+
+终点 `World/Finnal/StaticBody2D` 使用 `MemoryFloorGate`。它只统计四个稳定记忆 ID，按数量从左到右点亮 A-D；四枚齐全后禁用地块碰撞，播放一次红色闪光并持续透明闪烁，读档直接恢复。地块下方两个房间保持用户当前空白，不包含 agent 生成谜题或路线。
+
+Keeper 只在玩家主动交互时提供条件选项：爱心数 `>= 1` 且无 `askheart`、倒计时已归零且无 `asktime`、无 `askname`。问完写入 `NarrativeSlotModule` 并立即保存。NarrativePresenter 不再拥有自动 Keeper 气泡；旧 `true_ending_route` 与 `KnowledgeLock` 已删除，金色全屏真结局演出仍保留供后续 authored 路线调用。
 
 未来录像可在第一帧提交；短路径保持末帧补足到 `1s`。录制中接触过去体会提交/回传，不会触发失败。`TemporalRecordingHUD` 监听时间线与 `KeybindingModule.bindings_changed`，禁止把按键文本硬编码回 `L`。
 
@@ -106,14 +112,13 @@ $env:APPDATA = Join-Path $env:TEMP 'echo-chase-test-appdata'
 & $godot --headless --path . --quit-after 300 res://Scenes/EchoChase/echo_chase_start.tscn
 ```
 
-自动检查覆盖路径插值、回传断点、永久进度、现在房延迟切换和连续冲刺残影回归。不要添加把节点层级、Prefab 数量、颜色、动画时长、房间坐标或 Inspector 参数锁死的测试；这些内容以作者当前的场景与 Inspector 调整为准。
+自动检查覆盖路径插值、回传断点、永久进度、倒计时 round-trip、四压板门、终点爱心门、现在房延迟切换和连续冲刺残影回归。不要添加把节点层级、Prefab 数量、颜色、动画时长、房间坐标或 Inspector 参数锁死的测试；这些内容以作者当前的场景与 Inspector 调整为准。
 
 人工只检查 `1920x1080` 与同比例 `1280x720`。不做超宽屏批量截图。
 
+当前 Windows 试玩版导出到 `D:\Hopes_and_Dream\ExportGame\EchoChase\EchoChase.exe`。Preset 使用嵌入式 PCK，因此交付物是单个 exe；导出后已用 `--headless --quit-after 300` 启动验证。
+
 ## 尚未实现
 
-- 用户灰盒 A、灰盒 B 和任何正式路线。
-- 正式 Phantom Camera 房间边界、位置与 tween 调参。
-- 记录器、压力板、门在正式场景中的谜题和最终摆位。
+- 终点下方两个空房间的谜题、真结局触发条件与玩家 authored 路线。
 - 正式玩法背景、怪物、正式角色稿、正式选曲和完整剧情。菜单、施工玩法与中央 NPC 目前都只是 CC0/初稿占位。
-- Windows 导出。
