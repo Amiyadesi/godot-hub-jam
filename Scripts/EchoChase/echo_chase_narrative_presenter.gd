@@ -52,9 +52,13 @@ const MEMORY_JITTER_BBCODE := "[jit2 scale=2.0 freq=18.0]%s[]"
 @onready var memory_text: RicherTextLabel = %MemoryText
 @onready var ending_layer: CanvasLayer = %EndingLayer
 @onready var ending_flash: ColorRect = %EndingFlash
-@onready var normal_ending_text: Label = %NormalEndingText
-@onready var true_ending_text: Label = %TrueEndingText
+@onready var ending_dim: ColorRect = %EndingDim
+@onready var normal_ending_text: RicherTextLabel = %NormalEndingText
+@onready var true_ending_text: RicherTextLabel = %TrueEndingText
+@onready var normal_ending_title: RicherTextLabel = %NormalEndingTitle
+@onready var normal_ending_hint: RicherTextLabel = %NormalEndingHint
 @onready var normal_group: Node2D = %NormalGroup
+@onready var player_bindings: Node2D = %PlayerBindings
 @onready var normal_exit_particles: GPUParticles2D = %NormalExitParticles
 @onready var identity_pulse_particles: GPUParticles2D = %IdentityPulseParticles
 @onready var loop_player: Sprite2D = %LoopPlayer
@@ -64,6 +68,7 @@ const MEMORY_JITTER_BBCODE := "[jit2 scale=2.0 freq=18.0]%s[]"
 @onready var loop_run_label: Label = %LoopRunLabel
 @onready var loop_player_start: Marker2D = %LoopPlayerStart
 @onready var loop_keeper_start: Marker2D = %LoopKeeperStart
+@onready var loop_keeper_talk_target: Marker2D = %LoopKeeperTalkTarget
 @onready var loop_exit_target: Marker2D = %LoopExitTarget
 @onready var loop_rebirth_target: Marker2D = %LoopRebirthTarget
 @onready var normal_continue_button: Button = %NormalContinueButton
@@ -106,7 +111,10 @@ func _ready() -> void:
 	memory_text.hide()
 	normal_ending_text.hide()
 	true_ending_text.hide()
+	normal_ending_title.hide()
+	normal_ending_hint.hide()
 	ending_flash.hide()
+	_set_alpha(ending_dim, 0.0)
 	normal_continue_button.hide()
 	true_return_button.hide()
 
@@ -144,31 +152,50 @@ func play_memory_sequence(line_keys: Array, time_tag_key: String) -> void:
 	_sequence_active = false
 
 
-# Plays the Keeper's false escape, the Rift's reveal, and the memory-wipe loop.
+# Plays the Keeper's left-to-right escape, the Rift's reveal, and the memory-wipe loop.
 func play_normal_ending() -> void:
 	var was_paused := _pause_world()
 	_reset_normal_tableau()
 	ending_layer.visible = true
 	normal_group.show()
+	player_bindings.show()
+	var binding_tween := _new_cinematic_tween()
+	binding_tween.set_parallel(true)
+	binding_tween.tween_property(player_bindings, "modulate:a", 1.0, 0.45)
+	binding_tween.tween_property(player_bindings, "scale", Vector2(1.08, 1.08), 0.45)
+	await binding_tween.finished
+	var keeper_entry := _new_cinematic_tween()
+	keeper_entry.tween_property(loop_old_keeper, "position", loop_keeper_talk_target.position, 1.1)
+	await keeper_entry.finished
 	await _play_lines(normal_ending_text, NORMAL_KEEPER_LINES, ending_hold_seconds)
 	normal_exit_particles.amount_ratio = 0.25 if _uses_low_flash_mode() else 1.0
 	normal_exit_particles.restart()
 	normal_exit_particles.emitting = true
-	loop_replacement_keeper.scale = Vector2(6.2, 6.2)
-	if not _uses_low_flash_mode():
-		identity_pulse_particles.restart()
-		identity_pulse_particles.emitting = true
 	var exit_tween := _new_cinematic_tween()
 	exit_tween.tween_interval(0.25)
 	exit_tween.tween_property(loop_old_keeper, "position", loop_exit_target.position, 1.2)
 	exit_tween.parallel().tween_property(loop_old_keeper, "modulate:a", 0.0, 1.2)
-	exit_tween.parallel().tween_property(loop_player, "modulate:a", 0.0, 0.8).set_delay(0.3)
-	exit_tween.parallel().tween_property(loop_replacement_keeper, "modulate:a", 1.0, 0.8).set_delay(0.3)
-	exit_tween.parallel().tween_property(loop_replacement_keeper, "scale", Vector2(8.0, 8.0), 0.8).set_delay(0.3)
 	await exit_tween.finished
 	normal_exit_particles.emitting = false
+	loop_replacement_keeper.scale = Vector2(6.2, 6.2)
+	if not _uses_low_flash_mode():
+		identity_pulse_particles.restart()
+		identity_pulse_particles.emitting = true
+	var handoff_tween := _new_cinematic_tween()
+	handoff_tween.set_parallel(true)
+	handoff_tween.tween_property(loop_player, "modulate:a", 0.0, 0.8).set_delay(0.3)
+	handoff_tween.tween_property(loop_replacement_keeper, "modulate:a", 1.0, 0.8)
+	handoff_tween.tween_property(loop_replacement_keeper, "scale", Vector2(8.0, 8.0), 0.8)
+	await handoff_tween.finished
+	var dim_tween := _new_cinematic_tween()
+	dim_tween.set_parallel(true)
+	dim_tween.tween_property(ending_dim, "modulate:a", 0.82, 1.0)
+	dim_tween.tween_property(normal_group, "modulate", Color(0.34, 0.38, 0.42, 1.0), 1.0)
+	await dim_tween.finished
 	await _play_lines(normal_ending_text, NORMAL_RIFT_LINES, ending_hold_seconds)
-	await _play_memory_wash()
+	loop_player.hide()
+	loop_replacement_keeper.hide()
+	player_bindings.hide()
 	loop_reborn_player.show()
 	loop_run_label.show()
 	var rebirth_tween := _new_cinematic_tween()
@@ -176,6 +203,10 @@ func play_normal_ending() -> void:
 	rebirth_tween.tween_property(loop_reborn_player, "modulate:a", 1.0, 0.55)
 	rebirth_tween.tween_property(loop_run_label, "modulate:a", 1.0, 0.55)
 	await rebirth_tween.finished
+	normal_ending_title.bbcode = "[beat]%s[]" % tr("ENDING_NORMAL_TITLE")
+	normal_ending_hint.bbcode = "[sway]%s[]" % tr("ENDING_NORMAL_HINT")
+	normal_ending_title.show()
+	normal_ending_hint.show()
 	normal_continue_button.show()
 	normal_continue_button.grab_focus()
 	await normal_continue_button.pressed
@@ -262,10 +293,10 @@ func play_true_ending() -> void:
 	_restore_world(was_paused)
 
 
-# Serializes translated lines through one centered label with a short fade rhythm.
-func _play_lines(label: Label, line_keys: Array, hold_seconds: float) -> void:
+# Serializes translated lines through one centered RichText2 label with a short fade rhythm.
+func _play_lines(label: RicherTextLabel, line_keys: Array, hold_seconds: float) -> void:
 	for line_key in line_keys:
-		label.text = tr(String(line_key))
+		label.bbcode = "[sway]%s[]" % tr(String(line_key))
 		_set_alpha(label, 0.0)
 		label.show()
 		var tween := _new_cinematic_tween()
@@ -329,14 +360,21 @@ func _restore_world(was_paused: bool) -> void:
 func _reset_normal_tableau() -> void:
 	true_group.hide()
 	normal_group.show()
+	normal_group.modulate = Color.WHITE
 	normal_continue_button.hide()
 	normal_ending_text.hide()
 	true_ending_text.hide()
+	normal_ending_title.hide()
+	normal_ending_hint.hide()
 	ending_flash.hide()
+	_set_alpha(ending_dim, 0.0)
 	loop_player.position = loop_player_start.position
 	loop_replacement_keeper.position = loop_player_start.position
 	loop_old_keeper.position = loop_keeper_start.position
 	loop_reborn_player.position = loop_rebirth_target.position
+	player_bindings.position = loop_player_start.position
+	player_bindings.rotation = 0.0
+	player_bindings.scale = Vector2.ONE
 	loop_replacement_keeper.scale = Vector2(8.0, 8.0)
 	normal_exit_particles.emitting = false
 	identity_pulse_particles.emitting = false
@@ -349,6 +387,7 @@ func _reset_normal_tableau() -> void:
 	loop_player.show()
 	loop_replacement_keeper.show()
 	loop_old_keeper.show()
+	player_bindings.hide()
 	loop_reborn_player.hide()
 	loop_run_label.hide()
 

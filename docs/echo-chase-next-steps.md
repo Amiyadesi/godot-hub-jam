@@ -11,6 +11,16 @@
 - `ProgressionShortcut`、Future 凝固结构、Past/Future 移动拖尾、全局时间尘埃和双结局粒子已接入；`low_flash_mode` 会抑制密集爆发并降低持续粒子密度。
 - Windows 试玩版已导出到 `D:\Hopes_and_Dream\ExportGame\EchoChase\EchoChase.exe`，并通过导出后 headless 启动检查。
 
+## 自己修改这些内容
+
+- **冲刺/跳跃音效**：打开 `Scenes/EchoChase/Prefabs/echo_player.tscn`，修改 `DashAudio` 与 `JumpAudio` 的 `stream`。当前分别是 `player_dash.ogg` 和 `phaseJump2.ogg`；这里只换资源，不改 `Scripts/EchoChase/echo_player.gd`。
+- **对话打字音**：打开 `Dialogue/EchoChase/echo_dialogue_balloon.tscn`，修改 `typing_sound` 和 `sound_interval`。真正播放由同场景继承的 `TypingSoundModule` 完成。
+- **Keeper 对话与 RichText2 特效**：中文改 `Dialogue/EchoChase/present_hub.zh.dialogue`，英文改 `Dialogue/EchoChase/present_hub.en.dialogue`。在台词中使用 `[sway]...[]`、`[sparkle]...[]`、`[jit2]...[]`；两份文件要保持同一分支结构。
+- **黑底红字记忆与开场 `Run/跑`**：布局和字体在 `Scenes/EchoChase/UI/echo_chase_narrative_presenter.tscn` 的 `MemoryText`，当前使用项目已有的 `SmileySans-Oblique`，字号为 `88`。内容和逐句节奏在 `Scripts/EchoChase/echo_chase_narrative_presenter.gd` 的 `MEMORY_*` 调用与 PO key 中调整。
+- **两个终局文本**：它们不是普通 Dialogue Manager 气泡，而是演出用的 RichText2 全屏文本。中文在 `translations/delay_trace.zh_CN.po`，英文在 `translations/delay_trace.en.po`；搜索 `ENDING_NORMAL_` 或 `ENDING_TRUE_` 即可。播放顺序和人物移动在 `Scripts/EchoChase/echo_chase_narrative_presenter.gd`，演出节点和坐标在同名 `.tscn`。
+- **普通结局触发**：玩家进入当前地图的 `World/Finnal/NormalExit` 后，由 `Scripts/EchoChase/echo_chase_story.gd` 检查三条支路是否完成，再进入“玩家束缚 → Keeper 左入说话 → 右侧离开 → 身份交接 → 画面变暗 → 裂隙台词 → 普通结局与爱心提示”。不要把触发器改成新地图或新路线。
+- **系统语言**：`Scripts/Save/Modules/settings_module.gd` 的 `_get_system_language()` 将中文系统 locale 映射为 `zh_CN`，其他系统映射为 `en`；已有存档中的手动语言设置优先于系统检测。
+
 ## P0：先做三次无提示试玩
 
 找三名没看过设计文档的玩家，从新存档开始。测试者不要解释操作或谜底，只记录：

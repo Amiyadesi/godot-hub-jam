@@ -479,7 +479,13 @@ msgid "ENDING_NORMAL_RIFT_5"
 msgstr "Rift: You asked me to take your past and future."
 
 msgid "ENDING_NORMAL_RIFT_6"
-msgstr "Rift: I reflect your wish. Now, forget. Once more."
+msgstr "Rift: They will return to this cycle. I reflect your wish. Now, forget. Once more."
+
+msgid "ENDING_NORMAL_TITLE"
+msgstr "NORMAL ENDING"
+
+msgid "ENDING_NORMAL_HINT"
+msgstr "Collect every heart. There may be another path."
 
 msgid "ENDING_TRUE_ACCEPTANCE_1"
 msgstr "Rift: At last, you have stopped running."

@@ -110,9 +110,9 @@ visible = false
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 220.0
+offset_left = 140.0
 offset_top = 270.0
-offset_right = -220.0
+offset_right = -140.0
 offset_bottom = -270.0
 grow_horizontal = 2
 grow_vertical = 2
@@ -123,8 +123,8 @@ effects = 1
 alignment = 1
 color = Color(0.92, 0.08, 0.12, 1)
 font = "SmileySans-Oblique"
-font_size = 52
-outline_size = 6
+font_size = 88
+outline_size = 8
 markdown_enabled = false
 context_enabled = false
 autostyle_numbers = false
@@ -161,6 +161,17 @@ grow_vertical = 0
 mouse_filter = 2
 color = Color(0.27, 0.48, 0.52, 0.52)
 
+[node name="EndingDim" type="ColorRect" parent="EndingLayer"]
+unique_name_in_owner = true
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+modulate = Color(1, 1, 1, 0)
+color = Color(0, 0, 0, 1)
+
 [node name="EndingRoot" type="Control" parent="EndingLayer"]
 anchors_preset = 15
 anchor_right = 1.0
@@ -195,15 +206,19 @@ process_material = SubResource("Particle_exit_stream")
 
 [node name="LoopPlayerStart" type="Marker2D" parent="EndingLayer/EndingRoot/NormalGroup"]
 unique_name_in_owner = true
-position = Vector2(760, 600)
+position = Vector2(960, 600)
 
 [node name="LoopKeeperStart" type="Marker2D" parent="EndingLayer/EndingRoot/NormalGroup"]
+unique_name_in_owner = true
+position = Vector2(190, 600)
+
+[node name="LoopKeeperTalkTarget" type="Marker2D" parent="EndingLayer/EndingRoot/NormalGroup"]
 unique_name_in_owner = true
 position = Vector2(1160, 600)
 
 [node name="LoopExitTarget" type="Marker2D" parent="EndingLayer/EndingRoot/NormalGroup"]
 unique_name_in_owner = true
-position = Vector2(1510, 600)
+position = Vector2(1730, 600)
 
 [node name="LoopRebirthTarget" type="Marker2D" parent="EndingLayer/EndingRoot/NormalGroup"]
 unique_name_in_owner = true
@@ -211,20 +226,20 @@ position = Vector2(430, 600)
 
 [node name="LoopPlayer" type="Sprite2D" parent="EndingLayer/EndingRoot/NormalGroup"]
 unique_name_in_owner = true
-position = Vector2(760, 600)
+position = Vector2(960, 600)
 scale = Vector2(8, 8)
 texture = SubResource("Atlas_player")
 
 [node name="LoopReplacementKeeper" type="Sprite2D" parent="EndingLayer/EndingRoot/NormalGroup"]
 unique_name_in_owner = true
 modulate = Color(1, 1, 1, 0)
-position = Vector2(760, 600)
+position = Vector2(960, 600)
 scale = Vector2(8, 8)
 texture = SubResource("Atlas_keeper")
 
 [node name="IdentityPulseParticles" type="GPUParticles2D" parent="EndingLayer/EndingRoot/NormalGroup"]
 unique_name_in_owner = true
-position = Vector2(760, 600)
+position = Vector2(960, 600)
 emitting = false
 amount = 64
 texture = ExtResource("8_particle")
@@ -237,7 +252,7 @@ process_material = SubResource("Particle_ending_burst")
 
 [node name="LoopOldKeeper" type="Sprite2D" parent="EndingLayer/EndingRoot/NormalGroup"]
 unique_name_in_owner = true
-position = Vector2(1160, 600)
+position = Vector2(190, 600)
 scale = Vector2(8, 8)
 texture = SubResource("Atlas_keeper")
 
@@ -264,6 +279,22 @@ theme_override_font_sizes/font_size = 42
 text = "Run"
 horizontal_alignment = 1
 vertical_alignment = 1
+
+[node name="PlayerBindings" type="Node2D" parent="EndingLayer/EndingRoot/NormalGroup"]
+unique_name_in_owner = true
+visible = false
+position = Vector2(960, 600)
+
+[node name="Ring" type="Line2D" parent="EndingLayer/EndingRoot/NormalGroup/PlayerBindings"]
+points = PackedVector2Array(-120, -34, -72, -72, 72, -72, 120, -34, 72, 4, -72, 4)
+width = 8.0
+default_color = Color(0.75, 0.12, 0.2, 0.9)
+closed = true
+
+[node name="Cross" type="Line2D" parent="EndingLayer/EndingRoot/NormalGroup/PlayerBindings"]
+points = PackedVector2Array(-106, 42, 106, -42, -106, -42, 106, 42)
+width = 4.0
+default_color = Color(0.96, 0.36, 0.42, 0.72)
 
 [node name="TrueGroup" type="Node2D" parent="EndingLayer/EndingRoot"]
 unique_name_in_owner = true
@@ -481,7 +512,7 @@ text = "RUN"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="NormalEndingText" type="Label" parent="EndingLayer/EndingRoot"]
+[node name="NormalEndingText" type="RichTextLabel" parent="EndingLayer/EndingRoot"]
 unique_name_in_owner = true
 visible = false
 layout_mode = 1
@@ -496,12 +527,24 @@ theme_override_colors/font_color = Color(0.78, 0.94, 1, 1)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_constants/outline_size = 6
 theme_override_font_sizes/font_size = 38
-text = "ENDING_NORMAL_KEEPER_1"
+script = ExtResource("7_richer_text")
+bbcode = "[sway]ENDING_NORMAL_KEEPER_1[]"
+effects = 1
+alignment = 1
+font = "SmileySans-Oblique"
+font_size = 38
+outline_size = 6
+markdown_enabled = false
+context_enabled = false
+autostyle_numbers = false
+autostyle_emojis = false
+override_fitContent = false
+fit_content = false
 horizontal_alignment = 1
 vertical_alignment = 1
 autowrap_mode = 2
 
-[node name="TrueEndingText" type="Label" parent="EndingLayer/EndingRoot"]
+[node name="TrueEndingText" type="RichTextLabel" parent="EndingLayer/EndingRoot"]
 unique_name_in_owner = true
 visible = false
 layout_mode = 1
@@ -516,10 +559,82 @@ theme_override_colors/font_color = Color(1, 0.76, 0.22, 1)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_constants/outline_size = 6
 theme_override_font_sizes/font_size = 38
-text = "ENDING_TRUE_ACCEPTANCE_1"
+script = ExtResource("7_richer_text")
+bbcode = "[jit2 scale=1.0 freq=7.0]ENDING_TRUE_ACCEPTANCE_1[]"
+effects = 1
+alignment = 1
+font = "SmileySans-Oblique"
+font_size = 38
+outline_size = 6
+markdown_enabled = false
+context_enabled = false
+autostyle_numbers = false
+autostyle_emojis = false
+override_fitContent = false
+fit_content = false
 horizontal_alignment = 1
 vertical_alignment = 1
 autowrap_mode = 2
+
+[node name="NormalEndingTitle" type="RichTextLabel" parent="EndingLayer/EndingRoot"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_left = 280.0
+offset_top = 260.0
+offset_right = -280.0
+offset_bottom = 360.0
+grow_horizontal = 2
+theme_override_colors/font_color = Color(0.84, 0.96, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 6
+script = ExtResource("7_richer_text")
+bbcode = "[beat]ENDING_NORMAL_TITLE[]"
+effects = 1
+alignment = 1
+font = "SmileySans-Oblique"
+font_size = 58
+outline_size = 6
+markdown_enabled = false
+context_enabled = false
+autostyle_numbers = false
+autostyle_emojis = false
+override_fitContent = false
+fit_content = false
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="NormalEndingHint" type="RichTextLabel" parent="EndingLayer/EndingRoot"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_left = 300.0
+offset_top = 700.0
+offset_right = -300.0
+offset_bottom = 760.0
+grow_horizontal = 2
+theme_override_colors/font_color = Color(0.58, 0.72, 0.76, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.9)
+theme_override_constants/outline_size = 3
+script = ExtResource("7_richer_text")
+bbcode = "[sway]ENDING_NORMAL_HINT[]"
+effects = 1
+alignment = 1
+font = "SmileySans-Oblique"
+font_size = 22
+outline_size = 3
+markdown_enabled = false
+context_enabled = false
+autostyle_numbers = false
+autostyle_emojis = false
+override_fitContent = false
+fit_content = false
+horizontal_alignment = 1
+vertical_alignment = 1
 
 [node name="NormalContinueButton" type="Button" parent="EndingLayer/EndingRoot"]
 unique_name_in_owner = true

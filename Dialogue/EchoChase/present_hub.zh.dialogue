@@ -1,7 +1,7 @@
 ~ start
-神秘人: 这里只有现在，所以你不必奔逃了
-神秘人: 可能性存在时，金色的结构会凝固
-神秘人: 撞碎可能性，冲刺会回到你身上
+神秘人: [sway]这里只有现在[]，所以你不必奔逃了
+神秘人: 可能性存在时，[sparkle]金色的结构[]会凝固
+神秘人: 撞碎可能性，[jit2 scale=1.0 freq=8.0]冲刺[]会回到你身上
 神秘人: 如果你有什么想知道的，可以来问我
 => END
 
@@ -34,10 +34,10 @@
 	=> return
 - 那些爱心是什么？ [if LevelModule.instance.get_collected_item_count() >= 1 and not NarrativeSlotModule.instance.has_flag("askheart")]
 	神秘人: ...不知道，毕竟这个地方如此诡异
-	神秘人: 可你带回它以后，我的脑子就开始痛
+	神秘人: 可你带回它以后，我的[jit2 scale=1.1 freq=10.0]脑子开始痛[]
 	神秘人: 那些东西不属于试炼。别再收集了
 	神秘人: [speed=3]你不应该继续留在这里[next=auto]
-	神秘人: 快走吧。你真想一直待着吗？
+	神秘人: [sway]快走吧。[]你真想一直待着吗？
 	do mark_dialogue_seen("askheart")
 	=> return
 - 倒计时结束了会怎么样？

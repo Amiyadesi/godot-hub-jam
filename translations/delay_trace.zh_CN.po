@@ -316,7 +316,13 @@ msgid "ENDING_NORMAL_RIFT_5"
 msgstr "裂隙：你请求我拿走过去与未来。"
 
 msgid "ENDING_NORMAL_RIFT_6"
-msgstr "裂隙：我照见你的愿望。现在，忘记吧。再一次。"
+msgstr "裂隙：他们终将轮回。我照见你的愿望。现在，忘记吧。再一次。"
+
+msgid "ENDING_NORMAL_TITLE"
+msgstr "普通结局"
+
+msgid "ENDING_NORMAL_HINT"
+msgstr "收集所有爱心，也许还能找到另一条路。"
 
 msgid "ENDING_TRUE_ACCEPTANCE_1"
 msgstr "裂隙：你终于停下来了。"

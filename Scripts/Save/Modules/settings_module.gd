@@ -47,7 +47,7 @@ var _save_request_serial: int = 0
 
 # Registers the latest settings module instance and hooks global-load application.
 func _init() -> void:
-	_values = DEFAULTS.duplicate(true)
+	_values = _default_values()
 	instance = self
 	var save_system := _get_save_system()
 	if save_system != null and save_system.has_signal("global_loaded"):
@@ -71,7 +71,7 @@ func collect_data() -> Dictionary:
 
 # Applies persisted settings, migrates legacy keys, and normalizes values.
 func apply_data(data: Dictionary) -> void:
-	_values = DEFAULTS.duplicate(true)
+	_values = _default_values()
 	for key in data:
 		_values[key] = data[key]
 	_migrate_legacy_settings(data)
@@ -79,11 +79,11 @@ func apply_data(data: Dictionary) -> void:
 
 # Provides default settings for first-run global saves.
 func get_default_data() -> Dictionary:
-	return DEFAULTS.duplicate(true)
+	return _default_values()
 
 # Resets settings to defaults and applies them to the running game.
 func on_new_game() -> void:
-	_values = DEFAULTS.duplicate(true)
+	_values = _default_values()
 	apply_all()
 
 
@@ -192,7 +192,7 @@ func _normalize_values() -> void:
 	_values["timezone_mode"] = "custom" if str(_values.get("timezone_mode", DEFAULTS["timezone_mode"])) == "custom" else "system"
 	_values["custom_time_hour"] = clampi(int(_values.get("custom_time_hour", DEFAULTS["custom_time_hour"])), 0, 23)
 	_values["custom_time_minute"] = clampi(int(_values.get("custom_time_minute", DEFAULTS["custom_time_minute"])), 0, 59)
-	_values["language"] = _normalize_language(str(_values.get("language", DEFAULTS["language"])))
+	_values["language"] = _normalize_language(str(_values.get("language", _get_system_language())))
 
 
 # Converts unknown display mode strings back to a supported mode.
@@ -206,7 +206,19 @@ func _normalize_display_mode(value: String) -> String:
 
 # 只保留项目实际提供的两种语言，避免旧存档写入无效 locale。
 func _normalize_language(value: String) -> String:
-	return "en" if value == "en" else "zh_CN"
+	return value if value in ["en", "zh_CN"] else _get_system_language()
+
+
+# Builds first-run defaults without overwriting an explicitly saved language.
+func _default_values() -> Dictionary:
+	var defaults := DEFAULTS.duplicate(true)
+	defaults["language"] = _get_system_language()
+	return defaults
+
+
+# Selects Chinese for Chinese system locales and English for all others.
+func _get_system_language() -> String:
+	return "zh_CN" if OS.get_locale_language().to_lower().begins_with("zh") else "en"
 
 
 # Applies the active locale to Godot's translation server.

@@ -3,13 +3,13 @@
 [ext_resource type="Script" uid="uid://c0hlsn3j5i3ev" path="res://Scripts/EchoChase/echo_player.gd" id="1_script"]
 [ext_resource type="SpriteFrames" uid="uid://c5fwtfmpwe8fq" path="res://assets/echo_chase/character/echo_character_frames.tres" id="2_frames"]
 [ext_resource type="SpriteFrames" uid="uid://da37aey76yc08" path="res://assets/echo_chase/character/echo_character_outline_frames.tres" id="3_outline_frames"]
-[ext_resource type="AudioStream" uid="uid://c0rg7q0il23jc" path="res://assets/echo_chase/audio/phaseJump2.ogg" id="4_dash_audio"]
+[ext_resource type="AudioStream" path="res://assets/phase_lag/audio/sfx/player_dash.ogg" id="4_dash_audio"]
 [ext_resource type="AudioStream" uid="uid://byjiljbkdsj4g" path="res://assets/echo_chase/audio/impactGeneric_light_001.ogg" id="5_land_audio"]
 [ext_resource type="Shader" uid="uid://ccnr3f2ov4cnc" path="res://assets/echo_chase/vfx/temporal_outline.gdshader" id="6_outline_shader"]
 [ext_resource type="PackedScene" path="res://Scenes/EchoChase/Prefabs/echo_dash_vfx.tscn" id="7_dash_vfx"]
 [ext_resource type="Texture2D" path="res://assets/echo_chase/vfx/temporal_particle.svg" id="8_marker_particle"]
 [ext_resource type="AudioStream" path="res://assets/echo_chase/audio/powerUp5.ogg" id="9_refill_audio"]
-[ext_resource type="AudioStream" path="res://assets/phase_lag/audio/sfx/phase_send.ogg" id="10_jump_audio"]
+[ext_resource type="AudioStream" path="res://assets/echo_chase/audio/phaseJump2.ogg" id="10_jump_audio"]
 
 [sub_resource type="RectangleShape2D" id="Shape_player"]
 size = Vector2(10, 15)

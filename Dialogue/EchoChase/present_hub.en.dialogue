@@ -1,7 +1,7 @@
 ~ start
-Keeper: Only the present exists here. You no longer need to run.
-Keeper: While a possibility exists, golden structures become solid.
-Keeper: Shatter a possibility, and your dash returns to you.
+Keeper: [sway]Only the present exists here.[] You no longer need to run.
+Keeper: While a possibility exists, [sparkle]golden structures[] become solid.
+Keeper: Shatter a possibility, and your [jit2 scale=1.0 freq=8.0]dash[] returns to you.
 Keeper: Ask me if there is anything you want to know.
 => END
 
@@ -34,10 +34,10 @@ Keeper: ...What do you want to know?
 	=> return
 - What are those hearts? [if LevelModule.instance.get_collected_item_count() >= 1 and not NarrativeSlotModule.instance.has_flag("askheart")]
 	Keeper: ...I don't know. This place is strange enough.
-	Keeper: But since you brought one back, my head has started to ache.
+	Keeper: But since you brought one back, my [jit2 scale=1.1 freq=10.0]head has started to ache[].
 	Keeper: They are not part of the trial. Stop collecting them.
 	Keeper: [speed=3]You should not remain here[next=auto]
-	Keeper: Leave. Do you truly want to stay?
+	Keeper: [sway]Leave.[] Do you truly want to stay?
 	do mark_dialogue_seen("askheart")
 	=> return
 - What happens when the countdown ends?

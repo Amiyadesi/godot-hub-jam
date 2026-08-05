@@ -1,11 +1,15 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=3 format=3]
 
 [ext_resource type="PackedScene" path="res://Dialogue/Examples/modular_balloon.tscn" id="1_balloon"]
+[ext_resource type="AudioStream" path="res://assets/phase_lag/audio/sfx/dialogue_blip_1.ogg" id="2_typing_sound"]
 
 [node name="EchoDialogueBalloon" instance=ExtResource("1_balloon")]
 process_mode = 3
 history_enabled = false
 auto_save_progress = false
+typing_sound_enabled = true
+sound_interval = 2
+typing_sound = ExtResource("2_typing_sound")
 
 [node name="Illustrations" parent="." index="2"]
 visible = false
