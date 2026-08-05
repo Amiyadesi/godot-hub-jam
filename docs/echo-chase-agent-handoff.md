@@ -57,6 +57,7 @@ EchoChaseStart
 - 菜单音乐为 Frenchyboy 的 CC0 `Mysterious2.wav` 转码版本：`assets/echo_chase/audio/music/mysterious_futuristic_loop.ogg`；来源与 SHA256 见 `docs/asset-attributions.md`。
 - 施工玩法音乐为 SRG774 的 CC0 `sector.ogg`，进入玩法时由 `GameAudio` 从菜单曲 crossfade；支路装置激活使用同包 `victory.ogg`。
 - 首次进入中央房允许 Past 进入；NPC 复用 `ModularBalloon` 变体，范围内显示 `E`，或触碰 `current_room` 时自动开始同一段对话。首次剧情结束触发覆盖整房的环状 `TemporalDepartureVfx` 并清线；之后回访才在入房时清除时态实体、让延迟台即时生效，并改用短 `return` 对话。
+- Keeper 使用 `delay_trace_mystery_sprite.png` 的 `idle/run` 两行序列；默认朝右，在 `PresentHub` 内持续面向玩家，离房后恢复朝右。普通结局进场/离场与真结局汇聚移动播放 `run`，停下说话播放 `idle`。
 - Past/Future prefab 的 `OutlineVisual`、`PixelBurst`、`VfxAnimationPlayer`、`DepartureVfx` 是 authored 合同；`DepartureVfx` 是 `top_level` 旧位置快照，主体移动或槽位复用都不能带走它。
 - 主菜单是严格三等分固定剪影。Start 使用现在体青白径向转场，Continue 使用过去体洋红径向转场；玩法场景只负责同色淡出，不再包含三人入场 Overlay。
 
@@ -83,7 +84,7 @@ run_countdown_expired
 
 终点 `World/Finnal/StaticBody2D` 使用 `MemoryFloorGate`。它只统计四个稳定记忆 ID，按数量从左到右点亮 A-D；四枚齐全后禁用地块碰撞，播放一次红色闪光并持续透明闪烁，读档直接恢复。地块下方两个房间保持用户当前空白，不包含 agent 生成谜题或路线。
 
-Keeper 只在玩家主动交互时提供条件选项：爱心数 `>= 1` 且无 `askheart`、倒计时已归零且无 `asktime`、无 `askname`。问完写入 `NarrativeSlotModule` 并立即保存。NarrativePresenter 不再拥有自动 Keeper 气泡；旧 `true_ending_route` 与 `KnowledgeLock` 已删除，金色全屏真结局演出仍保留供后续 authored 路线调用。
+Keeper 只在玩家主动交互时提供条件选项：爱心数 `>= 1` 且无 `askheart`、倒计时已归零且无 `asktime`、无 `askname`。问完写入 `NarrativeSlotModule` 并立即保存。Keeper 对话固定使用启动时选中的 `present_hub.zh/en.dialogue`；NarrativePresenter 同样固定使用 `endings.zh/en.dialogue`，不经过 PO 二次翻译。NarrativePresenter 不再拥有自动 Keeper 气泡；旧 `true_ending_route` 与 `KnowledgeLock` 已删除，金色全屏真结局演出仍保留供后续 authored 路线调用。
 
 未来录像可在第一帧提交；短路径保持末帧补足到 `1s`。录制中接触过去体会提交/回传，不会触发失败。`TemporalRecordingHUD` 监听时间线与 `KeybindingModule.bindings_changed`，禁止把按键文本硬编码回 `L`。
 
@@ -107,16 +108,16 @@ Keeper 只在玩家主动交互时提供条件选项：爱心数 `>= 1` 且无 `
 $godot = (Get-Command godot).Source
 $env:APPDATA = Join-Path $env:TEMP 'echo-chase-test-appdata'
 & $godot --headless --editor --path . --quit
-& $godot --headless --path . res://Tests/EchoChase/run_tests.tscn
-& $godot --headless --path . res://Tests/echo_chase_architecture_smoke.tscn
-& $godot --headless --path . --quit-after 300 res://Scenes/EchoChase/echo_chase_start.tscn
+& $godot --headless --path . --scene res://Tests/EchoChase/run_tests.tscn
+& $godot --headless --path . --scene res://Tests/echo_chase_architecture_smoke.tscn
+& $godot --headless --path . --scene res://Scenes/EchoChase/echo_chase_start.tscn --quit-after 5
 ```
 
 自动检查覆盖路径插值、回传断点、永久进度、倒计时 round-trip、四压板门、终点爱心门、现在房延迟切换和连续冲刺残影回归。不要添加把节点层级、Prefab 数量、颜色、动画时长、房间坐标或 Inspector 参数锁死的测试；这些内容以作者当前的场景与 Inspector 调整为准。
 
 人工只检查 `1920x1080` 与同比例 `1280x720`。不做超宽屏批量截图。
 
-当前 Windows 试玩版导出到 `D:\Hopes_and_Dream\ExportGame\EchoChase\EchoChase.exe`。Preset 使用嵌入式 PCK，因此交付物是单个 exe；导出后已用 `--headless --quit-after 300` 启动验证。
+当前 Windows 试玩版导出到 `D:\Hopes_and_Dream\ExportGame\EchoChase\EchoChase.exe`。Preset 使用嵌入式 PCK，因此交付物是单个 exe；导出后已用 `--headless --quit-after 5` 启动验证。
 
 ## 尚未实现
 

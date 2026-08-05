@@ -1,45 +1,12 @@
 class_name EchoChaseNarrativePresenter
 extends Node
-## Owns red-text memories, Keeper balloons, and the two ending tableaux.
+## Owns red-text memories and the two localized ending tableaux.
 
-const NORMAL_KEEPER_LINES := [
-	"ENDING_NORMAL_KEEPER_1",
-	"ENDING_NORMAL_KEEPER_2",
-	"ENDING_NORMAL_KEEPER_3",
-]
-const NORMAL_RIFT_LINES := [
-	"ENDING_NORMAL_RIFT_1",
-	"ENDING_NORMAL_RIFT_2",
-	"ENDING_NORMAL_RIFT_3",
-	"ENDING_NORMAL_RIFT_4",
-	"ENDING_NORMAL_RIFT_5",
-	"ENDING_NORMAL_RIFT_6",
-]
-const TRUE_ACCEPTANCE_LINES := [
-	"ENDING_TRUE_ACCEPTANCE_1",
-	"ENDING_TRUE_ACCEPTANCE_2",
-	"ENDING_TRUE_ACCEPTANCE_3",
-	"ENDING_TRUE_ACCEPTANCE_4",
-	"ENDING_TRUE_ACCEPTANCE_5",
-	"ENDING_TRUE_ACCEPTANCE_6",
-	"ENDING_TRUE_ACCEPTANCE_7",
-]
-const TRUE_TRACE_LINES := [
-	"ENDING_TRUE_TRACE_1",
-	"ENDING_TRUE_TRACE_2",
-]
-const TRUE_REUNION_LINES := [
-	"ENDING_TRUE_REUNION_1",
-	"ENDING_TRUE_REUNION_2",
-	"ENDING_TRUE_REUNION_3",
-	"ENDING_TRUE_REUNION_4",
-	"ENDING_TRUE_REUNION_5",
-]
-const TRUE_EPILOGUE_LINES := [
-	"ENDING_TRUE_EPILOGUE_1",
-	"ENDING_TRUE_EPILOGUE_2",
-]
 const MEMORY_JITTER_BBCODE := "[jit2 scale=2.0 freq=18.0]%s[]"
+
+@export_group("Dialogue")
+@export var ending_dialogue_resource_zh: DialogueResource
+@export var ending_dialogue_resource_en: DialogueResource
 
 @export_group("Text Timing")
 @export_range(0.05, 1.0, 0.05) var text_fade_seconds := 0.22
@@ -64,6 +31,7 @@ const MEMORY_JITTER_BBCODE := "[jit2 scale=2.0 freq=18.0]%s[]"
 @onready var loop_player: Sprite2D = %LoopPlayer
 @onready var loop_replacement_keeper: Sprite2D = %LoopReplacementKeeper
 @onready var loop_old_keeper: Sprite2D = %LoopOldKeeper
+@onready var loop_keeper_animation_player: AnimationPlayer = %LoopKeeperAnimationPlayer
 @onready var loop_reborn_player: Sprite2D = %LoopRebornPlayer
 @onready var loop_run_label: Label = %LoopRunLabel
 @onready var loop_player_start: Marker2D = %LoopPlayerStart
@@ -77,6 +45,7 @@ const MEMORY_JITTER_BBCODE := "[jit2 scale=2.0 freq=18.0]%s[]"
 @onready var present_figure: Sprite2D = %PresentFigure
 @onready var future_figure: Sprite2D = %FutureFigure
 @onready var keeper_figure: Sprite2D = %KeeperFigure
+@onready var true_keeper_animation_player: AnimationPlayer = %TrueKeeperAnimationPlayer
 @onready var past_merge_trail: GPUParticles2D = %PastMergeTrail
 @onready var present_merge_trail: GPUParticles2D = %PresentMergeTrail
 @onready var future_merge_trail: GPUParticles2D = %FutureMergeTrail
@@ -102,10 +71,19 @@ const MEMORY_JITTER_BBCODE := "[jit2 scale=2.0 freq=18.0]%s[]"
 @onready var true_return_button: Button = %TrueReturnButton
 
 var _sequence_active := false
+var _active_ending_dialogue_resource: DialogueResource
+var _ending_uses_chinese := false
 
 
 # Hides all authored story surfaces until a sequence explicitly owns the screen.
 func _ready() -> void:
+	if ending_dialogue_resource_zh == null or ending_dialogue_resource_en == null:
+		push_error("EchoChaseNarrativePresenter requires zh and en ending dialogue resources")
+		return
+	_ending_uses_chinese = TranslationServer.get_locale().begins_with("zh")
+	_active_ending_dialogue_resource = (
+		ending_dialogue_resource_zh if _ending_uses_chinese else ending_dialogue_resource_en
+	)
 	memory_layer.visible = false
 	ending_layer.visible = false
 	memory_text.hide()
@@ -154,11 +132,20 @@ func play_memory_sequence(line_keys: Array, time_tag_key: String) -> void:
 
 # Plays the Keeper's left-to-right escape, the Rift's reveal, and the memory-wipe loop.
 func play_normal_ending() -> void:
+	var keeper_lines := await _read_ending_lines(&"normal_keeper")
+	var rift_lines := await _read_ending_lines(&"normal_rift")
+	var ending_title := await _read_ending_text(&"normal_title")
+	var ending_hint := await _read_ending_text(&"normal_hint")
+	var run_text := await _read_ending_text(&"normal_run")
+	var continue_text := await _read_ending_text(&"normal_continue")
 	var was_paused := _pause_world()
 	_reset_normal_tableau()
+	loop_run_label.text = run_text
+	normal_continue_button.text = continue_text
 	ending_layer.visible = true
 	normal_group.show()
 	player_bindings.show()
+	loop_keeper_animation_player.play(&"run")
 	var binding_tween := _new_cinematic_tween()
 	binding_tween.set_parallel(true)
 	binding_tween.tween_property(player_bindings, "modulate:a", 1.0, 0.45)
@@ -167,10 +154,12 @@ func play_normal_ending() -> void:
 	var keeper_entry := _new_cinematic_tween()
 	keeper_entry.tween_property(loop_old_keeper, "position", loop_keeper_talk_target.position, 1.1)
 	await keeper_entry.finished
-	await _play_lines(normal_ending_text, NORMAL_KEEPER_LINES, ending_hold_seconds)
+	loop_keeper_animation_player.play(&"idle")
+	await _play_lines(normal_ending_text, keeper_lines, ending_hold_seconds)
 	normal_exit_particles.amount_ratio = 0.25 if _uses_low_flash_mode() else 1.0
 	normal_exit_particles.restart()
 	normal_exit_particles.emitting = true
+	loop_keeper_animation_player.play(&"run")
 	var exit_tween := _new_cinematic_tween()
 	exit_tween.tween_interval(0.25)
 	exit_tween.tween_property(loop_old_keeper, "position", loop_exit_target.position, 1.2)
@@ -192,7 +181,7 @@ func play_normal_ending() -> void:
 	dim_tween.tween_property(ending_dim, "modulate:a", 0.82, 1.0)
 	dim_tween.tween_property(normal_group, "modulate", Color(0.34, 0.38, 0.42, 1.0), 1.0)
 	await dim_tween.finished
-	await _play_lines(normal_ending_text, NORMAL_RIFT_LINES, ending_hold_seconds)
+	await _play_lines(normal_ending_text, rift_lines, ending_hold_seconds)
 	loop_player.hide()
 	loop_replacement_keeper.hide()
 	player_bindings.hide()
@@ -203,8 +192,8 @@ func play_normal_ending() -> void:
 	rebirth_tween.tween_property(loop_reborn_player, "modulate:a", 1.0, 0.55)
 	rebirth_tween.tween_property(loop_run_label, "modulate:a", 1.0, 0.55)
 	await rebirth_tween.finished
-	normal_ending_title.bbcode = "[beat]%s[]" % tr("ENDING_NORMAL_TITLE")
-	normal_ending_hint.bbcode = "[sway]%s[]" % tr("ENDING_NORMAL_HINT")
+	normal_ending_title.bbcode = ending_title
+	normal_ending_hint.bbcode = ending_hint
 	normal_ending_title.show()
 	normal_ending_hint.show()
 	normal_continue_button.show()
@@ -217,10 +206,19 @@ func play_normal_ending() -> void:
 
 # Plays acceptance, the backward Future Trace, reunion, and the third-path escape.
 func play_true_ending() -> void:
+	var acceptance_lines := await _read_ending_lines(&"true_acceptance")
+	var trace_lines := await _read_ending_lines(&"true_trace")
+	var reunion_lines := await _read_ending_lines(&"true_reunion")
+	var epilogue_lines := await _read_ending_lines(&"true_epilogue")
+	var run_text := await _read_ending_text(&"true_run")
+	var return_text := await _read_ending_text(&"true_return")
 	var was_paused := _pause_world()
 	_reset_true_tableau()
+	true_run_label.text = run_text
+	true_return_button.text = return_text
 	ending_layer.visible = true
 	true_group.show()
+	true_keeper_animation_player.play(&"run")
 	var merge_figures: Array[Sprite2D] = [past_figure, present_figure, future_figure, keeper_figure]
 	var merge_trails: Array[GPUParticles2D] = [
 		past_merge_trail,
@@ -240,6 +238,7 @@ func play_true_ending() -> void:
 		merge_tween.tween_property(figure, "modulate:a", 0.0, 1.0)
 		merge_tween.tween_property(trail, "position", merge_target.position, 1.0)
 	await merge_tween.finished
+	true_keeper_animation_player.stop()
 	for trail in merge_trails:
 		trail.emitting = false
 	if not _uses_low_flash_mode():
@@ -250,7 +249,7 @@ func play_true_ending() -> void:
 	var merged_tween := _new_cinematic_tween()
 	merged_tween.tween_property(merged_figure, "modulate:a", 1.0, 0.35)
 	await merged_tween.finished
-	await _play_lines(true_ending_text, TRUE_ACCEPTANCE_LINES, ending_hold_seconds)
+	await _play_lines(true_ending_text, acceptance_lines, ending_hold_seconds)
 	future_trace.show()
 	true_run_label.show()
 	if not _uses_low_flash_mode():
@@ -261,11 +260,11 @@ func play_true_ending() -> void:
 	trace_tween.tween_property(future_trace, "scale:x", 1.0, 1.0)
 	trace_tween.tween_property(true_run_label, "modulate:a", 1.0, 0.45)
 	await trace_tween.finished
-	await _play_lines(true_ending_text, TRUE_TRACE_LINES, ending_hold_seconds)
+	await _play_lines(true_ending_text, trace_lines, ending_hold_seconds)
 	merged_figure.hide()
 	rewritten_hero.show()
 	lia_figure.show()
-	await _play_lines(true_ending_text, TRUE_REUNION_LINES, ending_hold_seconds)
+	await _play_lines(true_ending_text, reunion_lines, ending_hold_seconds)
 	third_path.show()
 	third_path_particles.amount_ratio = 0.25 if _uses_low_flash_mode() else 1.0
 	third_path_particles.restart()
@@ -284,7 +283,7 @@ func play_true_ending() -> void:
 	escape_tween.tween_property(rewritten_hero, "modulate:a", 0.0, 1.4)
 	escape_tween.tween_property(lia_figure, "modulate:a", 0.0, 1.4)
 	await escape_tween.finished
-	await _play_lines(true_ending_text, TRUE_EPILOGUE_LINES, ending_hold_seconds)
+	await _play_lines(true_ending_text, epilogue_lines, ending_hold_seconds)
 	true_return_button.show()
 	true_return_button.grab_focus()
 	await true_return_button.pressed
@@ -293,10 +292,10 @@ func play_true_ending() -> void:
 	_restore_world(was_paused)
 
 
-# Serializes translated lines through one centered RichText2 label with a short fade rhythm.
-func _play_lines(label: RicherTextLabel, line_keys: Array, hold_seconds: float) -> void:
-	for line_key in line_keys:
-		label.bbcode = "[sway]%s[]" % tr(String(line_key))
+# Serializes authored dialogue-resource lines through one centered RichText2 label.
+func _play_lines(label: RicherTextLabel, lines: Array[String], hold_seconds: float) -> void:
+	for line_text in lines:
+		label.bbcode = line_text
 		_set_alpha(label, 0.0)
 		label.show()
 		var tween := _new_cinematic_tween()
@@ -305,6 +304,47 @@ func _play_lines(label: RicherTextLabel, line_keys: Array, hold_seconds: float) 
 		tween.tween_property(label, "modulate:a", 0.0, text_fade_seconds)
 		await tween.finished
 	label.hide()
+
+
+# Reads one ending title sequentially from the language resource chosen at startup.
+func _read_ending_lines(title: StringName, include_character := true) -> Array[String]:
+	var lines: Array[String] = []
+	if _active_ending_dialogue_resource == null:
+		push_error("EchoChaseNarrativePresenter has no active ending dialogue resource")
+		return lines
+	var line: DialogueLine = await _active_ending_dialogue_resource.get_next_dialogue_line(
+		String(title),
+		[],
+		DMConstants.MutationBehaviour.Skip
+	)
+	while line != null:
+		lines.append(_format_ending_line(line, include_character))
+		if line.next_id in [DMConstants.ID_NULL, DMConstants.ID_END, DMConstants.ID_END_CONVERSATION]:
+			break
+		line = await _active_ending_dialogue_resource.get_next_dialogue_line(
+			line.next_id,
+			[],
+			DMConstants.MutationBehaviour.Skip
+		)
+	if lines.is_empty():
+		push_error("EchoChaseNarrativePresenter found no lines for ending title '%s'" % title)
+	return lines
+
+
+# Reads one UI string from a single-line ending title without a speaker prefix.
+func _read_ending_text(title: StringName) -> String:
+	var lines := await _read_ending_lines(title, false)
+	if lines.size() != 1:
+		push_error("EchoChaseNarrativePresenter expected one line for ending title '%s'" % title)
+		return ""
+	return lines[0]
+
+
+# Keeps speaker names in cinematic dialogue while matching the active language punctuation.
+func _format_ending_line(line: DialogueLine, include_character: bool) -> String:
+	if not include_character or line.character.is_empty():
+		return line.text
+	return "%s%s%s" % [line.character, "：" if _ending_uses_chinese else ": ", line.text]
 
 
 # Serializes translated memory text through RichText2's authored jitter effect.
@@ -371,11 +411,13 @@ func _reset_normal_tableau() -> void:
 	loop_player.position = loop_player_start.position
 	loop_replacement_keeper.position = loop_player_start.position
 	loop_old_keeper.position = loop_keeper_start.position
+	loop_old_keeper.flip_h = false
 	loop_reborn_player.position = loop_rebirth_target.position
 	player_bindings.position = loop_player_start.position
 	player_bindings.rotation = 0.0
 	player_bindings.scale = Vector2.ONE
 	loop_replacement_keeper.scale = Vector2(8.0, 8.0)
+	loop_keeper_animation_player.play(&"idle")
 	normal_exit_particles.emitting = false
 	identity_pulse_particles.emitting = false
 	_set_alpha(loop_player, 1.0)
@@ -383,7 +425,6 @@ func _reset_normal_tableau() -> void:
 	_set_alpha(loop_old_keeper, 1.0)
 	_set_alpha(loop_reborn_player, 0.0)
 	_set_alpha(loop_run_label, 0.0)
-	loop_run_label.text = tr("STORY_RUN")
 	loop_player.show()
 	loop_replacement_keeper.show()
 	loop_old_keeper.show()
@@ -404,6 +445,7 @@ func _reset_true_tableau() -> void:
 	present_figure.position = present_start.position
 	future_figure.position = future_start.position
 	keeper_figure.position = keeper_start.position
+	keeper_figure.flip_h = true
 	merged_figure.position = merge_target.position
 	rewritten_hero.position = rewritten_hero_start.position
 	lia_figure.position = lia_start.position
@@ -418,7 +460,6 @@ func _reset_true_tableau() -> void:
 	_set_alpha(rewritten_hero, 1.0)
 	_set_alpha(lia_figure, 1.0)
 	_set_alpha(true_run_label, 0.0)
-	true_run_label.text = tr("STORY_RUN")
 	merged_figure.hide()
 	rewritten_hero.hide()
 	lia_figure.hide()
@@ -434,6 +475,7 @@ func _reset_true_tableau() -> void:
 	_set_alpha(third_path, 0.0)
 	third_path.hide()
 	true_run_label.hide()
+	true_keeper_animation_player.play(&"idle")
 
 
 # Creates one pause-safe tween bound to the authored presenter.

@@ -113,11 +113,11 @@ Future 与屏障共用琥珀金色。Future 自己的出现/消散音作为这�
 
 ### NPC 与中央现在房
 
-普通 NPC 使用 `dialogue_npc.tscn`，赋值 `dialogue_resource_zh`、`dialogue_resource_en` 和可选 `dialogue_title`。玩家进入范围看到 `E`，按下后按当前 locale 复用 `Dialogue/EchoChase/echo_dialogue_balloon.tscn`；该变体保留 Flow、Animation、TypingSound、CharacterUI 和 Responses，禁用 History、SaveModule 与 Illustration。对话期间 `SceneTree.paused = true`，结束后恢复原状态。
+普通 NPC 使用 `dialogue_npc.tscn`，赋值 `dialogue_resource_zh`、`dialogue_resource_en` 和可选 `dialogue_title`。节点在 `_ready()` 按当前 locale 选择一次资源并整局固定使用；EchoChase 启动时关闭 Dialogue Manager 的 PO 二次翻译。玩家进入范围看到 `E`，按下后复用 `Dialogue/EchoChase/echo_dialogue_balloon.tscn`；该变体保留 Flow、Animation、TypingSound、CharacterUI 和 Responses，禁用 History、SaveModule 与 Illustration。对话期间 `SceneTree.paused = true`，结束后恢复原状态。
 
 Keeper 的 `askname`、`askheart`、`asktime` 都是玩家主动选择后才写入 `NarrativeSlotModule`。爱心选项要求收集数 `>= 1`，倒计时坦白要求 `run_countdown_expired`；每次写旗标后立即保存。NarrativePresenter 不再自动排队 Keeper 气泡。
 
-中央房直接在连续主场景中 authored 一个 `PresentHub (Area2D)`，不再实例化整房 prefab。其固定子节点为 `RoomShape`、`CurrentRoomCheckpoint`、`DialogueNpc` 和 `RoomDepartureVfx`；作者可在同一场景里调整边界、NPC 与出口，不需要切换房间 scene。
+中央房直接在连续主场景中 authored 一个 `PresentHub (Area2D)`，不再实例化整房 prefab。其固定子节点为 `RoomShape`、`CurrentRoomCheckpoint`、`DialogueNpc` 和 `RoomDepartureVfx`；作者可在同一场景里调整边界、NPC 与出口，不需要切换房间 scene。玩家位于该 Area2D 内时，`PresentRoom` 把玩家设为 NPC 朝向目标；离开后解除目标并恢复默认朝右。
 
 首次进入时不清线，Past 可以跟着玩家进入；玩家在范围内按 `E`，或在尚未对话时触碰 `checkpoint_id = current_room`，两条路径都会启动同一段 NPC 对话。对话结束后写入 `present_hub_unlocked`，清除时态实体，并在 Hub 原点播放覆盖 `480×270` 的 `TemporalDepartureVfx`，使用与开场一致的环状冲击波素材。之后回访才在进入时调用 `EchoTimeline.enter_present_room()`；房内不推进时间线、不记录路径，延迟台即时生效。离开任意出口调用 `leave_present_room()`，从玩家当前位置重建时间线。`current_room` 仍是玩家触碰才激活的普通 checkpoint。
 
@@ -158,7 +158,7 @@ EchoTimeline.reset_timeline(saved_past_delay_seconds, saved_delay_switch_id)
 - `MemoryShardA/B/C/D` 使用 `TemporalCollectible`；终点 `MemoryFloorGate` 按四枚数量点亮并打开可坠落地块。
 - 一个 `TemporalRecordingHUD`：玩家金色轮廓、屏幕金边、无数字进度条和实时回传键。
 - 一个 `EchoChaseOnboarding`：新游戏的黑屏红字 `跑/RUN` 结束后，玩家接近 `World/BeforeHub/FloatText` 时读取当前跳跃和方向冲刺绑定，用世界内手写飘字显示一次；Continue 不重复播放。
-- 一个 `EchoChaseNarrativePresenter`：开场与记忆共用全黑红字、倾斜字体和 RichText2 抖动序列；普通结局与真结局分别使用青白、金色文本和 authored tableau。Keeper 对话只由 `DialogueNpc` 主动交互触发。
+- 一个 `EchoChaseNarrativePresenter`：开场与记忆共用全黑红字、倾斜字体和 RichText2 抖动序列；普通结局与真结局从 `endings.zh.dialogue` / `endings.en.dialogue` 读取文本，分别使用青白、金色 authored tableau。Keeper 行走播放 `run`，停下说话播放 `idle`；Keeper 对话只由 `DialogueNpc` 主动交互触发。
 - 终点下方两个房间保持空白；旧 `true_ending_route` 与 `KnowledgeLock` 已删除，金色全屏演出仍保留。
 - 两套 authored 入场淡出资源：新游戏使用青白，Continue 使用洋红；淡出期间冻结 World，不再摆三人 Overlay。
 - `PauseScreen` 与 `SettingScreen`；Hint 永久禁用。

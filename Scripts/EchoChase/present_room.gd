@@ -37,6 +37,7 @@ func _on_body_entered(body: Node2D) -> void:
 	if body != EchoTimeline.player:
 		return
 	_player_inside = true
+	dialogue_npc.set_face_target(body)
 	if LevelModule.instance != null and LevelModule.instance.is_present_hub_unlocked():
 		EchoTimeline.enter_present_room()
 
@@ -46,6 +47,7 @@ func _on_body_exited(body: Node2D) -> void:
 	if body != EchoTimeline.player:
 		return
 	_player_inside = false
+	dialogue_npc.set_face_target(null)
 	if EchoTimeline.is_present_room_active():
 		EchoTimeline.leave_present_room()
 

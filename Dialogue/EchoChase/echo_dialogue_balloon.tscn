@@ -14,6 +14,9 @@ typing_sound = ExtResource("2_typing_sound")
 [node name="Illustrations" parent="." index="2"]
 visible = false
 
+[node name="ResponsesMenu" parent="Balloon" index="2"]
+hide_failed_responses = true
+
 [node name="HistoryModule" parent="." index="8"]
 is_enabled = false
 

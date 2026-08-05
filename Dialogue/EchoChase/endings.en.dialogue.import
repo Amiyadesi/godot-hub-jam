@@ -1,0 +1,16 @@
+[remap]
+
+importer="dialogue_manager"
+importer_version=15
+type="Resource"
+uid="uid://ca2jqg2100p6t"
+path="res://.godot/imported/endings.en.dialogue-44581ccb2da5b8fa9863a60b2d1ffc8d.tres"
+
+[deps]
+
+source_file="res://Dialogue/EchoChase/endings.en.dialogue"
+dest_files=["res://.godot/imported/endings.en.dialogue-44581ccb2da5b8fa9863a60b2d1ffc8d.tres"]
+
+[params]
+
+defaults=true

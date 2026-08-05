@@ -1,18 +1,16 @@
-[gd_scene load_steps=12 format=3]
+[gd_scene load_steps=16 format=3]
 
 [ext_resource type="Script" path="res://Scripts/EchoChase/echo_chase_narrative_presenter.gd" id="1_script"]
+[ext_resource type="Resource" uid="uid://ccqi3twteg66e" path="res://Dialogue/EchoChase/endings.zh.dialogue" id="2_ending_zh"]
+[ext_resource type="Resource" uid="uid://ca2jqg2100p6t" path="res://Dialogue/EchoChase/endings.en.dialogue" id="3_ending_en"]
 [ext_resource type="Texture2D" path="res://assets/echo_chase/character/idle.png" id="4_player"]
-[ext_resource type="Texture2D" path="res://assets/echo_chase/character/present_keeper_idle.png" id="5_keeper"]
+[ext_resource type="Texture2D" uid="uid://ckikvugdg0f5o" path="res://assets/echo_chase/character/delay_trace_mystery_sprite.png" id="5_keeper"]
 [ext_resource type="Theme" path="res://resources/main_theme.tres" id="6_theme"]
 [ext_resource type="Script" path="res://addons/richtext2/richer_text_label.gd" id="7_richer_text"]
 [ext_resource type="Texture2D" path="res://assets/echo_chase/vfx/temporal_particle.svg" id="8_particle"]
 
 [sub_resource type="AtlasTexture" id="Atlas_player"]
 atlas = ExtResource("4_player")
-region = Rect2(0, 0, 16, 16)
-
-[sub_resource type="AtlasTexture" id="Atlas_keeper"]
-atlas = ExtResource("5_keeper")
 region = Rect2(0, 0, 16, 16)
 
 [sub_resource type="ParticleProcessMaterial" id="Particle_exit_stream"]
@@ -71,9 +69,43 @@ color = Color(1, 0.78, 0.24, 0.82)
 emission_shape = 3
 emission_box_extents = Vector3(390, 30, 1)
 
+[sub_resource type="Animation" id="Animation_keeper_idle"]
+resource_name = "idle"
+length = 2.0
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/path = NodePath(".:frame")
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.5, 1, 1.5, 2),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1),
+"update": 1,
+"values": [0, 1, 2, 3, 0]
+}
+
+[sub_resource type="Animation" id="Animation_keeper_run"]
+resource_name = "run"
+loop_mode = 1
+step = 0.2
+tracks/0/type = "value"
+tracks/0/path = NodePath(".:frame")
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.2, 0.4, 0.6, 0.8),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1),
+"update": 1,
+"values": [5, 6, 7, 8, 9]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_keeper"]
+_data = {
+&"idle": SubResource("Animation_keeper_idle"),
+&"run": SubResource("Animation_keeper_run")
+}
+
 [node name="EchoChaseNarrativePresenter" type="Node"]
 process_mode = 3
 script = ExtResource("1_script")
+ending_dialogue_resource_zh = ExtResource("2_ending_zh")
+ending_dialogue_resource_en = ExtResource("3_ending_en")
 
 [node name="MemoryLayer" type="CanvasLayer" parent="."]
 unique_name_in_owner = true
@@ -235,7 +267,9 @@ unique_name_in_owner = true
 modulate = Color(1, 1, 1, 0)
 position = Vector2(960, 600)
 scale = Vector2(8, 8)
-texture = SubResource("Atlas_keeper")
+texture = ExtResource("5_keeper")
+hframes = 5
+vframes = 2
 
 [node name="IdentityPulseParticles" type="GPUParticles2D" parent="EndingLayer/EndingRoot/NormalGroup"]
 unique_name_in_owner = true
@@ -254,7 +288,14 @@ process_material = SubResource("Particle_ending_burst")
 unique_name_in_owner = true
 position = Vector2(190, 600)
 scale = Vector2(8, 8)
-texture = SubResource("Atlas_keeper")
+texture = ExtResource("5_keeper")
+hframes = 5
+vframes = 2
+
+[node name="LoopKeeperAnimationPlayer" type="AnimationPlayer" parent="EndingLayer/EndingRoot/NormalGroup"]
+unique_name_in_owner = true
+root_node = NodePath("../LoopOldKeeper")
+libraries/ = SubResource("AnimationLibrary_keeper")
 
 [node name="LoopRebornPlayer" type="Sprite2D" parent="EndingLayer/EndingRoot/NormalGroup"]
 unique_name_in_owner = true
@@ -361,7 +402,14 @@ texture = SubResource("Atlas_player")
 unique_name_in_owner = true
 position = Vector2(1330, 350)
 scale = Vector2(7, 7)
-texture = SubResource("Atlas_keeper")
+texture = ExtResource("5_keeper")
+hframes = 5
+vframes = 2
+
+[node name="TrueKeeperAnimationPlayer" type="AnimationPlayer" parent="EndingLayer/EndingRoot/TrueGroup"]
+unique_name_in_owner = true
+root_node = NodePath("../KeeperFigure")
+libraries/ = SubResource("AnimationLibrary_keeper")
 
 [node name="PastMergeTrail" type="GPUParticles2D" parent="EndingLayer/EndingRoot/TrueGroup"]
 unique_name_in_owner = true

@@ -3,8 +3,8 @@
 ## 当前可验证基线
 
 - 新游戏按当前语言播放黑屏红字 `跑/RUN`；玩家接近 `World/BeforeHub/FloatText` 后，世界内手写飘字显示当前跳跃与方向冲刺键位；Continue 跳过开场。
-- Keeper 对话拆为 `present_hub.zh.dialogue` 与 `present_hub.en.dialogue`，运行时按 locale 选择。
-- 四段记忆使用黑屏、红色倾斜字与 RichText2 抖动，不显示说话者；结局仍有各自演出文本。
+- Keeper 对话拆为 `present_hub.zh.dialogue` 与 `present_hub.en.dialogue`，启动时按 locale 选择一次并整局固定使用；现在房内 NPC 持续面向玩家，离开后恢复朝右。
+- 四段记忆使用黑屏、红色倾斜字与 RichText2 抖动，不显示说话者；双结局文本同样拆为 `endings.zh.dialogue` 与 `endings.en.dialogue`。
 - 倒计时更大、更清晰，归零只保存状态；玩家再次主动询问 Keeper 时才出现一次坦白选项，不失败、不清档。
 - 爱心数 `>= 1` 时出现一次主动问题；终点 A-D 按数量点亮，四枚后地块闪光、透明闪烁并允许落入下方。
 - 下方两个房间保持空白，旧真结局路线与 KnowledgeLock 已删除；金色全屏真结局演出仍保留。
@@ -17,7 +17,8 @@
 - **对话打字音**：打开 `Dialogue/EchoChase/echo_dialogue_balloon.tscn`，修改 `typing_sound` 和 `sound_interval`。真正播放由同场景继承的 `TypingSoundModule` 完成。
 - **Keeper 对话与 RichText2 特效**：中文改 `Dialogue/EchoChase/present_hub.zh.dialogue`，英文改 `Dialogue/EchoChase/present_hub.en.dialogue`。在台词中使用 `[sway]...[]`、`[sparkle]...[]`、`[jit2]...[]`；两份文件要保持同一分支结构。
 - **黑底红字记忆与开场 `Run/跑`**：布局和字体在 `Scenes/EchoChase/UI/echo_chase_narrative_presenter.tscn` 的 `MemoryText`，当前使用项目已有的 `SmileySans-Oblique`，字号为 `88`。内容和逐句节奏在 `Scripts/EchoChase/echo_chase_narrative_presenter.gd` 的 `MEMORY_*` 调用与 PO key 中调整。
-- **两个终局文本**：它们不是普通 Dialogue Manager 气泡，而是演出用的 RichText2 全屏文本。中文在 `translations/delay_trace.zh_CN.po`，英文在 `translations/delay_trace.en.po`；搜索 `ENDING_NORMAL_` 或 `ENDING_TRUE_` 即可。播放顺序和人物移动在 `Scripts/EchoChase/echo_chase_narrative_presenter.gd`，演出节点和坐标在同名 `.tscn`。
+- **两个终局文本**：中文改 `Dialogue/EchoChase/endings.zh.dialogue`，英文改 `Dialogue/EchoChase/endings.en.dialogue`；title 名必须保持一致。它们仍由 RichText2 全屏演出显示，不使用普通气泡。播放顺序和人物移动在 `Scripts/EchoChase/echo_chase_narrative_presenter.gd`，演出节点和坐标在同名 `.tscn`。
+- **Keeper 朝向与动画**：常驻 NPC 的朝向逻辑在 `Scripts/EchoChase/dialogue_npc.gd`，房间绑定在 `Scripts/EchoChase/present_room.gd`。帧序列在 `Scenes/EchoChase/Prefabs/dialogue_npc.tscn` 的 `AnimationPlayer`；终局 Keeper 的 `idle/run` 在 `Scenes/EchoChase/UI/echo_chase_narrative_presenter.tscn`。
 - **普通结局触发**：玩家进入当前地图的 `World/Finnal/NormalExit` 后，由 `Scripts/EchoChase/echo_chase_story.gd` 检查三条支路是否完成，再进入“玩家束缚 → Keeper 左入说话 → 右侧离开 → 身份交接 → 画面变暗 → 裂隙台词 → 普通结局与爱心提示”。不要把触发器改成新地图或新路线。
 - **系统语言**：`Scripts/Save/Modules/settings_module.gd` 的 `_get_system_language()` 将中文系统 locale 映射为 `zh_CN`，其他系统映射为 `en`；已有存档中的手动语言设置优先于系统检测。
 

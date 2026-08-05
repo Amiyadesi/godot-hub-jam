@@ -43,6 +43,7 @@ var _show_onboarding_on_entry := true
 
 # 收集当前场景实际摆放的机关，并接通存档、失败和暂停信号。
 func _ready() -> void:
+	DialogueManager.translation_source = DMConstants.TranslationSource.None
 	EchoTimeline.set_gameplay_active(false)
 	if onboarding == null or narrative_presenter == null:
 		push_error("EchoChaseStart requires the authored onboarding and narrative presenter")

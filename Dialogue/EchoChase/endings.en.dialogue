@@ -1,0 +1,66 @@
+~ normal_keeper
+Keeper: [sway]At last... the handoff is complete.[]
+Keeper: Thirty minutes. Three paths. One person willing to remain in my place.
+Keeper: [beat]Now I can leave.[]
+=> END
+
+~ normal_rift
+Rift: [sway]He deceived you, but not me.[]
+Rift: He only forgot that he once stood where you stand.
+Rift: The past that chased, the present that fled, the future left blank, the Keeper who waited-
+Rift: [jit2 scale=1.0 freq=7.0]They were always the same man.[]
+Rift: You asked me to take your past and future.
+Rift: [sway]They will return to this cycle. I reflect your wish. Now, forget. Once more.[]
+=> END
+
+~ normal_title
+UI: [beat]NORMAL ENDING[]
+=> END
+
+~ normal_hint
+UI: [sway]Collect every heart. There may be another path.[]
+=> END
+
+~ normal_run
+UI: RUN
+=> END
+
+~ normal_continue
+UI: CONTINUE
+=> END
+
+~ true_acceptance
+Rift: [sway]At last, you have stopped running.[]
+He: I did not defeat the past.
+He: I finally let her finish speaking.
+Rift: Acceptance is not revision. Understanding cannot undo what happened.
+He: I know. I will not ask you to erase her choice.
+He: [beat]Send the future I recorded back. To that cry of RUN.[]
+Rift: A wish can only open a path. You must run the rest together.
+=> END
+
+~ true_trace
+Rift: For the first time, past, present, and future point the same way.
+Rift: [sparkle]A path that never existed now exists because you carried it here.[]
+=> END
+
+~ true_reunion
+He: [beat]Lia.[]
+Lia: You remember?
+He: Everything. Even the words you never got to finish.
+He: [sparkle]This time, we run together.[]
+Lia: Then keep up.
+=> END
+
+~ true_epilogue
+Rift: [sparkle]RUN. I will catch up with you.[]
+Rift: This time, neither of them had to run alone.
+=> END
+
+~ true_run
+UI: RUN
+=> END
+
+~ true_return
+UI: RETURN TO TITLE
+=> END
