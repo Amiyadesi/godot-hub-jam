@@ -1,4 +1,4 @@
-[gd_scene load_steps=20 format=3]
+[gd_scene load_steps=21 format=3]
 
 [ext_resource type="Script" path="res://Scripts/EchoChase/past_echo.gd" id="1_script"]
 [ext_resource type="SpriteFrames" path="res://assets/echo_chase/character/echo_character_frames.tres" id="2_frames"]
@@ -7,13 +7,21 @@
 [ext_resource type="Shader" path="res://assets/echo_chase/vfx/temporal_outline.gdshader" id="5_outline_shader"]
 [ext_resource type="Texture2D" path="res://assets/echo_chase/vfx/temporal_particle.svg" id="6_particle"]
 [ext_resource type="PackedScene" path="res://Scenes/EchoChase/Prefabs/temporal_departure_vfx.tscn" id="7_departure"]
+[ext_resource type="Shader" path="res://assets/echo_chase/vfx/temporal_glow.gdshader" id="8_glow_shader"]
 
 [sub_resource type="RectangleShape2D" id="Shape_past"]
 size = Vector2(10, 15)
 
+[sub_resource type="ShaderMaterial" id="Material_visual"]
+shader = ExtResource("8_glow_shader")
+shader_parameter/shadow_color = Color(0.18, 0.004, 0.008, 1)
+shader_parameter/light_color = Color(1, 0.11, 0.14, 1)
+shader_parameter/opacity = 0.88
+shader_parameter/glow_strength = 0.72
+
 [sub_resource type="ShaderMaterial" id="Material_outline"]
 shader = ExtResource("5_outline_shader")
-shader_parameter/temporal_color = Color(1, 0.24, 0.82, 1)
+shader_parameter/temporal_color = Color(1, 0.06, 0.09, 1)
 shader_parameter/outline_alpha = 1.0
 shader_parameter/fill_alpha = 0.0
 
@@ -26,7 +34,7 @@ initial_velocity_max = 52.0
 gravity = Vector3(0, 18, 0)
 scale_min = 0.75
 scale_max = 1.5
-color = Color(1, 0.24, 0.82, 0.9)
+color = Color(1, 0.04, 0.07, 0.9)
 emission_shape = 1
 emission_sphere_radius = 7.0
 
@@ -40,7 +48,7 @@ damping_min = 3.0
 damping_max = 7.0
 scale_min = 0.28
 scale_max = 0.72
-color = Color(1, 0.2, 0.56, 0.58)
+color = Color(1, 0.035, 0.06, 0.58)
 emission_shape = 1
 emission_sphere_radius = 3.0
 
@@ -52,7 +60,7 @@ tracks/0/path = NodePath("Visual:visible")
 tracks/0/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 1, "values": [true]}
 tracks/1/type = "value"
 tracks/1/path = NodePath("Visual:self_modulate")
-tracks/1/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 1, "values": [Color(1, 0.34, 0.72, 0.82)]}
+tracks/1/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 1, "values": [Color(1, 1, 1, 1)]}
 tracks/2/type = "value"
 tracks/2/path = NodePath("OutlineVisual:visible")
 tracks/2/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 1, "values": [false]}
@@ -71,7 +79,7 @@ tracks/0/path = NodePath("Visual:visible")
 tracks/0/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 1, "values": [true]}
 tracks/1/type = "value"
 tracks/1/path = NodePath("Visual:self_modulate")
-tracks/1/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 1, "values": [Color(1, 0.34, 0.72, 0.82)]}
+tracks/1/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 1, "values": [Color(1, 1, 1, 1)]}
 tracks/2/type = "value"
 tracks/2/path = NodePath("OutlineVisual:visible")
 tracks/2/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 1, "values": [true]}
@@ -88,7 +96,7 @@ length = 0.35
 tracks/0/type = "value"
 tracks/0/path = NodePath("Visual:self_modulate")
 tracks/0/interp = 1
-tracks/0/keys = {"times": PackedFloat32Array(0, 0.35), "transitions": PackedFloat32Array(1, 1), "update": 0, "values": [Color(1, 0.34, 0.72, 0), Color(1, 0.34, 0.72, 0.82)]}
+tracks/0/keys = {"times": PackedFloat32Array(0, 0.35), "transitions": PackedFloat32Array(1, 1), "update": 0, "values": [Color(1, 1, 1, 0), Color(1, 1, 1, 1)]}
 tracks/1/type = "value"
 tracks/1/path = NodePath("OutlineVisual:visible")
 tracks/1/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 1, "values": [true]}
@@ -107,7 +115,7 @@ length = 0.35
 tracks/0/type = "value"
 tracks/0/path = NodePath("Visual:self_modulate")
 tracks/0/interp = 1
-tracks/0/keys = {"times": PackedFloat32Array(0, 0.35), "transitions": PackedFloat32Array(1, 1), "update": 0, "values": [Color(1, 1, 1, 0.18), Color(1, 1, 1, 0.72)]}
+tracks/0/keys = {"times": PackedFloat32Array(0, 0.35), "transitions": PackedFloat32Array(1, 1), "update": 0, "values": [Color(1, 1, 1, 0.18), Color(1, 1, 1, 1)]}
 tracks/1/type = "value"
 tracks/1/path = NodePath("OutlineVisual:visible")
 tracks/1/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 1, "values": [true]}
@@ -147,7 +155,7 @@ length = 0.6
 tracks/0/type = "value"
 tracks/0/path = NodePath("Visual:self_modulate")
 tracks/0/interp = 1
-tracks/0/keys = {"times": PackedFloat32Array(0, 0.6), "transitions": PackedFloat32Array(1, 1), "update": 0, "values": [Color(1, 1, 1, 0), Color(1, 1, 1, 0.72)]}
+tracks/0/keys = {"times": PackedFloat32Array(0, 0.6), "transitions": PackedFloat32Array(1, 1), "update": 0, "values": [Color(1, 1, 1, 0), Color(1, 1, 1, 1)]}
 tracks/1/type = "value"
 tracks/1/path = NodePath("OutlineVisual:visible")
 tracks/1/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 1, "values": [true]}
@@ -166,7 +174,7 @@ length = 0.6
 tracks/0/type = "value"
 tracks/0/path = NodePath("Visual:self_modulate")
 tracks/0/interp = 1
-tracks/0/keys = {"times": PackedFloat32Array(0, 0.6), "transitions": PackedFloat32Array(1, 1), "update": 0, "values": [Color(1, 1, 1, 0.18), Color(1, 1, 1, 0.72)]}
+tracks/0/keys = {"times": PackedFloat32Array(0, 0.6), "transitions": PackedFloat32Array(1, 1), "update": 0, "values": [Color(1, 1, 1, 0.18), Color(1, 1, 1, 1)]}
 tracks/1/type = "value"
 tracks/1/path = NodePath("OutlineVisual:visible")
 tracks/1/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 1, "values": [true]}
@@ -194,14 +202,14 @@ shape = SubResource("Shape_past")
 
 [node name="Visual" type="AnimatedSprite2D" parent="."]
 unique_name_in_owner = true
-self_modulate = Color(1, 0.34, 0.72, 0.82)
+material = SubResource("Material_visual")
 sprite_frames = ExtResource("2_frames")
 animation = &"idle"
 
 [node name="HistoryTrail" type="AnimatedSprite2D" parent="."]
 unique_name_in_owner = true
 position = Vector2(-5, 1)
-self_modulate = Color(1, 0.12, 0.68, 0.26)
+self_modulate = Color(1, 0.03, 0.05, 0.3)
 show_behind_parent = true
 sprite_frames = ExtResource("2_frames")
 animation = &"idle"
@@ -209,7 +217,7 @@ animation = &"idle"
 [node name="HistoryTrailFar" type="AnimatedSprite2D" parent="."]
 unique_name_in_owner = true
 position = Vector2(-10, 2)
-self_modulate = Color(1, 0.08, 0.62, 0.13)
+self_modulate = Color(1, 0.015, 0.03, 0.16)
 show_behind_parent = true
 sprite_frames = ExtResource("2_frames")
 animation = &"idle"
@@ -223,7 +231,7 @@ animation = &"idle"
 
 [node name="DepartureVfx" parent="." instance=ExtResource("7_departure")]
 unique_name_in_owner = true
-temporal_color = Color(1, 0.24, 0.82, 1)
+temporal_color = Color(1, 0.05, 0.08, 1)
 
 [node name="MotionTrail" type="GPUParticles2D" parent="."]
 unique_name_in_owner = true

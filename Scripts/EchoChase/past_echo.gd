@@ -5,6 +5,10 @@ extends Area2D
 signal caught_player
 
 const MATERIALIZE_PREVIEW_SECONDS := 0.35
+const TRACE_REFRESH_MSEC := 100
+const TRACE_SAMPLE_SECONDS := 0.1
+const TRACE_MAX_SEGMENT_DISTANCE := 64.0
+const TRACE_COLOR := Color(0.95, 0.06, 0.08, 0.52)
 
 @onready var collision_shape: CollisionShape2D = %CollisionShape2D
 @onready var visual: AnimatedSprite2D = %Visual
@@ -22,6 +26,8 @@ var _phase_shifting := false
 var _materializing := false
 var _first_materialization_pending := true
 var _last_velocity := Vector2.ZERO
+var _pending_trace_points := PackedVector2Array()
+var _last_trace_refresh_msec := -TRACE_REFRESH_MSEC
 
 
 # 只连接 authored 玩家与未来体接触检测。
@@ -32,6 +38,18 @@ func _ready() -> void:
 	if SettingsModule.instance != null:
 		SettingsModule.instance.settings_changed.connect(_on_setting_changed)
 	reset_echo()
+
+
+# 绘制未来一小段历史将要经过的断续红线，并跳过回传造成的空间断点。
+func _draw() -> void:
+	if not _active or not _shows_past_trace():
+		return
+	for index in range(1, _pending_trace_points.size()):
+		var from := to_local(_pending_trace_points[index - 1])
+		var to := to_local(_pending_trace_points[index])
+		if from.distance_to(to) > TRACE_MAX_SEGMENT_DISTANCE:
+			continue
+		draw_dashed_line(from, to, TRACE_COLOR, 1.4, 4.0, true, true)
 
 
 # 历史抵达前先预显轮廓，抵达后再启用过去体玩法影响。
@@ -58,6 +76,8 @@ func play_at(track: TemporalTrack, playback_time: float) -> void:
 		_first_materialization_pending = false
 		_materializing = false
 	_set_active(true)
+	_refresh_pending_trace(track, playback_time)
+	queue_redraw()
 
 
 # 延迟切档预警期间禁用世界影响。
@@ -66,6 +86,7 @@ func begin_phase_shift() -> void:
 	_materializing = false
 	_active = false
 	motion_trail.emitting = false
+	_clear_pending_trace()
 	collision_shape.set_deferred("disabled", true)
 	if visible:
 		departure_vfx.play_from_sprites(visual, outline_visual, _last_velocity)
@@ -115,6 +136,7 @@ func reset_echo() -> void:
 	pixel_burst.emitting = false
 	departure_vfx.reset_vfx()
 	_last_velocity = Vector2.ZERO
+	_clear_pending_trace()
 	vfx_animation_player.play(&"RESET")
 	collision_shape.set_deferred("disabled", true)
 
@@ -134,6 +156,7 @@ func dissipate() -> void:
 	history_trail_far.visible = false
 	motion_trail.emitting = false
 	pixel_burst.emitting = false
+	_clear_pending_trace()
 	collision_shape.set_deferred("disabled", true)
 
 
@@ -157,6 +180,7 @@ func is_materializing() -> bool:
 func _set_active(value: bool) -> void:
 	if not value:
 		motion_trail.emitting = false
+		_clear_pending_trace()
 	if _active == value:
 		return
 	_active = value
@@ -219,6 +243,7 @@ func _begin_materialization(frame: TemporalFrame) -> void:
 	_apply_frame_visual(frame)
 	_active = false
 	_materializing = true
+	_clear_pending_trace()
 	visible = true
 	visual.visible = true
 	outline_visual.visible = true
@@ -230,6 +255,10 @@ func _begin_materialization(frame: TemporalFrame) -> void:
 
 # 实体化或切档途中切换低闪时保留当前预警进度。
 func _on_setting_changed(key: String, _value: Variant) -> void:
+	if key == "show_past_trace":
+		if not _shows_past_trace():
+			_clear_pending_trace()
+		return
 	if key != "low_flash_mode":
 		return
 	motion_trail.amount_ratio = 0.35 if _uses_low_flash_mode() else 1.0
@@ -249,6 +278,48 @@ func _switch_vfx_animation(animation_name: StringName) -> void:
 		progress_ratio = vfx_animation_player.current_animation_position / vfx_animation_player.current_animation_length
 	vfx_animation_player.play(animation_name)
 	vfx_animation_player.seek(progress_ratio * vfx_animation_player.current_animation_length, true)
+
+
+# 每 0.1 秒重采样一次 Past 尚未执行的历史片段。
+func _refresh_pending_trace(track: TemporalTrack, playback_time: float) -> void:
+	if not _active or not _shows_past_trace():
+		_clear_pending_trace()
+		return
+	var now_msec := Time.get_ticks_msec()
+	if now_msec - _last_trace_refresh_msec < TRACE_REFRESH_MSEC:
+		return
+	_last_trace_refresh_msec = now_msec
+	var points := PackedVector2Array()
+	var end_time := track.get_end_time()
+	var sample_time := playback_time
+	while sample_time <= end_time:
+		var frame: TemporalFrame = track.sample_at(sample_time)
+		if frame != null:
+			points.append(frame.position)
+		sample_time += TRACE_SAMPLE_SECONDS
+	var end_frame: TemporalFrame = track.sample_at(end_time)
+	if end_frame != null and (points.is_empty() or not points[-1].is_equal_approx(end_frame.position)):
+		points.append(end_frame.position)
+	_pending_trace_points = points
+	queue_redraw()
+
+
+# 清掉不再适用的路线预览，并让下一次激活立即重采样。
+func _clear_pending_trace() -> void:
+	if _pending_trace_points.is_empty():
+		_last_trace_refresh_msec = -TRACE_REFRESH_MSEC
+		return
+	_pending_trace_points.clear()
+	_last_trace_refresh_msec = -TRACE_REFRESH_MSEC
+	queue_redraw()
+
+
+# 读取过去体路线预览辅助开关。
+func _shows_past_trace() -> bool:
+	return (
+		SettingsModule.instance != null
+		and bool(SettingsModule.instance.get_value("show_past_trace", false))
+	)
 
 
 # 读取低闪烁模式，缺少设置模块时使用标准特效。

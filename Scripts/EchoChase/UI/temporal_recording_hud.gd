@@ -61,6 +61,7 @@ func _on_recording_started() -> void:
 func _on_recording_progress(elapsed_seconds: float, maximum_seconds: float) -> void:
 	progress_bar.max_value = maximum_seconds
 	progress_bar.value = clampf(elapsed_seconds, 0.0, maximum_seconds)
+	_sync_recording_speed()
 
 
 # 回传、自动提交或时间线重置时立即清除录制提示。
@@ -72,6 +73,7 @@ func _on_recording_finished() -> void:
 func _on_setting_changed(key: String, _value: Variant) -> void:
 	if key == "low_flash_mode" and visible:
 		_play_recording_animation(true)
+		_sync_recording_speed()
 		player.set_recording_feedback(true, _uses_low_flash_mode(), true)
 
 
@@ -81,7 +83,9 @@ func _set_recording_visible(value: bool) -> void:
 	player.set_recording_feedback(value, _uses_low_flash_mode())
 	if value:
 		_play_recording_animation(false)
+		_sync_recording_speed()
 	else:
+		animation_player.speed_scale = 1.0
 		animation_player.play(&"RESET")
 
 
@@ -93,6 +97,11 @@ func _play_recording_animation(preserve_progress: bool) -> void:
 	animation_player.play(&"recording_reduced" if _uses_low_flash_mode() else &"recording")
 	if preserve_progress:
 		animation_player.seek(progress_ratio * animation_player.current_animation_length, true)
+
+
+# 标准模式随录制进度把金色边缘脉冲从 1 倍加快到 3 倍，低闪模式保持稳定。
+func _sync_recording_speed() -> void:
+	animation_player.speed_scale = 1.0 if _uses_low_flash_mode() else lerpf(1.0, 3.0, get_progress_ratio())
 
 
 # 读取当前低闪烁开关。

@@ -1,4 +1,4 @@
-[gd_scene load_steps=16 format=3]
+[gd_scene load_steps=19 format=3]
 
 [ext_resource type="Script" path="res://Scripts/EchoChase/echo_chase_narrative_presenter.gd" id="1_script"]
 [ext_resource type="Resource" uid="uid://ccqi3twteg66e" path="res://Dialogue/EchoChase/endings.zh.dialogue" id="2_ending_zh"]
@@ -8,10 +8,19 @@
 [ext_resource type="Theme" path="res://resources/main_theme.tres" id="6_theme"]
 [ext_resource type="Script" path="res://addons/richtext2/richer_text_label.gd" id="7_richer_text"]
 [ext_resource type="Texture2D" path="res://assets/echo_chase/vfx/temporal_particle.svg" id="8_particle"]
+[ext_resource type="SpriteFrames" path="res://assets/echo_chase/character/echo_character_frames.tres" id="9_character_frames"]
+[ext_resource type="Shader" path="res://assets/echo_chase/vfx/temporal_glow.gdshader" id="10_temporal_glow"]
 
 [sub_resource type="AtlasTexture" id="Atlas_player"]
 atlas = ExtResource("4_player")
 region = Rect2(0, 0, 16, 16)
+
+[sub_resource type="ShaderMaterial" id="Material_opening_runner"]
+shader = ExtResource("10_temporal_glow")
+shader_parameter/shadow_color = Color(0.12, 0.002, 0.004, 1)
+shader_parameter/light_color = Color(0.72, 0.025, 0.04, 1)
+shader_parameter/opacity = 0.92
+shader_parameter/glow_strength = 0.5
 
 [sub_resource type="ParticleProcessMaterial" id="Particle_exit_stream"]
 particle_flag_disable_z = true
@@ -120,6 +129,14 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 color = Color(0, 0, 0, 1)
+
+[node name="OpeningRunner" type="AnimatedSprite2D" parent="MemoryLayer"]
+unique_name_in_owner = true
+visible = false
+material = SubResource("Material_opening_runner")
+scale = Vector2(4, 4)
+sprite_frames = ExtResource("9_character_frames")
+animation = &"run"
 
 [node name="MemoryTag" type="Label" parent="MemoryLayer"]
 unique_name_in_owner = true

@@ -11,6 +11,7 @@ signal active_changed(active: bool)
 @onready var outline_visual: AnimatedSprite2D = %OutlineVisual
 @onready var outer_outline_visual: AnimatedSprite2D = %OuterOutlineVisual
 @onready var prediction_visual: AnimatedSprite2D = %PredictionVisual
+@onready var playback_timer: ProgressBar = %PlaybackTimer
 @onready var motion_trail: GPUParticles2D = %MotionTrail
 @onready var pixel_burst: GPUParticles2D = %PixelBurst
 @onready var vfx_animation_player: AnimationPlayer = %VfxAnimationPlayer
@@ -74,6 +75,7 @@ func advance(delta: float) -> void:
 		global_position = frame.position
 		_last_velocity = frame.velocity
 		_apply_frame_visual(frame)
+	_refresh_playback_timer()
 	if _playback_seconds >= _duration or frame == null:
 		_release_slot()
 
@@ -214,8 +216,10 @@ func _release_slot() -> void:
 # 只在真实生命周期切换时同步绑定机关。
 func _set_active(value: bool) -> void:
 	if _active == value:
+		_refresh_playback_timer()
 		return
 	_active = value
+	_refresh_playback_timer()
 	active_changed.emit(_active)
 
 
@@ -228,6 +232,9 @@ func _on_departure_finished() -> void:
 
 # 生成或主体消散动画途中切换低闪时保留当前进度。
 func _on_setting_changed(key: String, _value: Variant) -> void:
+	if key == "show_future_timer":
+		_refresh_playback_timer()
+		return
 	if key != "low_flash_mode":
 		return
 	motion_trail.amount_ratio = 0.35 if _uses_low_flash_mode() else 1.0
@@ -247,6 +254,22 @@ func _switch_vfx_animation(animation_name: StringName) -> void:
 		progress_ratio = vfx_animation_player.current_animation_position / vfx_animation_player.current_animation_length
 	vfx_animation_player.play(animation_name)
 	vfx_animation_player.seek(progress_ratio * vfx_animation_player.current_animation_length, true)
+
+
+# 同步未来体头顶的剩余回放比例，仅在辅助开关启用时显示。
+func _refresh_playback_timer() -> void:
+	playback_timer.visible = _active and _shows_future_timer()
+	if not playback_timer.visible:
+		return
+	playback_timer.value = clampf(1.0 - _playback_seconds / _duration, 0.0, 1.0) if _duration > 0.0 else 0.0
+
+
+# 读取未来体剩余时间辅助开关。
+func _shows_future_timer() -> bool:
+	return (
+		SettingsModule.instance != null
+		and bool(SettingsModule.instance.get_value("show_future_timer", false))
+	)
 
 
 # 读取低闪烁模式，缺少设置模块时使用标准特效。

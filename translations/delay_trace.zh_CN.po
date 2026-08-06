@@ -108,6 +108,12 @@ msgstr "屏幕震动"
 msgid "SETTINGS_LOW_FLASH"
 msgstr "低闪烁模式"
 
+msgid "SETTINGS_PAST_TRACE"
+msgstr "过去体行动轨迹"
+
+msgid "SETTINGS_FUTURE_TIMER"
+msgstr "未来体剩余时间"
+
 msgid "SETTINGS_RESET_DEFAULTS"
 msgstr "恢复默认"
 

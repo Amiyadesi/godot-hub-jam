@@ -509,6 +509,68 @@ alignment = 1
 [node name="Line" type="HSeparator" parent="PanelRoot/Content/Pages/AudioPage/GeneralVBox/LowFlashRow"]
 layout_mode = 2
 
+[node name="PastTraceRow" type="VBoxContainer" parent="PanelRoot/Content/Pages/AudioPage/GeneralVBox"]
+layout_mode = 2
+theme_override_constants/separation = 5
+
+[node name="RowContent" type="HBoxContainer" parent="PanelRoot/Content/Pages/AudioPage/GeneralVBox/PastTraceRow"]
+custom_minimum_size = Vector2(0, 52)
+layout_mode = 2
+
+[node name="Title" type="Label" parent="PanelRoot/Content/Pages/AudioPage/GeneralVBox/PastTraceRow/RowContent"]
+custom_minimum_size = Vector2(230, 0)
+layout_mode = 2
+text = "SETTINGS_PAST_TRACE"
+vertical_alignment = 1
+
+[node name="Spacer" type="Control" parent="PanelRoot/Content/Pages/AudioPage/GeneralVBox/PastTraceRow/RowContent"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="PastTraceToggle" type="Button" parent="PanelRoot/Content/Pages/AudioPage/GeneralVBox/PastTraceRow/RowContent"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(132, 46)
+layout_mode = 2
+theme_type_variation = &"TextToggle"
+toggle_mode = true
+theme_override_font_sizes/font_size = 22
+text = "[ OFF ]"
+alignment = 1
+
+[node name="Line" type="HSeparator" parent="PanelRoot/Content/Pages/AudioPage/GeneralVBox/PastTraceRow"]
+layout_mode = 2
+
+[node name="FutureTimerRow" type="VBoxContainer" parent="PanelRoot/Content/Pages/AudioPage/GeneralVBox"]
+layout_mode = 2
+theme_override_constants/separation = 5
+
+[node name="RowContent" type="HBoxContainer" parent="PanelRoot/Content/Pages/AudioPage/GeneralVBox/FutureTimerRow"]
+custom_minimum_size = Vector2(0, 52)
+layout_mode = 2
+
+[node name="Title" type="Label" parent="PanelRoot/Content/Pages/AudioPage/GeneralVBox/FutureTimerRow/RowContent"]
+custom_minimum_size = Vector2(230, 0)
+layout_mode = 2
+text = "SETTINGS_FUTURE_TIMER"
+vertical_alignment = 1
+
+[node name="Spacer" type="Control" parent="PanelRoot/Content/Pages/AudioPage/GeneralVBox/FutureTimerRow/RowContent"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="FutureTimerToggle" type="Button" parent="PanelRoot/Content/Pages/AudioPage/GeneralVBox/FutureTimerRow/RowContent"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(132, 46)
+layout_mode = 2
+theme_type_variation = &"TextToggle"
+toggle_mode = true
+theme_override_font_sizes/font_size = 22
+text = "[ OFF ]"
+alignment = 1
+
+[node name="Line" type="HSeparator" parent="PanelRoot/Content/Pages/AudioPage/GeneralVBox/FutureTimerRow"]
+layout_mode = 2
+
 [node name="ResetAudioButton" parent="PanelRoot/Content/Pages/AudioPage/GeneralVBox" instance=ExtResource("3_button")]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(220, 52)

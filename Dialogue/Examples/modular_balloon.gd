@@ -307,11 +307,6 @@ func _on_dialogue_ended() -> void:
 	_sync_status_indicators()
 
 
-func _on_mutation_visibility_cooldown_finished() -> void:
-	if is_instance_valid(_balloon_control):
-		_balloon_control.hide()
-
-
 func _on_meta_clicked(meta: Variant) -> void:
 	OS.shell_open(str(meta))
 

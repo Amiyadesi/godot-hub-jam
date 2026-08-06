@@ -31,6 +31,8 @@ const DEFAULTS := {
 	"ambient_volume" : 0.8,
 	"screen_shake"   : 0.5,
 	"low_flash_mode" : false,
+	"show_past_trace": false,
+	"show_future_timer": false,
 	"language"       : "zh_CN",
 	"display_mode"   : "fullscreen",
 	"borderless_enabled": false,
@@ -144,7 +146,8 @@ func apply_setting(key: String, value: Variant) -> void:
 			_apply_display_mode()
 		"vsync_enabled":
 			_apply_vsync(_is_truthy(value))
-		"timezone_mode", "custom_time_hour", "custom_time_minute", "screen_shake", "low_flash_mode":
+		"timezone_mode", "custom_time_hour", "custom_time_minute", "screen_shake", "low_flash_mode", \
+		"show_past_trace", "show_future_timer":
 			pass
 
 
@@ -184,6 +187,8 @@ func _normalize_values() -> void:
 	_values["ambient_volume"] = clampf(float(_values.get("ambient_volume", DEFAULTS["ambient_volume"])), 0.0, 1.0)
 	_values["screen_shake"] = clampf(float(_values.get("screen_shake", DEFAULTS["screen_shake"])), 0.0, 1.0)
 	_values["low_flash_mode"] = _is_truthy(_values.get("low_flash_mode", DEFAULTS["low_flash_mode"]))
+	_values["show_past_trace"] = _is_truthy(_values.get("show_past_trace", DEFAULTS["show_past_trace"]))
+	_values["show_future_timer"] = _is_truthy(_values.get("show_future_timer", DEFAULTS["show_future_timer"]))
 	_values["display_mode"] = _normalize_display_mode(str(_values.get("display_mode", DEFAULTS["display_mode"])))
 	_values["borderless_enabled"] = _is_truthy(_values.get("borderless_enabled", DEFAULTS["borderless_enabled"]))
 	_values["window_width"] = maxi(640, int(_values.get("window_width", DEFAULTS["window_width"])))

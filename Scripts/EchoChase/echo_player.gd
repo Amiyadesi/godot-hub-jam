@@ -325,6 +325,7 @@ func reset_player(reset_position: Vector2) -> void:
 	_wall_jump_locked = false
 	_wall_jump_lock_normal = Vector2.ZERO
 	_temporal_phase_remaining = 0.0
+	_dash_requested = false
 	_jump_requested = false
 	_recall_requested = false
 	_was_on_floor = false

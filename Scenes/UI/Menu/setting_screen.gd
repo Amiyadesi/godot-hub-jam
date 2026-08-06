@@ -10,7 +10,7 @@ const LANGUAGE_CODES: Array[String] = ["zh_CN", "en"]
 const GENERAL_KEYS := [
 	"display_mode", "borderless_enabled", "window_width", "window_height", "vsync_enabled",
 	"master_volume", "music_volume", "sfx_volume", "ui_volume", "ambient_volume", "screen_shake",
-	"low_flash_mode",
+	"low_flash_mode", "show_past_trace", "show_future_timer",
 ]
 const GENERAL_DEFAULTS := {
 	"display_mode": "fullscreen",
@@ -25,6 +25,8 @@ const GENERAL_DEFAULTS := {
 	"ambient_volume": 0.8,
 	"screen_shake": 0.5,
 	"low_flash_mode": false,
+	"show_past_trace": false,
+	"show_future_timer": false,
 }
 var is_in_menu_flag: bool
 
@@ -60,6 +62,8 @@ var is_in_menu_flag: bool
 @onready var screen_shake_value: Label = %ScreenShakeValue
 @onready var low_flash_row: VBoxContainer = %LowFlashRow
 @onready var low_flash_toggle: Button = %LowFlashToggle
+@onready var past_trace_toggle: Button = %PastTraceToggle
+@onready var future_timer_toggle: Button = %FutureTimerToggle
 @onready var keybinding_ui: EchoKeybindingUI = %KeybindingUI
 
 var _setting_rows: Array[Dictionary] = []
@@ -98,6 +102,8 @@ func refresh_from_settings() -> void:
 	_sync_display_controls()
 	_sync_language_option()
 	low_flash_toggle.button_pressed = bool(SettingsModule.instance.get_value("low_flash_mode", false))
+	past_trace_toggle.button_pressed = bool(SettingsModule.instance.get_value("show_past_trace", false))
+	future_timer_toggle.button_pressed = bool(SettingsModule.instance.get_value("show_future_timer", false))
 	_sync_toggle_labels()
 	_ignore_ui_changes = false
 	keybinding_ui.refresh_all()
@@ -126,6 +132,8 @@ func _connect_signals() -> void:
 	language_option.item_selected.connect(_on_language_selected)
 	vsync_toggle.toggled.connect(_on_vsync_toggled)
 	low_flash_toggle.toggled.connect(_on_low_flash_toggled)
+	past_trace_toggle.toggled.connect(_on_past_trace_toggled)
+	future_timer_toggle.toggled.connect(_on_future_timer_toggled)
 	visibility_changed.connect(_on_visibility_changed)
 	close_modal_requested.connect(_on_return_pressed)
 	SettingsModule.instance.settings_changed.connect(_on_setting_changed)
@@ -191,6 +199,8 @@ func _sync_display_controls() -> void:
 func _sync_toggle_labels() -> void:
 	vsync_toggle.text = "[ %s ]" % tr("SETTINGS_ON" if vsync_toggle.button_pressed else "SETTINGS_OFF")
 	low_flash_toggle.text = "[ %s ]" % tr("SETTINGS_ON" if low_flash_toggle.button_pressed else "SETTINGS_OFF")
+	past_trace_toggle.text = "[ %s ]" % tr("SETTINGS_ON" if past_trace_toggle.button_pressed else "SETTINGS_OFF")
+	future_timer_toggle.text = "[ %s ]" % tr("SETTINGS_ON" if future_timer_toggle.button_pressed else "SETTINGS_OFF")
 
 
 # Switches between general settings and keybinding pages.
@@ -273,6 +283,22 @@ func _on_low_flash_toggled(enabled: bool) -> void:
 	if _ignore_ui_changes:
 		return
 	SettingsModule.instance.set_value("low_flash_mode", enabled)
+
+
+# Persists the optional Past route preview immediately.
+func _on_past_trace_toggled(enabled: bool) -> void:
+	_sync_toggle_labels()
+	if _ignore_ui_changes:
+		return
+	SettingsModule.instance.set_value("show_past_trace", enabled)
+
+
+# Persists the optional Future playback timer immediately.
+func _on_future_timer_toggled(enabled: bool) -> void:
+	_sync_toggle_labels()
+	if _ignore_ui_changes:
+		return
+	SettingsModule.instance.set_value("show_future_timer", enabled)
 
 
 # Restores only general display, sound, and accessibility fields.
@@ -362,6 +388,8 @@ func _configure_button_audio() -> void:
 	GameAudio.setup_plain_button(language_option)
 	GameAudio.setup_plain_button(vsync_toggle)
 	GameAudio.setup_plain_button(low_flash_toggle)
+	GameAudio.setup_plain_button(past_trace_toggle)
+	GameAudio.setup_plain_button(future_timer_toggle)
 
 
 # Shows the credits shortcut only when this modal is opened from the menu.

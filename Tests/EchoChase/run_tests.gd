@@ -25,6 +25,7 @@ func _ready() -> void:
 	await _test_past_catch_reports_recording_source()
 	_test_dash_charge_marker_follows_player_state()
 	_test_dash_input_consumes_single_charge()
+	_test_reset_discards_buffered_dash()
 	await _test_landing_restores_single_dash()
 	_test_temporal_door_requires_all_sources()
 	_test_temporal_door_latches_after_all_sources()
@@ -231,6 +232,26 @@ func _test_dash_input_consumes_single_charge() -> void:
 	_expect(dash_count[0] == 1, "empty dash charge cannot start a second dash")
 	animation_player.advance(0.1)
 	_expect(not player.get_node("DashChargeMarker").visible, "consumed dash marker hides after its authored animation")
+	player.free()
+
+
+# 验证死亡复位会丢弃同帧锁存的冲刺输入。
+func _test_reset_discards_buffered_dash() -> void:
+	var player := PLAYER_SCENE.instantiate() as EchoPlayer
+	add_child(player)
+	player.set_physics_process(false)
+	var dash_count: Array[int] = [0]
+	player.dash_started.connect(func(_direction: Vector2) -> void:
+		dash_count[0] += 1
+	)
+	var dash_event := InputEventAction.new()
+	dash_event.action = &"echo_dash"
+	dash_event.pressed = true
+	player._input(dash_event)
+	player.prepare_for_reset(&"death")
+	player.reset_player(Vector2.ZERO)
+	player._physics_process(PHYSICS_STEP)
+	_expect(dash_count[0] == 0, "death reset discards a buffered dash input")
 	player.free()
 
 

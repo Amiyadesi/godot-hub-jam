@@ -17,6 +17,7 @@ const MEMORY_JITTER_BBCODE := "[jit2 scale=2.0 freq=18.0]%s[]"
 @onready var memory_layer: CanvasLayer = %MemoryLayer
 @onready var memory_tag: Label = %MemoryTag
 @onready var memory_text: RicherTextLabel = %MemoryText
+@onready var opening_runner: AnimatedSprite2D = %OpeningRunner
 @onready var ending_layer: CanvasLayer = %EndingLayer
 @onready var ending_flash: ColorRect = %EndingFlash
 @onready var ending_dim: ColorRect = %EndingDim
@@ -81,6 +82,7 @@ func _ready() -> void:
 		push_error("EchoChaseNarrativePresenter requires zh and en ending dialogue resources")
 		return
 	memory_layer.visible = false
+	opening_runner.hide()
 	ending_layer.visible = false
 	memory_text.hide()
 	normal_ending_text.hide()
@@ -104,15 +106,31 @@ func select_dialogue_language(use_chinese: bool) -> void:
 	)
 
 
-# Plays the localized opening command inside the same black-red memory surface.
-func play_opening_run_card() -> void:
+# Plays the localized command while a separate silhouette reaches the real spawn position.
+func play_opening_run_card(target_screen_position: Vector2) -> void:
 	if _sequence_active:
 		push_error("EchoChaseNarrativePresenter cannot overlap story sequences")
 		return
 	_sequence_active = true
 	memory_tag.hide()
 	memory_layer.visible = true
-	await _play_memory_lines(["STORY_RUN"], opening_hold_seconds)
+	opening_runner.position = Vector2(-64.0, target_screen_position.y)
+	opening_runner.show()
+	opening_runner.play(&"run")
+	memory_text.bbcode = MEMORY_JITTER_BBCODE % tr("STORY_RUN")
+	_set_alpha(memory_text, 0.0)
+	memory_text.show()
+	var tween := _new_cinematic_tween()
+	tween.set_parallel(true)
+	tween.tween_property(opening_runner, "position", target_screen_position, opening_hold_seconds)
+	tween.tween_property(memory_text, "modulate:a", 1.0, text_fade_seconds)
+	tween.tween_property(memory_text, "modulate:a", 0.0, text_fade_seconds).set_delay(
+		maxf(opening_hold_seconds - text_fade_seconds, 0.0)
+	)
+	await tween.finished
+	opening_runner.hide()
+	opening_runner.stop()
+	memory_text.hide()
 	memory_layer.visible = false
 	memory_tag.show()
 	_sequence_active = false

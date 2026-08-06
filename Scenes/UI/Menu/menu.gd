@@ -309,9 +309,9 @@ func _switch_animation_preserving_progress(animation_player: AnimationPlayer, an
 # 跳过时先应用 authored 最终帧，避免残留半入场状态。
 func _skip_menu_intro() -> void:
 	menu_animation_player.seek(menu_animation_player.current_animation_length, true)
-	menu_animation_player.stop()
+	menu_animation_player.stop(true)
 	world_animation_player.seek(world_animation_player.current_animation_length, true)
-	world_animation_player.stop()
+	world_animation_player.stop(true)
 	_finish_menu_intro()
 
 

@@ -20,6 +20,9 @@ const CURRENT_ROOM_CHECKPOINT_ID := &"current_room"
 @export var setting_screen: SettingScreen
 @export var onboarding: EchoChaseOnboarding
 @export var narrative_presenter: EchoChaseNarrativePresenter
+@export var gameplay_camera: Camera2D
+@export var death_vfx: TemporalDepartureVfx
+@export var death_flash: ColorRect
 @export var reset_audio: AudioStreamPlayer
 @export var gameplay_music: AudioStream
 @export var present_entry_transition: SceneTransition
@@ -39,15 +42,27 @@ var _entry_intro_active := false
 var _entry_card_playing := false
 var _entry_tween: Tween
 var _show_onboarding_on_entry := true
+var _death_flash_tween: Tween
+var _death_shake_tween: Tween
+var _camera_rest_offset := Vector2.ZERO
 
 
 # 收集当前场景实际摆放的机关，并接通存档、失败和暂停信号。
 func _ready() -> void:
 	DialogueManager.translation_source = DMConstants.TranslationSource.None
 	EchoTimeline.set_gameplay_active(false)
-	if present_room == null or onboarding == null or narrative_presenter == null:
-		push_error("EchoChaseStart requires the authored present room, onboarding, and narrative presenter")
+	if (
+		present_room == null
+		or onboarding == null
+		or narrative_presenter == null
+		or gameplay_camera == null
+		or death_vfx == null
+		or death_flash == null
+	):
+		push_error("EchoChaseStart requires its authored room, story, camera, and failure feedback nodes")
 		return
+	_camera_rest_offset = gameplay_camera.offset
+	_reset_failure_feedback()
 	var use_chinese := TranslationServer.get_locale().to_lower().begins_with("zh")
 	present_room.dialogue_npc.select_dialogue_language(use_chinese)
 	narrative_presenter.select_dialogue_language(use_chinese)
@@ -206,7 +221,7 @@ func _finish_entry_intro() -> void:
 	SceneManager.transition_clear()
 	if _show_onboarding_on_entry:
 		_entry_card_playing = true
-		await narrative_presenter.play_opening_run_card()
+		await narrative_presenter.play_opening_run_card(_get_player_screen_position())
 		_entry_card_playing = false
 	gameplay_world.process_mode = Node.PROCESS_MODE_PAUSABLE
 	EchoTimeline.set_gameplay_active(true)
@@ -214,6 +229,11 @@ func _finish_entry_intro() -> void:
 	_entry_intro_active = false
 	if _show_onboarding_on_entry:
 		onboarding.start()
+
+
+# Converts the authored player origin into the presenter CanvasLayer's viewport coordinates.
+func _get_player_screen_position() -> Vector2:
+	return player.get_global_transform_with_canvas().origin
 
 
 # 识别键盘、手柄和鼠标的离散跳过输入。
@@ -283,15 +303,60 @@ func _begin_failure_reset(animation_name: StringName) -> void:
 		return
 	_reset_in_progress = true
 	EchoTimeline.set_gameplay_active(false)
+	var impact_velocity := player.velocity
 	player.prepare_for_reset(animation_name)
+	death_vfx.play_from_sprites(player.visual, player.temporal_outline, impact_velocity)
+	_play_failure_feedback()
 	# Clear temporal entities before the death animation so Past/VFX cannot linger behind it.
 	EchoTimeline.reset_timeline(_respawn_past_delay_seconds, _respawn_delay_switch_id)
 	reset_audio.play()
 	await get_tree().create_timer(RESET_DELAY_SECONDS).timeout
+	_reset_failure_feedback()
 	player.reset_player(_respawn_position)
 	EchoTimeline.set_gameplay_active(true)
 	_reset_in_progress = false
 	reset_completed.emit(_respawn_position)
+
+
+# 播放失败时的红光和相机冲击，并遵守现有辅助设置。
+func _play_failure_feedback() -> void:
+	var low_flash := _uses_low_flash_mode()
+	death_flash.show()
+	death_flash.self_modulate.a = 0.0
+	_death_flash_tween = create_tween()
+	_death_flash_tween.tween_property(death_flash, "self_modulate:a", 0.1 if low_flash else 0.32, 0.04)
+	_death_flash_tween.tween_property(death_flash, "self_modulate:a", 0.0, 0.26 if low_flash else 0.18)
+	_death_flash_tween.tween_callback(death_flash.hide)
+	var strength := float(SettingsModule.instance.get_value("screen_shake", 0.5))
+	if is_zero_approx(strength):
+		return
+	var amplitude := 7.0 * strength
+	_death_shake_tween = create_tween()
+	for offset in [
+		Vector2(amplitude, -amplitude * 0.5),
+		Vector2(-amplitude * 0.75, amplitude * 0.45),
+		Vector2(amplitude * 0.45, amplitude * 0.25),
+		Vector2(-amplitude * 0.2, -amplitude * 0.15),
+	]:
+		_death_shake_tween.tween_property(gameplay_camera, "offset", _camera_rest_offset + offset, 0.035)
+	_death_shake_tween.tween_property(gameplay_camera, "offset", _camera_rest_offset, 0.04)
+
+
+# 复活或场景初始化时清掉尚未结束的失败反馈。
+func _reset_failure_feedback() -> void:
+	if _death_flash_tween != null and _death_flash_tween.is_valid():
+		_death_flash_tween.kill()
+	if _death_shake_tween != null and _death_shake_tween.is_valid():
+		_death_shake_tween.kill()
+	death_flash.self_modulate.a = 0.0
+	death_flash.hide()
+	gameplay_camera.offset = _camera_rest_offset
+	death_vfx.reset_vfx()
+
+
+# 读取共享低闪设置，压低全屏死亡脉冲。
+func _uses_low_flash_mode() -> bool:
+	return bool(SettingsModule.instance.get_value("low_flash_mode", false))
 
 
 # 打开 authored 暂停页并冻结玩法世界。

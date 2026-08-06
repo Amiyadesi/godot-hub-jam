@@ -6,7 +6,7 @@
 [ext_resource type="PackedScene" uid="uid://dl7b3wmwdq67u" path="res://Scenes/UI/PauseScreen/pause_screen.tscn" id="8_wwiui"]
 [ext_resource type="PackedScene" uid="uid://b7hivg2dnaer8" path="res://Scenes/UI/Menu/setting_screen.tscn" id="10_hg02a"]
 [ext_resource type="Script" uid="uid://blg8o5qqjypkc" path="res://Scripts/EchoChase/echo_chase_start.gd" id="12_pasgv"]
-[ext_resource type="AudioStream" uid="uid://b5uh6fi7whuvk" path="res://assets/phase_lag/audio/sfx/impact_metal.ogg" id="13_55wkc"]
+[ext_resource type="AudioStream" path="res://assets/phase_lag/audio/sfx/explosion_crunch.ogg" id="13_55wkc"]
 [ext_resource type="AudioStream" uid="uid://bs4xhkgsehp8s" path="res://assets/echo_chase/audio/music/dark_sci_fi_sector.ogg" id="14_gameplay_music"]
 [ext_resource type="PackedScene" uid="uid://ciiccw142kmek" path="res://Scenes/EchoChase/Prefabs/delay_pickup.tscn" id="15_delay"]
 [ext_resource type="PackedScene" uid="uid://bvn43sm7w0wuc" path="res://Scenes/EchoChase/Prefabs/future_recorder.tscn" id="16_recorder"]
@@ -321,6 +321,10 @@ position = Vector2(52, 868)
 
 [node name="EchoPlayer" parent="World" unique_id=605191803 instance=ExtResource("4_ukg33")]
 position = Vector2(320, 840)
+
+[node name="DeathVfx" parent="World" instance=ExtResource("33_room_departure")]
+unique_name_in_owner = true
+temporal_color = Color(1, 0.08, 0.12, 1)
 
 [node name="RoomCamera" type="Node2D" parent="World" unique_id=928911101]
 
@@ -1257,6 +1261,17 @@ libraries/ = SubResource("AnimationLibrary_memory_floor")
 [node name="TemporalRecordingHUD" parent="UI" unique_id=845923935 node_paths=PackedStringArray("player") instance=ExtResource("19_recording_hud")]
 player = NodePath("../../World/EchoPlayer")
 
+[node name="DeathFlash" type="ColorRect" parent="UI"]
+unique_name_in_owner = true
+visible = false
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.86, 0.015, 0.035, 1)
+
 [node name="PauseScreen" parent="UI" unique_id=948210252 instance=ExtResource("8_wwiui")]
 visible = false
 modal_offset = Vector2(0, 0.08)
@@ -1289,7 +1304,7 @@ narrative_presenter = NodePath("../NarrativePresenter")
 normal_ending_trigger = NodePath("../World/Finnal/NormalExit")
 final_return_point = NodePath("../World/Finnal/A")
 
-[node name="SceneController" type="Node" parent="." unique_id=1768837849 node_paths=PackedStringArray("player", "gameplay_world", "spawn_point", "present_room", "pause_screen", "setting_screen", "onboarding", "narrative_presenter", "reset_audio")]
+[node name="SceneController" type="Node" parent="." unique_id=1768837849 node_paths=PackedStringArray("player", "gameplay_world", "spawn_point", "present_room", "pause_screen", "setting_screen", "onboarding", "narrative_presenter", "gameplay_camera", "death_vfx", "death_flash", "reset_audio")]
 process_mode = 3
 script = ExtResource("12_pasgv")
 checkpoint_scene_path = "res://Scenes/EchoChase/echo_chase_start.tscn"
@@ -1302,6 +1317,9 @@ pause_screen = NodePath("../UI/PauseScreen")
 setting_screen = NodePath("../UI/SettingScreen")
 onboarding = NodePath("../Onboarding")
 narrative_presenter = NodePath("../NarrativePresenter")
+gameplay_camera = NodePath("../World/RoomCamera/Camera2D")
+death_vfx = NodePath("../World/DeathVfx")
+death_flash = NodePath("../UI/DeathFlash")
 reset_audio = NodePath("ResetAudio")
 gameplay_music = ExtResource("14_gameplay_music")
 present_entry_transition = ExtResource("20_present_entry")
