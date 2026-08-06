@@ -71,10 +71,10 @@ func recording_rejected() -> void:
 	recording_rejected_here.emit()
 
 
-# 时间线清空录像时按玩家是否仍在台内恢复可理解状态。
-func recording_cancelled() -> void:
-	_requires_exit_before_restart = _player_inside
-	_set_state(State.WAITING_EXIT if _player_inside else State.READY)
+# 时间线清空录像时恢复可理解状态；回传到台内时必须先离开才能重录。
+func recording_cancelled(require_exit := false) -> void:
+	_requires_exit_before_restart = require_exit or _player_inside
+	_set_state(State.WAITING_EXIT if _requires_exit_before_restart else State.READY)
 
 
 # 世界回退后按自身未来体和玩家位置恢复稳定状态。

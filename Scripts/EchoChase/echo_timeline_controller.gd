@@ -21,7 +21,7 @@ const PAST_PHASE_WARNING_SECONDS := 0.6
 const FUTURE_MINIMUM_SECONDS := 1.0
 const FUTURE_MAXIMUM_SECONDS := 5.0
 const TEMPORAL_PHASE_SECONDS := 0.35
-const RUN_TIME_LIMIT_SECONDS := 1800.0
+const RUN_TIME_LIMIT_SECONDS := LevelModule.DEFAULT_RUN_COUNTDOWN_REMAINING
 
 @onready var past_echo: PastEcho = %PastEcho
 
@@ -59,12 +59,23 @@ func _ready() -> void:
 func register_player(value: EchoPlayer) -> void:
 	if player == value:
 		return
+	var entering_scene := player == null
 	player = value
 	_present_room_active = false
 	_gameplay_active = true
+	if entering_scene:
+		_run_countdown_session_active = false
 	_ensure_run_countdown()
 	set_physics_process(true)
-	reset_timeline()
+	var initial_delay := DEFAULT_PAST_DELAY
+	var initial_switch_id := DEFAULT_DELAY_SWITCH_ID
+	if LevelModule.instance != null:
+		var saved_delay := LevelModule.instance.get_past_delay_seconds()
+		var saved_switch_id := LevelModule.instance.get_delay_switch_id()
+		if DELAY_OPTIONS.has(saved_delay) and not saved_switch_id.is_empty():
+			initial_delay = saved_delay
+			initial_switch_id = saved_switch_id
+	reset_timeline(initial_delay, initial_switch_id)
 
 
 # 场景卸载时清除已释放玩家留下的时态状态。
@@ -75,6 +86,7 @@ func unregister_player(value: EchoPlayer) -> void:
 	_present_room_active = false
 	_gameplay_active = false
 	_run_countdown_paused = true
+	_run_countdown_session_active = false
 	reset_timeline()
 
 
@@ -120,13 +132,26 @@ func start_run_countdown() -> void:
 	_run_countdown_session_active = true
 	_run_countdown_paused = true
 	_run_countdown_expired_emitted = false
+	if LevelModule.instance != null:
+		LevelModule.instance.set_run_countdown_remaining(_run_countdown_remaining)
 	_emit_run_countdown_changed()
 
 
 # Starts a timer for direct scene entry while preserving an active Continue run.
 func _ensure_run_countdown() -> void:
-	if not _run_countdown_session_active:
-		start_run_countdown()
+	if _run_countdown_session_active:
+		return
+	_run_countdown_remaining = RUN_TIME_LIMIT_SECONDS
+	_run_countdown_expired_emitted = false
+	if LevelModule.instance != null:
+		_run_countdown_remaining = LevelModule.instance.get_run_countdown_remaining()
+		_run_countdown_expired_emitted = LevelModule.instance.has_run_countdown_expired()
+	_run_countdown_session_active = true
+	_run_countdown_paused = true
+	_emit_run_countdown_changed()
+	if is_zero_approx(_run_countdown_remaining) and not _run_countdown_expired_emitted:
+		_run_countdown_expired_emitted = true
+		run_countdown_expired.emit()
 
 
 # Pauses only the whole-run countdown, used by PresentHub dialogue and presence.
@@ -140,7 +165,7 @@ func resume_run_countdown() -> void:
 		_run_countdown_paused = false
 
 
-# Returns the current unsaved whole-run time limit.
+# Returns the current slot-backed whole-run time limit.
 func get_run_countdown_remaining() -> float:
 	return _run_countdown_remaining
 
@@ -252,6 +277,37 @@ func commit_future_recording() -> bool:
 	return true
 
 
+# 让触发陷阱的录制未来消散，并把当前体与世界恢复到录像锚点。
+func cancel_future_recording_due_to_failure() -> bool:
+	if _recording_track == null:
+		return false
+	var cancelled_recorder := _recording_recorder
+	var cancelled_anchor := _recording_anchor
+	var cancelled_future_states := _recording_future_states.duplicate()
+	var cancelled_run_countdown_remaining := _recording_run_countdown_remaining
+	_recording_track = null
+	_recording_recorder = null
+	_recording_future_echo = null
+	_recording_future_states.clear()
+	_recording_anchor = {}
+	_recording_run_countdown_remaining = -1.0
+	_timeline_seconds = _recording_started_at
+	_run_track.trim_after(_timeline_seconds)
+	player.apply_temporal_recall(cancelled_anchor, TEMPORAL_PHASE_SECONDS)
+	_restore_past_anchor(cancelled_anchor)
+	for recorder in recorders:
+		var playback_state: Dictionary = cancelled_future_states.get(recorder.get_instance_id(), {})
+		if not playback_state.is_empty():
+			recorder.get_future_echo().restore_playback_state(playback_state)
+		recorder.refresh_future_state()
+	if cancelled_recorder != null:
+		cancelled_recorder.recording_cancelled(true)
+	_set_run_countdown_remaining(cancelled_run_countdown_remaining)
+	_sync_future_slot_count()
+	future_recording_finished.emit()
+	return true
+
+
 # 请求切换过去延迟；连续请求只覆盖目标，不重置既有预警。
 func request_past_delay(seconds: float, switch_id: StringName) -> bool:
 	if not DELAY_OPTIONS.has(seconds):
@@ -265,6 +321,8 @@ func request_past_delay(seconds: float, switch_id: StringName) -> bool:
 		and switch_id == _pending_past_delay_switch_id
 	):
 		return false
+	if LevelModule.instance != null:
+		LevelModule.instance.set_past_delay(seconds, switch_id)
 	if _present_room_active:
 		_past_delay_seconds = seconds
 		_pending_past_delay_seconds = seconds
@@ -460,7 +518,7 @@ func _sync_future_slot_count() -> void:
 	future_slots_changed.emit(_future_slots_used, recorders.size())
 
 
-# Advances the unsaved whole-run limit everywhere except PresentHub.
+# Advances the slot-backed whole-run limit everywhere except PresentHub.
 func _advance_run_countdown(delta: float) -> void:
 	if (
 		not _run_countdown_session_active
@@ -477,6 +535,8 @@ func _advance_run_countdown(delta: float) -> void:
 func _set_run_countdown_remaining(value: float) -> void:
 	var was_above_zero := _run_countdown_remaining > 0.0
 	_run_countdown_remaining = clampf(value, 0.0, RUN_TIME_LIMIT_SECONDS)
+	if LevelModule.instance != null:
+		LevelModule.instance.set_run_countdown_remaining(_run_countdown_remaining)
 	_emit_run_countdown_changed()
 	if was_above_zero and is_zero_approx(_run_countdown_remaining) and not _run_countdown_expired_emitted:
 		_run_countdown_expired_emitted = true

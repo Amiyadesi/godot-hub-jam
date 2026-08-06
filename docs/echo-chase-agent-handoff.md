@@ -52,7 +52,7 @@ EchoChaseStart
 - 玩家、过去体和未来体的 `Visual` 都是无材质 `AnimatedSprite2D`；洋红、青白、琥珀仅由独立 Outline/Halo 层表达。
 - 平台使用 `assets/echo_chase/tilemap/echo_platform_tileset.tres`，逻辑格为 `16x16`。
 - checkpoint 临时图来自同一 Kenney atlas 的 `(7,2)`。
-- 菜单地图与三时态剪影只存在于 `MenuWorld/WorldParallax`，由 `WorldCamera` 产生轻微世界视差；标题、按钮、设置、感谢、转场和 `TemporalFrame` 位于固定 `MenuUi`。改地图、道路、剪影或其动画时只编辑 `menu_world.tscn`；不得在 `menu.tscn` 重建副本。
+- 菜单地图与三时态剪影只存在于 `MenuWorld/WorldParallax`，由 `WorldCamera` 产生轻微世界视差；三体使用更深的红/青/金 Core、较高 fill，并各自带低密度 `temporal_particle.svg` 粒子。标题、按钮、设置、感谢、转场和 `TemporalFrame` 位于固定 `MenuUi`。改地图、道路、剪影或其动画时只编辑 `menu_world.tscn`；不得在 `menu.tscn` 重建副本。
 - 音效节点已 authored：玩家冲刺/落地、过去体出现、失败复位、checkpoint 激活。
 - 菜单音乐为 Frenchyboy 的 CC0 `Mysterious2.wav` 转码版本：`assets/echo_chase/audio/music/mysterious_futuristic_loop.ogg`；来源与 SHA256 见 `docs/asset-attributions.md`。
 - 施工玩法音乐为 SRG774 的 CC0 `sector.ogg`，进入玩法时由 `GameAudio` 从菜单曲 crossfade；支路装置激活使用同包 `victory.ogg`。
@@ -78,15 +78,16 @@ collected_item_ids
 opened_latched_door_ids
 present_hub_unlocked
 run_countdown_expired
+run_countdown_remaining
 ```
 
-延迟台是可重复机关，类名仍为 `DelayPickup`。每个场景必须恰好一个默认 `3s` 台，所有台使用唯一 ID；`EchoChaseStart` 从 authored `gameplay_world` 收集它们。MemoryShard、BranchProgressionDevice 和倒计时归零都会立即保存；Latched ALL 状态仍随现有存档流程持久化。触碰 `current_room` 且尚未完成对话时会启动中央 NPC 剧情。被过去体抓到后，玩家冻结 `0.4s`，随后先恢复坐标，再用保存的延迟和台 ID 调用 `EchoTimeline.reset_timeline()`。Continue 同样建立干净时间线。
+延迟台是可重复机关，类名仍为 `DelayPickup`。每个场景必须恰好一个默认 `3s` 台，所有台使用唯一 ID；`EchoChaseStart` 从 authored `gameplay_world` 收集它们。倒计时剩余秒数与当前延迟台选择是槽位级状态，不依赖是否刚触碰 checkpoint；任意后续 `SaveSystem.save_slot()` 都会写入最新内存值，Continue 再恢复。MemoryShard、BranchProgressionDevice 和倒计时归零都会立即保存；Latched ALL 状态仍随现有存档流程持久化。触碰 `current_room` 且尚未完成对话时会启动中央 NPC 剧情。被过去体抓到后，玩家冻结 `0.4s`，随后先恢复坐标，再用保存的延迟和台 ID 调用 `EchoTimeline.reset_timeline()`。Continue 同样建立干净时间线。
 
 终点 `World/Finnal/StaticBody2D` 使用 `MemoryFloorGate`。它只统计四个稳定记忆 ID，按数量从左到右点亮 A-D；四枚齐全后禁用地块碰撞，播放一次红色闪光并持续透明闪烁，读档直接恢复。地块下方两个房间保持用户当前空白，不包含 agent 生成谜题或路线。
 
 Keeper 只在玩家主动交互时提供条件选项：爱心数 `>= 1` 且无 `askheart`、倒计时已归零且无 `asktime`、无 `askname`。失败条件选项完全隐藏；任一未读选项可用时头顶闪烁 `!`。问完写入 `NarrativeSlotModule` 并立即保存。`EchoChaseStart` 只判断一次启动 locale，并同时锁定 Keeper 的 `present_hub.zh/en.dialogue` 与 NarrativePresenter 的 `endings.zh/en.dialogue`，不经过 PO 二次翻译。NarrativePresenter 不再拥有自动 Keeper 气泡；旧 `true_ending_route` 与 `KnowledgeLock` 已删除，金色全屏真结局演出仍保留供后续 authored 路线调用。
 
-未来录像可在第一帧提交；短路径保持末帧补足到 `1s`。录制中接触过去体会提交/回传，不会触发失败。`TemporalRecordingHUD` 监听时间线与 `KeybindingModule.bindings_changed`，禁止把按键文本硬编码回 `L`。
+未来录像可在第一帧提交；短路径保持末帧补足到 `1s`。录制中接触过去体会提交/回传；录制中碰到 Trap 则只让金色 Future 播放退场并取消本次录像，玩家、其他 Future、Past、延迟和倒计时回到录像锚点，不进入 checkpoint 死亡流程。`TemporalRecordingHUD` 监听时间线与 `KeybindingModule.bindings_changed`，禁止把按键文本硬编码回 `L`。
 
 过去体切档时，`DepartureVfx` 在旧历史位置播放洋红裂解，PastEcho 主体同时移到新历史位置播放 `0.6s` 轮廓收束。未来体结束时先禁用碰撞并发出 `slot_released`，再由琥珀快照完成尾效；`dissipated` 只表示视觉尾段结束。
 

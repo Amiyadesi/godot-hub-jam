@@ -8,18 +8,20 @@ signal collectible_collected(item_id: String)
 static var instance: LevelModule
 
 const VALID_PAST_DELAYS := [1.0, 3.0, 5.0]
+const DEFAULT_RUN_COUNTDOWN_REMAINING := 1800.0
 
 var checkpoint_scene_path := ""
 var checkpoint_id := ""
 var checkpoint_position := Vector2.ZERO
 var past_delay_seconds := 3.0
-var delay_switch_id := ""
+var delay_switch_id := "delay_3s"
 # Branch devices persist immediately when activated; checkpoint-gated state is stored separately below.
 var activated_progression_device_ids: Array[String] = []
 var collected_item_ids: Array[String] = []
 var opened_latched_door_ids: Array[String] = []
 var present_hub_unlocked := false
 var run_countdown_expired := false
+var run_countdown_remaining := DEFAULT_RUN_COUNTDOWN_REMAINING
 var _has_checkpoint_position := false
 
 
@@ -54,12 +56,32 @@ func collect_data() -> Dictionary:
 		"opened_latched_door_ids": opened_latched_door_ids.duplicate(),
 		"present_hub_unlocked": present_hub_unlocked,
 		"run_countdown_expired": run_countdown_expired,
+		"run_countdown_remaining": run_countdown_remaining,
 	}
 
 
 # 只接收当前坐标 schema；旧开发存档直接视为无进度。
 func apply_data(data: Dictionary) -> void:
 	_apply_world_progress(data)
+	var stored_delay: Variant = data.get("past_delay_seconds", 3.0)
+	var restored_delay := 3.0
+	if stored_delay is float or stored_delay is int:
+		var candidate_delay := float(stored_delay)
+		if VALID_PAST_DELAYS.has(candidate_delay):
+			restored_delay = candidate_delay
+	var restored_switch_id := str(data.get("delay_switch_id", ""))
+	if restored_switch_id.is_empty():
+		restored_switch_id = "delay_%ds" % int(restored_delay)
+	past_delay_seconds = restored_delay
+	delay_switch_id = restored_switch_id
+	var stored_countdown: Variant = data.get(
+		"run_countdown_remaining",
+		0.0 if run_countdown_expired else DEFAULT_RUN_COUNTDOWN_REMAINING
+	)
+	if stored_countdown is float or stored_countdown is int:
+		run_countdown_remaining = clampf(float(stored_countdown), 0.0, DEFAULT_RUN_COUNTDOWN_REMAINING)
+	else:
+		run_countdown_remaining = DEFAULT_RUN_COUNTDOWN_REMAINING
 	var stored_position: Variant = data.get("checkpoint_position")
 	if not stored_position is Dictionary:
 		clear_checkpoint()
@@ -68,20 +90,13 @@ func apply_data(data: Dictionary) -> void:
 	if not position_data.has("x") or not position_data.has("y"):
 		clear_checkpoint()
 		return
-	var stored_delay: Variant = data.get("past_delay_seconds")
 	var stored_switch_id := str(data.get("delay_switch_id", ""))
-	if not stored_delay is float and not stored_delay is int:
-		clear_checkpoint()
-		return
-	var restored_delay := float(stored_delay)
-	if not VALID_PAST_DELAYS.has(restored_delay) or stored_switch_id.is_empty():
+	if stored_switch_id.is_empty():
 		clear_checkpoint()
 		return
 	checkpoint_scene_path = str(data.get("checkpoint_scene_path", ""))
 	checkpoint_id = str(data.get("checkpoint_id", ""))
 	checkpoint_position = Vector2(float(position_data["x"]), float(position_data["y"]))
-	past_delay_seconds = restored_delay
-	delay_switch_id = stored_switch_id
 	_has_checkpoint_position = (
 		not checkpoint_scene_path.is_empty()
 		and not checkpoint_id.is_empty()
@@ -96,12 +111,13 @@ func get_default_data() -> Dictionary:
 		"checkpoint_id": "",
 		"checkpoint_position": {"x": 0.0, "y": 0.0},
 		"past_delay_seconds": 3.0,
-		"delay_switch_id": "",
+		"delay_switch_id": "delay_3s",
 		"activated_progression_device_ids": [],
 		"collected_item_ids": [],
 		"opened_latched_door_ids": [],
 		"present_hub_unlocked": false,
 		"run_countdown_expired": false,
+		"run_countdown_remaining": DEFAULT_RUN_COUNTDOWN_REMAINING,
 	}
 
 
@@ -109,6 +125,9 @@ func get_default_data() -> Dictionary:
 func on_new_game() -> void:
 	clear_checkpoint()
 	clear_world_progress()
+	past_delay_seconds = 3.0
+	delay_switch_id = "delay_3s"
+	run_countdown_remaining = DEFAULT_RUN_COUNTDOWN_REMAINING
 
 
 # 保存 authored 复活点场景、ID 与世界坐标。
@@ -131,6 +150,36 @@ func set_checkpoint(
 	past_delay_seconds = new_past_delay_seconds
 	delay_switch_id = new_delay_switch_id
 	_has_checkpoint_position = true
+
+
+# 保存当前槽位选中的过去延迟，即使玩家尚未激活新的 checkpoint。
+func set_past_delay(new_delay_seconds: float, new_delay_switch_id: StringName) -> bool:
+	if not VALID_PAST_DELAYS.has(new_delay_seconds) or new_delay_switch_id.is_empty():
+		push_error("LevelModule.set_past_delay requires a valid delay and switch id")
+		return false
+	past_delay_seconds = new_delay_seconds
+	delay_switch_id = String(new_delay_switch_id)
+	return true
+
+
+# 返回当前槽位选中的过去延迟。
+func get_past_delay_seconds() -> float:
+	return past_delay_seconds
+
+
+# 返回当前槽位选中的延迟台 ID。
+func get_delay_switch_id() -> StringName:
+	return StringName(delay_switch_id)
+
+
+# 保存整局倒计时的最新内存值，真正落盘仍由 SaveSystem.save_slot 触发。
+func set_run_countdown_remaining(value: float) -> void:
+	run_countdown_remaining = clampf(value, 0.0, DEFAULT_RUN_COUNTDOWN_REMAINING)
+
+
+# 返回整局倒计时剩余秒数。
+func get_run_countdown_remaining() -> float:
+	return run_countdown_remaining
 
 
 # 判断当前槽位是否有完整、可继续的复活点。
@@ -166,8 +215,6 @@ func clear_checkpoint() -> void:
 	checkpoint_scene_path = ""
 	checkpoint_id = ""
 	checkpoint_position = Vector2.ZERO
-	past_delay_seconds = 3.0
-	delay_switch_id = ""
 	_has_checkpoint_position = false
 
 
@@ -262,6 +309,7 @@ func clear_world_progress() -> void:
 	opened_latched_door_ids.clear()
 	present_hub_unlocked = false
 	run_countdown_expired = false
+	run_countdown_remaining = DEFAULT_RUN_COUNTDOWN_REMAINING
 
 
 # Restores optional world-progress fields without invalidating legacy checkpoints.

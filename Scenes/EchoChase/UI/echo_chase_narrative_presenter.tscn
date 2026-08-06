@@ -112,6 +112,7 @@ _data = {
 
 [node name="EchoChaseNarrativePresenter" type="Node"]
 process_mode = 3
+auto_translate_mode = 2
 script = ExtResource("1_script")
 ending_dialogue_resource_zh = ExtResource("2_ending_zh")
 ending_dialogue_resource_en = ExtResource("3_ending_en")

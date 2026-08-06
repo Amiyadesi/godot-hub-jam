@@ -21,8 +21,10 @@ func _ready() -> void:
 	_test_track_interpolates_continuous_motion()
 	_test_track_keeps_recall_until_its_exact_time()
 	_test_player_tuning_matches_authored_envelope()
+	_test_level_module_round_trip()
 	await _test_run_countdown_lifecycle()
 	await _test_past_catch_reports_recording_source()
+	await _test_future_recording_cancels_on_trap()
 	_test_dash_charge_marker_follows_player_state()
 	_test_dash_input_consumes_single_charge()
 	_test_reset_discards_buffered_dash()
@@ -102,6 +104,55 @@ func _test_player_tuning_matches_authored_envelope() -> void:
 	_expect(is_equal_approx(full_jump_height / TILE_SIZE, 2.5), "EchoPlayer full jump reaches 2.5 tiles")
 	_expect(short_jump_height / TILE_SIZE >= 1.15 and short_jump_height / TILE_SIZE <= 1.25, "EchoPlayer short jump stays near 1.2 tiles")
 	_expect(dash_distance / TILE_SIZE >= 3.0 and dash_distance / TILE_SIZE <= 3.3, "EchoPlayer dash stays near 3.25 tiles")
+	player.free()
+
+
+# 验证槽位字段独立保存整局倒计时和当前过去延迟。
+func _test_level_module_round_trip() -> void:
+	var module := LevelModule.instance
+	_expect(module != null, "LevelModule is available for slot round-trip")
+	if module == null:
+		return
+	var original_data: Dictionary = module.collect_data().duplicate(true)
+	module.on_new_game()
+	_expect(module.set_past_delay(1.0, &"delay_1s"), "LevelModule accepts a one-second delay selection")
+	module.set_run_countdown_remaining(987.25)
+	var saved_data: Dictionary = module.collect_data().duplicate(true)
+	module.on_new_game()
+	module.apply_data(saved_data)
+	_expect(is_equal_approx(module.get_run_countdown_remaining(), 987.25), "slot round-trip restores countdown remaining")
+	_expect(is_equal_approx(module.get_past_delay_seconds(), 1.0), "slot round-trip restores selected past delay")
+	_expect(module.get_delay_switch_id() == &"delay_1s", "slot round-trip restores selected delay switch")
+	module.apply_data(original_data)
+
+
+# 验证 Future 录制撞陷阱时只取消录制并回到锚点，不占用失败复位流程。
+func _test_future_recording_cancels_on_trap() -> void:
+	var player := PLAYER_SCENE.instantiate() as EchoPlayer
+	add_child(player)
+	player.set_physics_process(false)
+	var recorder := FUTURE_RECORDER_SCENE.instantiate() as FutureRecorder
+	add_child(recorder)
+	await get_tree().process_frame
+	var original_data: Dictionary = LevelModule.instance.collect_data().duplicate(true)
+	EchoTimeline.reset_timeline()
+	EchoTimeline.start_run_countdown()
+	EchoTimeline.resume_run_countdown()
+	EchoTimeline._set_run_countdown_remaining(777.0)
+	player.global_position = Vector2(120, 80)
+	var anchor_position := player.global_position
+	_expect(EchoTimeline.start_future_recording(recorder), "Future recording starts before trap cancellation")
+	EchoTimeline._physics_process(PHYSICS_STEP)
+	player.global_position = anchor_position + Vector2(48, 0)
+	_expect(EchoTimeline.cancel_future_recording_due_to_failure(), "trap cancels the Future recording")
+	_expect(not EchoTimeline.is_future_recording(), "trap cancellation exits recording mode")
+	_expect(player.global_position.is_equal_approx(anchor_position), "trap cancellation recalls the player to the recording anchor")
+	_expect(is_equal_approx(EchoTimeline.get_run_countdown_remaining(), 777.0), "trap cancellation restores the recording countdown")
+	_expect(recorder.get_future_echo().is_available(), "trap cancellation releases the reserved Future slot")
+	_expect(recorder.get_state_name() == &"waiting_exit", "trap cancellation requires leaving the recorder before retry")
+	EchoTimeline.reset_timeline()
+	LevelModule.instance.apply_data(original_data)
+	recorder.free()
 	player.free()
 
 

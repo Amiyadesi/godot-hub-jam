@@ -6,6 +6,7 @@
 - `EchoChaseStart` 启动时只判断一次 locale，同时锁定 `present_hub.zh/en.dialogue` 与 `endings.zh/en.dialogue`，整局不再重新选择或经过 PO 二次翻译；现在房内 NPC 持续面向玩家，离开后恢复朝右。
 - 四段记忆使用黑屏、红色倾斜字与 RichText2 抖动，不显示说话者；不满足条件的 Keeper 选项完全隐藏，`askname/askheart/asktime` 任一新选项可用时头顶闪烁 `!`。
 - 倒计时更大、更清晰，归零只保存状态；玩家再次主动询问 Keeper 时才出现一次坦白选项，不失败、不清档。
+- Continue 会恢复保存时的倒计时剩余秒数和当前 `1s/3s/5s` 延迟选择；录制 Future 时碰 Trap 只取消录像并回到锚点，不杀死真实玩家。
 - 爱心数 `>= 1` 时出现一次主动问题；终点 A-D 按数量点亮，四枚后地块闪光、透明闪烁并允许落入下方。
 - 下方两个房间保持空白，旧真结局路线与 KnowledgeLock 已删除；金色全屏真结局演出仍保留。
 - `ProgressionShortcut`、Future 凝固结构、Past/Future 移动拖尾、全局时间尘埃和双结局粒子已接入；`low_flash_mode` 会抑制密集爆发并降低持续粒子密度。
@@ -14,7 +15,7 @@
 
 ## 自己修改这些内容
 
-- **冲刺/跳跃音效**：打开 `Scenes/EchoChase/Prefabs/echo_player.tscn`，修改 `DashAudio` 与 `JumpAudio` 的 `stream`。当前分别是 `player_dash.ogg` 和 `phaseJump2.ogg`；这里只换资源，不改 `Scripts/EchoChase/echo_player.gd`。
+- **冲刺/跳跃音效**：打开 `Scenes/EchoChase/Prefabs/echo_player.tscn`，修改 `DashAudio` 与 `JumpAudio` 的 `stream`。当前分别是 `phaserDown2.ogg` 和 `phaseJump2.ogg`；这里只换资源，不改 `Scripts/EchoChase/echo_player.gd`。
 - **对话打字音**：打开 `Dialogue/EchoChase/echo_dialogue_balloon.tscn`，修改 `typing_sound` 和 `sound_interval`。真正播放由同场景继承的 `TypingSoundModule` 完成。
 - **Keeper 对话与 RichText2 特效**：中文改 `Dialogue/EchoChase/present_hub.zh.dialogue`，英文改 `Dialogue/EchoChase/present_hub.en.dialogue`。在台词中使用 `[sway]...[]`、`[sparkle]...[]`、`[jit2]...[]`；两份文件要保持同一分支结构。
 - **黑底红字记忆与开场 `Run/跑`**：布局和字体在 `Scenes/EchoChase/UI/echo_chase_narrative_presenter.tscn` 的 `MemoryText`，当前使用项目已有的 `SmileySans-Oblique`，字号为 `88`。内容和逐句节奏在 `Scripts/EchoChase/echo_chase_narrative_presenter.gd` 的 `MEMORY_*` 调用与 PO key 中调整。
@@ -32,6 +33,7 @@
 3. 到 Hub 时，玩家是否注意到倒计时、三条支路和 Keeper，而不会把倒计时误读成真实失败条件。
 4. 每条支路首题的首次错误假设、失败次数、解开时间，以及解开后能否复述该支路的新规则。
 5. 到终点时，玩家是否自然看见普通出口；全碎片玩家是否注意到 A-D 全亮、地块透明闪烁，并理解可以主动落到下方。
+6. 在 `1s` 或 `5s` 支路存档后 Continue，确认倒计时与延迟不变；录制 Future 主动撞一次 Trap，确认只看到金色退场并回到 Recorder。
 
 停止条件：若两名玩家在同一处卡住超过三分钟，下一轮只改那一处的构图、落点或反馈，不继续加谜题和说明文字。
 

@@ -9,6 +9,7 @@ const ENTRY_STATE_META := &"echo_chase_entry_temporal_state"
 const ENTRY_STATE_PRESENT := &"present"
 const ENTRY_STATE_PAST := &"past"
 const CURRENT_ROOM_CHECKPOINT_ID := &"current_room"
+const FUTURE_FAILURE_COLOR := Color(1.0, 0.68, 0.16, 1.0)
 
 @export_file("*.tscn") var checkpoint_scene_path := ""
 @export_file("*.tscn") var menu_scene_path := ""
@@ -63,7 +64,7 @@ func _ready() -> void:
 		return
 	_camera_rest_offset = gameplay_camera.offset
 	_reset_failure_feedback()
-	var use_chinese := TranslationServer.get_locale().to_lower().begins_with("zh")
+	var use_chinese := str(SettingsModule.instance.get_value("language", "en")) == "zh_CN"
 	present_room.dialogue_npc.select_dialogue_language(use_chinese)
 	narrative_presenter.select_dialogue_language(use_chinese)
 	if gameplay_music == null:
@@ -165,6 +166,13 @@ func _restore_entry_position() -> void:
 	if _default_delay_switch != null:
 		_respawn_past_delay_seconds = float(_default_delay_switch.delay_seconds)
 		_respawn_delay_switch_id = _default_delay_switch.get_delay_switch_id()
+	if LevelModule.instance != null:
+		var saved_delay := LevelModule.instance.get_past_delay_seconds()
+		var saved_switch_id := LevelModule.instance.get_delay_switch_id()
+		var persisted_delay_switch := _get_delay_switch(saved_switch_id)
+		if EchoTimeline.DELAY_OPTIONS.has(saved_delay) and persisted_delay_switch != null:
+			_respawn_past_delay_seconds = saved_delay
+			_respawn_delay_switch_id = saved_switch_id
 	var checkpoint := LevelModule.instance.get_checkpoint() if LevelModule.instance != null else {}
 	if checkpoint.is_empty() or checkpoint.get("scene_path", "") != checkpoint_scene_path:
 		player.reset_player(_respawn_position)
@@ -289,13 +297,18 @@ func _on_player_caught() -> void:
 	_begin_failure_reset(&"hit")
 
 
-# 玩家 Hurtbox 和过去体共用带动画语义的 checkpoint 失败入口。
+# 玩家 Hurtbox 在普通状态进入 checkpoint 失败；录制状态只摧毁当前 Future。
 func _on_player_failure_requested(animation_name: StringName) -> void:
+	if EchoTimeline.is_future_recording():
+		var authored_death_color := death_vfx.temporal_color
+		death_vfx.temporal_color = FUTURE_FAILURE_COLOR
+		death_vfx.play_from_sprites(player.visual, player.recording_outline, player.velocity)
+		death_vfx.temporal_color = authored_death_color
+		_play_failure_feedback()
+		if not EchoTimeline.cancel_future_recording_due_to_failure():
+			push_error("EchoChaseStart failed to cancel a Future recording after trap contact")
+		return
 	_begin_failure_reset(animation_name)
-
-
-
-
 
 # 冻结玩家 0.4 秒，然后先恢复坐标、再清空时间线。
 func _begin_failure_reset(animation_name: StringName) -> void:

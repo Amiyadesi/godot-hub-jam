@@ -6,6 +6,7 @@
 [ext_resource type="SpriteFrames" uid="uid://da37aey76yc08" path="res://assets/echo_chase/character/echo_character_outline_frames.tres" id="4_outline_frames"]
 [ext_resource type="Shader" uid="uid://ccnr3f2ov4cnc" path="res://assets/echo_chase/vfx/temporal_outline.gdshader" id="5_outline_shader"]
 [ext_resource type="Texture2D" uid="uid://bqyfshrwdgvmw" path="res://assets/echo_chase/vfx/temporal_transition_ring.svg" id="6_ring"]
+[ext_resource type="Texture2D" uid="uid://cvfu3k8hdr2x5" path="res://assets/echo_chase/vfx/temporal_particle.svg" id="7_particle"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_grid_world"]
 shader = ExtResource("2_grid")
@@ -19,19 +20,32 @@ shader_parameter/line_width = 1.0
 shader = ExtResource("5_outline_shader")
 shader_parameter/temporal_color = Color(1, 0.24, 0.82, 1)
 shader_parameter/outline_alpha = 1.0
-shader_parameter/fill_alpha = 0.12
+shader_parameter/fill_alpha = 0.28
 
 [sub_resource type="ShaderMaterial" id="Material_present_world"]
 shader = ExtResource("5_outline_shader")
 shader_parameter/temporal_color = Color(0.7, 1, 1, 1)
 shader_parameter/outline_alpha = 1.0
-shader_parameter/fill_alpha = 0.12
+shader_parameter/fill_alpha = 0.24
 
 [sub_resource type="ShaderMaterial" id="Material_future_world"]
 shader = ExtResource("5_outline_shader")
 shader_parameter/temporal_color = Color(1, 0.7, 0.2, 1)
 shader_parameter/outline_alpha = 1.0
-shader_parameter/fill_alpha = 0.12
+shader_parameter/fill_alpha = 0.3
+
+[sub_resource type="ParticleProcessMaterial" id="Particle_menu_echo"]
+particle_flag_disable_z = true
+emission_shape = 1
+emission_sphere_radius = 5.0
+direction = Vector3(0, -1, 0)
+spread = 180.0
+initial_velocity_min = 5.0
+initial_velocity_max = 14.0
+gravity = Vector3(0, 3, 0)
+scale_min = 0.35
+scale_max = 0.72
+color = Color(1, 1, 1, 0.72)
 
 [sub_resource type="Animation" id="Animation_world_pulse_past"]
 resource_name = "pulse_past"
@@ -347,7 +361,7 @@ scale = Vector2(0.2, 0.2)
 texture = ExtResource("6_ring")
 
 [node name="HistoryGhostFar" type="AnimatedSprite2D" parent="WorldParallax/PastEcho" unique_id=1725315015]
-self_modulate = Color(1, 0.08, 0.62, 0.18)
+self_modulate = Color(0.82, 0.02, 0.2, 0.26)
 texture_filter = 1
 position = Vector2(-3, 1)
 sprite_frames = ExtResource("3_frames")
@@ -355,7 +369,7 @@ animation = &"idle"
 autoplay = "idle"
 
 [node name="HistoryGhost" type="AnimatedSprite2D" parent="WorldParallax/PastEcho" unique_id=394131833]
-self_modulate = Color(1, 0.14, 0.7, 0.3)
+self_modulate = Color(0.92, 0.03, 0.24, 0.4)
 texture_filter = 1
 position = Vector2(-2, 1)
 sprite_frames = ExtResource("3_frames")
@@ -363,7 +377,7 @@ animation = &"idle"
 autoplay = "idle"
 
 [node name="Core" type="AnimatedSprite2D" parent="WorldParallax/PastEcho" unique_id=1384306791]
-self_modulate = Color(1, 0.34, 0.72, 0.84)
+self_modulate = Color(0.96, 0.08, 0.28, 0.96)
 texture_filter = 1
 sprite_frames = ExtResource("3_frames")
 animation = &"idle"
@@ -376,6 +390,19 @@ sprite_frames = ExtResource("4_outline_frames")
 animation = &"idle"
 autoplay = "idle"
 
+[node name="TraceParticles" type="GPUParticles2D" parent="WorldParallax/PastEcho" unique_id=191223011]
+z_index = 1
+emitting = true
+amount = 18
+texture = ExtResource("7_particle")
+lifetime = 1.1
+preprocess = 1.1
+randomness = 0.85
+visibility_rect = Rect2(-48, -48, 96, 96)
+local_coords = true
+process_material = SubResource("Particle_menu_echo")
+modulate = Color(0.92, 0.08, 0.22, 0.72)
+
 [node name="PresentEcho" type="Node2D" parent="WorldParallax" unique_id=191223020]
 modulate = Color(1, 1, 1, 0)
 position = Vector2(240, 146)
@@ -387,6 +414,7 @@ texture_filter = 1
 texture = ExtResource("6_ring")
 
 [node name="Core" type="AnimatedSprite2D" parent="WorldParallax/PresentEcho" unique_id=1351391830]
+self_modulate = Color(0.6, 0.9, 0.94, 0.94)
 texture_filter = 1
 sprite_frames = ExtResource("3_frames")
 animation = &"idle"
@@ -399,6 +427,19 @@ sprite_frames = ExtResource("4_outline_frames")
 animation = &"idle"
 autoplay = "idle"
 
+[node name="TraceParticles" type="GPUParticles2D" parent="WorldParallax/PresentEcho" unique_id=191223021]
+z_index = 1
+emitting = true
+amount = 14
+texture = ExtResource("7_particle")
+lifetime = 1.0
+preprocess = 1.0
+randomness = 0.8
+visibility_rect = Rect2(-48, -48, 96, 96)
+local_coords = true
+process_material = SubResource("Particle_menu_echo")
+modulate = Color(0.38, 0.88, 0.92, 0.58)
+
 [node name="FutureEcho" type="Node2D" parent="WorldParallax" unique_id=191223030]
 modulate = Color(1, 1, 1, 0)
 position = Vector2(400, 146)
@@ -410,7 +451,7 @@ texture_filter = 1
 texture = ExtResource("6_ring")
 
 [node name="PredictionGhost" type="AnimatedSprite2D" parent="WorldParallax/FutureEcho" unique_id=1375979338]
-self_modulate = Color(1, 0.7, 0.2, 0.28)
+self_modulate = Color(1, 0.42, 0.02, 0.38)
 texture_filter = 1
 position = Vector2(3, 1)
 sprite_frames = ExtResource("3_frames")
@@ -418,7 +459,7 @@ animation = &"idle"
 autoplay = "idle"
 
 [node name="Core" type="AnimatedSprite2D" parent="WorldParallax/FutureEcho" unique_id=2017207290]
-self_modulate = Color(1, 0.76, 0.24, 0.84)
+self_modulate = Color(1, 0.56, 0.06, 0.96)
 texture_filter = 1
 sprite_frames = ExtResource("3_frames")
 animation = &"idle"
@@ -430,6 +471,19 @@ material = SubResource("Material_future_world")
 sprite_frames = ExtResource("4_outline_frames")
 animation = &"idle"
 autoplay = "idle"
+
+[node name="TraceParticles" type="GPUParticles2D" parent="WorldParallax/FutureEcho" unique_id=191223031]
+z_index = 1
+emitting = true
+amount = 20
+texture = ExtResource("7_particle")
+lifetime = 0.9
+preprocess = 0.9
+randomness = 0.85
+visibility_rect = Rect2(-48, -48, 96, 96)
+local_coords = true
+process_material = SubResource("Particle_menu_echo")
+modulate = Color(1, 0.5, 0.04, 0.7)
 
 [node name="WorldCamera" type="Camera2D" parent="." unique_id=191223040]
 position = Vector2(240, 135)

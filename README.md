@@ -49,7 +49,7 @@
 
 ## 存档
 
-`LevelModule` 仅保存干净检查点：`checkpoint_scene_path`、`checkpoint_id`、`checkpoint_position: {x, y}`、`past_delay_seconds` 与 `delay_switch_id`。它故意不兼容 Phase Lag 或缺少延迟台字段的开发存档，也不保存任何在途时间状态。主菜单的“继续游戏”读取最近 checkpoint；已有 checkpoint 时点“开始游戏”会先确认是否覆盖。
+`LevelModule` 保存干净检查点、当前延迟选择、整局倒计时剩余值，以及已有的装置、收集物、锁存门和中央房状态。它不保存任何在途时间线或录像路径；主菜单的“继续游戏”会恢复保存时的倒计时和 `1/3/5s` 延迟选择。它故意不兼容 Phase Lag 的旧玩法语义；已有 checkpoint 时点“开始游戏”会先确认是否覆盖。
 
 ## 验证
 
@@ -61,4 +61,4 @@ godot --headless --path . --scene res://Scenes/EchoChase/echo_chase_start.tscn -
 
 原型阶段只保留路径插值与回传断点两项算法检查。关卡结构、Prefab 数量、资源、视觉、UI、相机和 Inspector 调参均以编辑器中的当前 authored 内容为准，不用硬测试锁死。
 
-不导出 Windows 版本，直到用户灰盒完成并通过试玩止损门。
+Windows 试玩导出由当前 Jam 交付流程单独验证，正式路线仍以用户 authored 灰盒和试玩止损门为准。

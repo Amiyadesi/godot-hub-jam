@@ -37,6 +37,7 @@
 [ext_resource type="PackedScene" path="res://Scenes/EchoChase/UI/echo_chase_onboarding.tscn" id="40_onboarding"]
 [ext_resource type="Script" uid="uid://bw6vrgkstukeg" path="res://Scripts/EchoChase/memory_floor_gate.gd" id="41_memory_floor_gate"]
 [ext_resource type="PackedScene" path="res://Scenes/EchoChase/UI/echo_mobile_controls.tscn" id="42_mobile_controls"]
+[ext_resource type="FontFile" uid="uid://bk23nmiva6eei" path="res://assets/fonts/fusion-pixel-12px-proportional-zh_hans.ttf" id="43_pixel_font"]
 
 [sub_resource type="ParticleProcessMaterial" id="Particle_world_dust"]
 particle_flag_disable_z = true
@@ -781,14 +782,16 @@ local_coords = true
 process_material = SubResource("Particle_present_room_ambient")
 
 [node name="Label" type="Label" parent="World/PresentHub" unique_id=574734010]
-offset_left = -104.0
+texture_filter = 1
+offset_left = -144.0
 offset_top = -112.0
-offset_right = 104.0
+offset_right = 144.0
 offset_bottom = -52.0
+theme_override_fonts/font = ExtResource("43_pixel_font")
 theme_override_colors/font_color = Color(0.62, 0.92, 1, 1)
 theme_override_colors/font_outline_color = Color(0.01, 0.04, 0.05, 0.95)
 theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 32
+theme_override_font_sizes/font_size = 48
 text = "30:00"
 horizontal_alignment = 1
 vertical_alignment = 1
@@ -1156,14 +1159,16 @@ item_id = &"memory_t_minus_5"
 [node name="Finnal" type="Node2D" parent="World" unique_id=1435246247]
 
 [node name="Label" type="Label" parent="World/Finnal" unique_id=1716312669]
-offset_left = 1910.0
+texture_filter = 1
+offset_left = 1870.0
 offset_top = 930.0
-offset_right = 2118.0
+offset_right = 2158.0
 offset_bottom = 990.0
+theme_override_fonts/font = ExtResource("43_pixel_font")
 theme_override_colors/font_color = Color(0.62, 0.92, 1, 1)
 theme_override_colors/font_outline_color = Color(0.01, 0.04, 0.05, 0.95)
 theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 32
+theme_override_font_sizes/font_size = 48
 text = "30:00"
 horizontal_alignment = 1
 vertical_alignment = 1

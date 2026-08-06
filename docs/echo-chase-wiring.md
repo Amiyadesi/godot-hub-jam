@@ -157,7 +157,9 @@ EchoTimeline.reset_timeline(saved_past_delay_seconds, saved_delay_switch_id)
 
 先复位玩家，再清时间线。不要保存或恢复在途路径、剩余录像、未来体位置、过去体切档过程或临时压力板占用。
 
-使用 `LevelModule.set_checkpoint(scene_path, checkpoint_id, respawn_position, past_delay_seconds, delay_switch_id)` 写入干净 checkpoint。`past_delay_seconds` 与 ID 必须来自 `EchoTimeline.get_selected_past_delay_seconds()` 和 `get_selected_delay_switch_id()`，这样切档预警中的最新选择也能稳定恢复。槽位存档保存 `activated_progression_device_ids`、`collected_item_ids`、`opened_latched_door_ids`、`present_hub_unlocked` 与 `run_countdown_expired`。BranchProgressionDevice、MemoryShard 和倒计时归零立即写入当前槽位；旧存档缺少新增字段时默认空集合、未解锁和倒计时未结束，不影响现有 checkpoint。
+使用 `LevelModule.set_checkpoint(scene_path, checkpoint_id, respawn_position, past_delay_seconds, delay_switch_id)` 写入干净 checkpoint。`past_delay_seconds` 与 ID 必须来自 `EchoTimeline.get_selected_past_delay_seconds()` 和 `get_selected_delay_switch_id()`，这样切档预警中的最新选择也能稳定恢复。延迟台一经选择便同步到 `LevelModule`，倒计时每次变化也同步最新内存值；真正落盘仍只由现有 `SaveSystem.save_slot()` 触发。槽位存档保存 `run_countdown_remaining`、`run_countdown_expired`、当前延迟选择、永久装置、收集物、锁存门和现在房状态。Continue 读取后不会把剩余时间重置为 `30:00`，也不会把 `1s/5s` 支路恢复成 `3s`。
+
+录制中的玩家 Hurtbox 碰到 Trap 时，`EchoChaseStart` 不调用普通 checkpoint 失败：它播放当前金色录像体的退场快照，再由 `EchoTimeline.cancel_future_recording_due_to_failure()` 恢复录像锚点、已有 Future、Past、延迟和倒计时。普通状态碰 Trap 仍走 `0.4s` 死亡复位。
 
 ## 起始施工场景
 
