@@ -709,7 +709,7 @@ func _expect(condition: bool, message: String) -> void:
 # 输出结果后退出，避免原型阶段引入额外测试框架。
 func _finish() -> void:
 	if _failures.is_empty():
-		print("Echo Chase temporal path checks passed")
+		print("Delay Trace temporal path checks passed")
 		get_tree().quit(0)
 		return
 	for failure in _failures:

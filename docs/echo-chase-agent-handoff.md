@@ -118,7 +118,7 @@ $env:APPDATA = Join-Path $env:TEMP 'echo-chase-test-appdata'
 
 人工只检查 `1920x1080` 与同比例 `1280x720`。不做超宽屏批量截图。
 
-当前 Windows 试玩版导出到 `D:\Hopes_and_Dream\ExportGame\EchoChase\EchoChase.exe`。Preset 使用嵌入式 PCK，因此交付物是单个 exe；导出后已用 `--headless --quit-after 5` 启动验证。
+当前导出 preset 使用 `D:\Hopes_and_Dream\ExportGame\DelayTrace\Windows\DelayTrace.exe`、`D:\Hopes_and_Dream\ExportGame\DelayTrace\Web\index.html` 与 `D:\Hopes_and_Dream\ExportGame\DelayTrace\Android\DelayTrace.apk`。Windows preset 使用嵌入式 PCK，因此交付物是单个 exe；导出后已用 `--headless --quit-after 5` 启动验证。
 
 ## 尚未实现
 

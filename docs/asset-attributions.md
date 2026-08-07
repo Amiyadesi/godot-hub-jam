@@ -1,6 +1,6 @@
 # 当前保留资源归因
 
-Delay Trace 已接入 CC0 占位角色、施工平台、菜单地图、机关图块、动作/状态音效、菜单与施工玩法循环音乐，以及一套 OFL 中文像素字体；它们不是正式美术方向。内部路径仍使用 `EchoChase`，部分通用 UI 音频仍临时引用旧目录资源；目录名 `assets/phase_lag` 是历史路径，不代表它们属于当前玩法。
+Delay Trace 已接入 CC0 占位角色、施工平台、菜单地图、机关图块、动作/状态音效、菜单与施工玩法循环音乐，以及一套 OFL 中文像素字体；它们不是正式美术方向。内部路径保留 `EchoChase` 兼容标识，部分通用 UI 音频仍临时引用旧目录资源；目录名 `assets/phase_lag` 是历史路径，不代表它们属于当前玩法。
 
 下列条目分别记录可确认的下载日期或“原始日期未保留”，不伪造来源链。SHA256 用于确认当前仓库中实际保留的文件。未来候选素材必须先放入隔离目录，并记录下载日期、修改内容、来源 URL、作者、许可证与 SHA256；正式接入前由项目作者确认。
 
@@ -25,7 +25,7 @@ Delay Trace 已接入 CC0 占位角色、施工平台、菜单地图、机关图
 | `assets/echo_chase/character/hit.png` | `3BE1CD59704BAAFAD8EEB21A9652F62B0714275AD915E46CDA96C7B5E2FD6347` |
 | `assets/echo_chase/character/death.png` | `693EA8F9E9572EE7AB739C1B4583D305F0DB51AEED40453C848E2CB4DA6B1DAA` |
 
-## Kenney: Echo Chase 施工素材
+## Kenney: Delay Trace 施工素材
 
 - 作者：Kenney
 - 许可证：CC0
@@ -96,7 +96,7 @@ Delay Trace 已接入 CC0 占位角色、施工平台、菜单地图、机关图
 
 | 保留状态 | 文件 | 修改 | SHA256 |
 | --- | --- | --- | --- |
-| 仓库保留、当前运行时未引用 | `assets/phase_lag/environment/facility_corridor_strip.png` | 历史 Phase Lag 菜单设施带；Echo Chase 菜单已替换。 | `34D83E00581BF05CC954361AB65926A8A6CD44440111B8B80ABF69A6455F52F4` |
+| 仓库保留、当前运行时未引用 | `assets/phase_lag/environment/facility_corridor_strip.png` | 历史 Phase Lag 菜单设施带；Delay Trace 菜单已替换。 | `34D83E00581BF05CC954361AB65926A8A6CD44440111B8B80ABF69A6455F52F4` |
 
 ## Kenney: 历史菜单资源
 
@@ -121,7 +121,7 @@ Delay Trace 已接入 CC0 占位角色、施工平台、菜单地图、机关图
 
 | 当前用途 | 文件 | 修改 | SHA256 |
 | --- | --- | --- | --- |
-| 仓库保留、当前运行时未引用 | `assets/phase_lag/audio/music/tragic_ambient_main_menu.ogg` | 历史导入时裁去首尾长静音并设置 loop；Echo Chase 菜单已替换。 | `0831A5EE293E24A3ACA183CB066D1D461C81D1A0C166F580DCA07F9AC7003DB6` |
+| 仓库保留、当前运行时未引用 | `assets/phase_lag/audio/music/tragic_ambient_main_menu.ogg` | 历史导入时裁去首尾长静音并设置 loop；Delay Trace 菜单已替换。 | `0831A5EE293E24A3ACA183CB066D1D461C81D1A0C166F580DCA07F9AC7003DB6` |
 
 ## 引擎与插件
 

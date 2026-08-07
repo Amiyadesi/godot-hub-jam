@@ -1,6 +1,6 @@
 @icon("res://addons/dialogue_manager/assets/responses_menu.svg")
 
-## EchoChase 的对白选项布局：长列表分页，结束项固定在分页框外。
+## Delay Trace 的对白选项布局：长列表分页，结束项固定在分页框外。
 class_name EchoDialogueResponsesMenu extends ProjectDialogueResponsesMenu
 
 @export_range(2, 12, 1) var carousel_threshold: int = 5

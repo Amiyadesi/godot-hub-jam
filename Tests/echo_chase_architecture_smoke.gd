@@ -1,5 +1,5 @@
 extends Node
-## Headless behavior smoke for slot-scoped Echo Chase world progress.
+## Headless behavior smoke for slot-scoped Delay Trace world progress.
 
 const PROGRESSION_SHORTCUT_SCENE := preload("res://Scenes/EchoChase/Prefabs/progression_shortcut.tscn")
 
@@ -22,7 +22,7 @@ func _ready() -> void:
 	_test_legacy_checkpoint_defaults_progress()
 	LevelModule.instance = original_level_module
 	if _failures.is_empty():
-		print("Echo Chase architecture smoke: PASS")
+		print("Delay Trace architecture smoke: PASS")
 		get_tree().quit()
 		return
 	for failure in _failures:
