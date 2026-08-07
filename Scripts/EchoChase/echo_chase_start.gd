@@ -34,6 +34,7 @@ const FUTURE_FAILURE_COLOR := Color(1.0, 0.68, 0.16, 1.0)
 
 var _checkpoints: Array[EchoCheckpoint] = []
 var _delay_switches: Array[DelayPickup] = []
+var _temporal_doors: Array[TemporalDoor] = []
 var _default_delay_switch: DelayPickup
 var _respawn_position := Vector2.ZERO
 var _respawn_past_delay_seconds := EchoTimeline.DEFAULT_PAST_DELAY
@@ -73,6 +74,7 @@ func _ready() -> void:
 		GameAudio.play_music("echo_chase_gameplay", gameplay_music, 0.6)
 	_resolve_checkpoints()
 	_resolve_delay_switches()
+	_resolve_temporal_doors()
 	_connect_gameplay_signals()
 	_configure_ui()
 	_restore_entry_position()
@@ -125,6 +127,13 @@ func _resolve_delay_switches() -> void:
 		_delay_switches.append(delay_switch)
 		if delay_switch.default_active and _default_delay_switch == null:
 			_default_delay_switch = delay_switch
+
+
+# Collects authored temporal doors for checkpoint-based reset restoration.
+func _resolve_temporal_doors() -> void:
+	_temporal_doors.clear()
+	for node in gameplay_world.find_children("*", "TemporalDoor", true, false):
+		_temporal_doors.append(node as TemporalDoor)
 
 
 # 连接场景内唯一的玩家失败、出界和 checkpoint 请求。
@@ -280,6 +289,7 @@ func _on_checkpoint_activation_requested(checkpoint: EchoCheckpoint) -> void:
 	_respawn_position = checkpoint.get_respawn_position()
 	_respawn_past_delay_seconds = EchoTimeline.get_selected_past_delay_seconds()
 	_respawn_delay_switch_id = EchoTimeline.get_selected_delay_switch_id()
+	LevelModule.instance.commit_latched_doors()
 	LevelModule.instance.set_checkpoint(
 		checkpoint_scene_path,
 		String(checkpoint.get_checkpoint_id()),
@@ -321,7 +331,9 @@ func _begin_failure_reset(animation_name: StringName) -> void:
 	death_vfx.play_from_sprites(player.visual, player.temporal_outline, impact_velocity)
 	_play_failure_feedback()
 	# Clear temporal entities before the death animation so Past/VFX cannot linger behind it.
+	LevelModule.instance.discard_pending_latched_doors()
 	EchoTimeline.reset_timeline(_respawn_past_delay_seconds, _respawn_delay_switch_id)
+	_restore_temporal_doors()
 	reset_audio.play()
 	await get_tree().create_timer(RESET_DELAY_SECONDS).timeout
 	_reset_failure_feedback()
@@ -393,9 +405,17 @@ func _restart_from_pause() -> void:
 	if tween != null:
 		await tween.finished
 	get_tree().paused = false
+	LevelModule.instance.discard_pending_latched_doors()
 	player.reset_player(_respawn_position)
 	EchoTimeline.reset_timeline(_respawn_past_delay_seconds, _respawn_delay_switch_id)
+	_restore_temporal_doors()
 	EchoTimeline.set_gameplay_active(true)
+
+
+# Reapplies committed door state after a checkpoint reset.
+func _restore_temporal_doors() -> void:
+	for door in _temporal_doors:
+		door.restore_checkpoint_state()
 
 
 # 从暂停页进入设置页，整个往返过程保持游戏暂停。

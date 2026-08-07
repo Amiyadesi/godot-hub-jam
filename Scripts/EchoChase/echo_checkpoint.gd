@@ -69,8 +69,8 @@ func _uses_low_flash_mode() -> bool:
 	)
 
 
-# 只有未激活的存档点会向场景控制器发送一次玩家触碰请求。
+# 每次玩家触碰都请求场景控制器保存；是否切换视觉状态由控制器决定。
 func _on_body_entered(body: Node2D) -> void:
-	if _active or not body is EchoPlayer:
+	if not body is EchoPlayer:
 		return
 	activation_requested.emit(self)

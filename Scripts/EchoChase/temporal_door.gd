@@ -81,6 +81,18 @@ func _latch() -> void:
 		return
 
 
+# Restores this door from committed checkpoint progress after a reset.
+func restore_checkpoint_state() -> void:
+	_latched = (
+		mode == Mode.LATCHED_ALL
+		and not latched_door_id.is_empty()
+		and LevelModule.instance != null
+		and LevelModule.instance.is_latched_door_open(String(latched_door_id))
+	)
+	var all_pressed := _are_all_sources_pressed()
+	_update_indicators(all_pressed)
+	set_open(_latched if mode == Mode.LATCHED_ALL else all_pressed, false)
+
 # 只有存在来源且每块板都按下时才算满足。
 func _are_all_sources_pressed() -> bool:
 	if source_plates.is_empty():

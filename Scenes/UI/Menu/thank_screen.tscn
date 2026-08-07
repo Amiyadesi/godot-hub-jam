@@ -11,6 +11,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 theme = ExtResource("3_theme")
+auto_translate_mode = 1
 script = ExtResource("1_script")
 color = Color(0, 0, 0, 0.9)
 close_modal_on_clicked = false

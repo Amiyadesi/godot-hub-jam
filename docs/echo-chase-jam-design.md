@@ -94,7 +94,7 @@ Jam 首次通关目标为 `25–35min`。当前地图保留用户已完成的 Hu
 - 三门后正前方始终是普通出口。终点 A-D 按四枚记忆碎片数量从左到右点亮；四枚齐全后地块失去碰撞并持续透明闪烁，提示玩家可以主动落入下方两个额外房间。房间当前保持空白，普通出口始终可选。
 - `docs/echo-chase-puzzle-atlas.md` 保存动作链和验收；旧 HTML 不再是设计依据且不继续维护。本轮不新增 HTML，也不把动作链自动摆进地图。
 
-永久世界进度与稳定 checkpoint 分开保存。`past_delay_seconds`、`delay_switch_id`、`run_countdown_remaining`、`run_countdown_expired`、`activated_progression_device_ids`、`collected_item_ids`、`opened_latched_door_ids` 和 `present_hub_unlocked` 跨退出保留。BranchProgressionDevice 与 MemoryShard 立即写入当前槽位；checkpoint 仍只由玩家触碰激活，且同一时刻只有一个生效。`NarrativeSlotModule` 保存 `askname`、`askheart`、`asktime` 与结局标记。
+永久世界进度与稳定 checkpoint 分开保存。`past_delay_seconds`、`delay_switch_id`、`run_countdown_remaining`、`run_countdown_expired`、`activated_progression_device_ids`、`collected_item_ids`、`opened_latched_door_ids` 和 `present_hub_unlocked` 跨退出保留。BranchProgressionDevice 与 MemoryShard 立即写入当前槽位；玩家每次触碰 checkpoint 都会保存当前稳定状态，并把运行态锁存门提交到槽位，且同一时刻只有一个 checkpoint 生效。`NarrativeSlotModule` 保存 `askname`、`askheart`、`asktime` 与结局标记。
 
 ## 剧情定案与双结局
 

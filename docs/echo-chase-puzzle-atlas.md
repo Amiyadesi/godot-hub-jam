@@ -79,7 +79,7 @@
 | 延迟台 | `Scenes/EchoChase/Prefabs/delay_pickup.tscn` | `delay_seconds`、唯一 `delay_switch_id` | 选择 `1s/3s/5s` |
 | 支路装置 | `Scenes/EchoChase/Prefabs/progression_device.tscn` | 唯一 `device_id` | 玩家抵达 ActivationArea 后永久激活 |
 | 永久门 | `Scenes/EchoChase/Prefabs/persistent_gate.tscn` | `required_device_id` | 读取对应支路装置 |
-| 存档点 | `Scenes/EchoChase/Prefabs/echo_checkpoint.tscn` | 唯一 `checkpoint_id` | 玩家触碰后保存稳定状态 |
+| 存档点 | `Scenes/EchoChase/Prefabs/echo_checkpoint.tscn` | 唯一 `checkpoint_id` | 玩家每次触碰后保存稳定状态，并提交运行态锁存门 |
 | 收集物 | `Scenes/EchoChase/Prefabs/temporal_collectible.tscn` | 唯一 `item_id` | 记忆碎片；立即保存，不阻挡普通出口 |
 | 终点爱心门 | `World/Finnal/StaticBody2D` + `memory_floor_gate.gd` | 四个稳定记忆 ID、A-D 亮灯引用 | 按数量点灯；四枚后清除碰撞并闪烁 |
 | 开场引导 | `Scenes/EchoChase/UI/echo_chase_narrative_presenter.tscn` + `Scenes/EchoChase/UI/echo_chase_onboarding.tscn` + `World/BeforeHub/FloatText` | `player`、`floating_text` | 新游戏先显示黑屏红字 `跑/RUN`；接近 authored 世界位置后，以手写飘字显示当前跳跃与方向冲刺键位 |

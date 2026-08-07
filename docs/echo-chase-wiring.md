@@ -52,11 +52,11 @@ YourGrayboxRoot (Node2D)
 | `EchoChaseStart` | `gameplay_music` | 进入玩法后交给 `GameAudio` crossfade 的独立循环曲 |
 | `EchoChaseStart` | `present_entry_transition/past_entry_transition` | 与菜单满屏颜色一致的 `0.35s` authored 淡出资源 |
 
-`EchoChaseStart` 会收集 `gameplay_world` 下实际 authored 的 checkpoint 与延迟台；Prefab 自己负责向 `EchoTimeline` 注册和注销。漏掉必填资源、ID 或直接引用应主动报错，不要添加静默 fallback。
+`EchoChaseStart` 会收集 `gameplay_world` 下实际 authored 的 checkpoint、延迟台和锁存门；Prefab 自己负责向 `EchoTimeline` 注册和注销。漏掉必填资源、ID 或直接引用应主动报错，不要添加静默 fallback。
 
 ## 手机控件
 
-`Scenes/EchoChase/UI/echo_mobile_controls.tscn` 复用参考游戏的 `gdb-xbox-2.png` Atlas，根节点挂在 `UI` CanvasLayer 下并使用 `PROCESS_MODE_ALWAYS`。每个 `TouchScreenButton` 直接填写现有 Input action，不新增或改写 `InputMap`：
+`Scenes/EchoChase/UI/echo_mobile_controls.tscn` 是独立的 authored 手机控件场景：动作键复用参考游戏的 `gdb-xbox-2.png` Atlas，左上暂停键复用 `gdb-keyboard-2.png` 中真实的 ESC normal/pressed 两帧。根节点挂在 `UI` CanvasLayer 下并使用 `PROCESS_MODE_ALWAYS`。每个 `TouchScreenButton` 直接填写现有 Input action，不新增或改写 `InputMap`：
 
 | 手机位置 | 图标 | 现有 action | 桌面对应 |
 | --- | --- | --- | --- |
@@ -107,7 +107,7 @@ YourGrayboxRoot (Node2D)
 实例化 `temporal_door.tscn` 和所需数量的 `temporal_pressure_plate.tscn`。压力板只广播状态；在门的 `source_plates` 数组中显式拖入 1–4 块板，并选择模式：
 
 - `MOMENTARY_ALL`：全部板同时按下才保持开启，任一释放立即关闭。
-- `LATCHED_ALL`：全部板同时按下一次后保持开启；填写 `latched_door_id` 后写入槽位存档，读档直接恢复打开。未填写 ID 的原型门只保留运行时锁存。
+- `LATCHED_ALL`：全部板同时按下一次后保持开启；填写 `latched_door_id` 后先保留在运行态，玩家下一次触碰 `EchoCheckpoint` 时才写入槽位存档，读档直接恢复打开。失败或暂停菜单 Restart 会丢弃尚未提交的锁存。未填写 ID 的原型门只保留运行时锁存。
 
 现在体、过去体和未来体都可压板。门 prefab authored 四个状态格，未接线的格子隐藏，已接线格显示当前缺少哪个输入。不要在关卡脚本中重新组合这些板，也不要用它代替 `PersistentGate`。
 

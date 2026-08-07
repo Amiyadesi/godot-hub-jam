@@ -493,6 +493,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 theme = ExtResource("7_theme")
+auto_translate_mode = 0
 script = ExtResource("1_menu")
 echo_chase_entry_scene_path = "res://Scenes/EchoChase/echo_chase_start.tscn"
 menu_music = ExtResource("5_music")
@@ -685,6 +686,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 theme = ExtResource("7_theme")
+auto_translate_mode = 1
 
 [node name="TitleReveal" type="Control" parent="MenuUi/ButtonLayer" unique_id=1129034817]
 clip_contents = true

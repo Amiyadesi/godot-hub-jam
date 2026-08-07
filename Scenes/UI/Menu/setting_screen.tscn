@@ -7,6 +7,18 @@
 
 [sub_resource type="ButtonGroup" id="ButtonGroup_tabs"]
 
+[sub_resource type="StyleBoxFlat" id="Style_setting_selected"]
+content_margin_left = 12.0
+content_margin_top = 7.0
+content_margin_right = 12.0
+content_margin_bottom = 7.0
+bg_color = Color(0.78, 0.78, 0.74, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.96, 0.96, 0.92, 1)
+
 [node name="SettingScreen" type="Container"]
 anchors_preset = 15
 anchor_right = 1.0
@@ -14,6 +26,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 theme = ExtResource("4_theme")
+auto_translate_mode = 1
 script = ExtResource("1_script")
 color = Color(0, 0, 0, 0.9)
 close_modal_on_clicked = false
@@ -93,6 +106,14 @@ layout_mode = 2
 toggle_mode = true
 button_group = SubResource("ButtonGroup_tabs")
 theme_override_font_sizes/font_size = 28
+theme_override_colors/font_focus_color = Color(0.015, 0.015, 0.014, 1)
+theme_override_colors/font_hover_color = Color(0.015, 0.015, 0.014, 1)
+theme_override_colors/font_hover_pressed_color = Color(0.015, 0.015, 0.014, 1)
+theme_override_colors/font_pressed_color = Color(0.015, 0.015, 0.014, 1)
+theme_override_styles/focus = SubResource("Style_setting_selected")
+theme_override_styles/hover = SubResource("Style_setting_selected")
+theme_override_styles/hover_pressed = SubResource("Style_setting_selected")
+theme_override_styles/pressed = SubResource("Style_setting_selected")
 text = "SETTINGS_GENERAL"
 alignment = 0
 
@@ -103,6 +124,14 @@ layout_mode = 2
 toggle_mode = true
 button_group = SubResource("ButtonGroup_tabs")
 theme_override_font_sizes/font_size = 28
+theme_override_colors/font_focus_color = Color(0.015, 0.015, 0.014, 1)
+theme_override_colors/font_hover_color = Color(0.015, 0.015, 0.014, 1)
+theme_override_colors/font_hover_pressed_color = Color(0.015, 0.015, 0.014, 1)
+theme_override_colors/font_pressed_color = Color(0.015, 0.015, 0.014, 1)
+theme_override_styles/focus = SubResource("Style_setting_selected")
+theme_override_styles/hover = SubResource("Style_setting_selected")
+theme_override_styles/hover_pressed = SubResource("Style_setting_selected")
+theme_override_styles/pressed = SubResource("Style_setting_selected")
 text = "SETTINGS_CONTROLS"
 alignment = 0
 
@@ -196,6 +225,12 @@ unique_name_in_owner = true
 custom_minimum_size = Vector2(280, 46)
 layout_mode = 2
 theme_override_font_sizes/font_size = 22
+theme_override_colors/font_focus_color = Color(0.015, 0.015, 0.014, 1)
+theme_override_colors/font_hover_color = Color(0.015, 0.015, 0.014, 1)
+theme_override_colors/font_pressed_color = Color(0.015, 0.015, 0.014, 1)
+theme_override_styles/focus = SubResource("Style_setting_selected")
+theme_override_styles/hover = SubResource("Style_setting_selected")
+theme_override_styles/pressed = SubResource("Style_setting_selected")
 
 [node name="Line" type="HSeparator" parent="PanelRoot/Content/Pages/AudioPage/GeneralVBox/DisplayModeRow"]
 layout_mode = 2
@@ -225,6 +260,12 @@ unique_name_in_owner = true
 custom_minimum_size = Vector2(280, 46)
 layout_mode = 2
 theme_override_font_sizes/font_size = 22
+theme_override_colors/font_focus_color = Color(0.015, 0.015, 0.014, 1)
+theme_override_colors/font_hover_color = Color(0.015, 0.015, 0.014, 1)
+theme_override_colors/font_pressed_color = Color(0.015, 0.015, 0.014, 1)
+theme_override_styles/focus = SubResource("Style_setting_selected")
+theme_override_styles/hover = SubResource("Style_setting_selected")
+theme_override_styles/pressed = SubResource("Style_setting_selected")
 
 [node name="Line" type="HSeparator" parent="PanelRoot/Content/Pages/AudioPage/GeneralVBox/LanguageRow"]
 layout_mode = 2

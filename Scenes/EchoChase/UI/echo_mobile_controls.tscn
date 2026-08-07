@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" path="res://Scripts/EchoChase/UI/echo_mobile_controls.gd" id="1_script"]
 [ext_resource type="Texture2D" path="res://assets/echo_chase/ui/gdb-xbox-2.png" id="2_texture"]
-[ext_resource type="FontFile" path="res://assets/fonts/fusion-pixel-12px-proportional-zh_hans.ttf" id="3_font"]
+[ext_resource type="Texture2D" path="res://assets/echo_chase/ui/gdb-keyboard-2.png" id="3_keyboard"]
 
 [sub_resource type="AtlasTexture" id="Atlas_A_normal"]
 atlas = ExtResource("2_texture")
@@ -67,6 +67,14 @@ region = Rect2(114, 227, 12, 8)
 [sub_resource type="AtlasTexture" id="Atlas_Right_pressed"]
 atlas = ExtResource("2_texture")
 region = Rect2(146, 195, 12, 8)
+
+[sub_resource type="AtlasTexture" id="Atlas_Escape_normal"]
+atlas = ExtResource("3_keyboard")
+region = Rect2(32, 16, 16, 16)
+
+[sub_resource type="AtlasTexture" id="Atlas_Escape_pressed"]
+atlas = ExtResource("3_keyboard")
+region = Rect2(32, 129, 16, 16)
 
 [node name="EchoMobileControls" type="Control"]
 process_mode = 3
@@ -176,25 +184,9 @@ offset_right = 112.0
 offset_bottom = 112.0
 mouse_filter = 2
 
-[node name="Button" type="TouchScreenButton" parent="Escape"]
+[node name="EscButton" type="TouchScreenButton" parent="Escape"]
 scale = Vector2(4.0, 4.0)
-texture_normal = SubResource("Atlas_A_normal")
-texture_pressed = SubResource("Atlas_A_pressed")
+texture_normal = SubResource("Atlas_Escape_normal")
+texture_pressed = SubResource("Atlas_Escape_pressed")
 action = "pause"
 visibility_mode = 1
-
-[node name="Label" type="Label" parent="Escape"]
-layout_mode = 0
-offset_left = 0.0
-offset_top = 14.0
-offset_right = 56.0
-offset_bottom = 42.0
-mouse_filter = 2
-theme_override_colors/font_color = Color(0.95, 0.98, 1, 1)
-theme_override_colors/font_outline_color = Color(0.01, 0.02, 0.03, 0.95)
-theme_override_constants/outline_size = 3
-theme_override_fonts/font = ExtResource("3_font")
-theme_override_font_sizes/font_size = 12
-text = "ESC"
-horizontal_alignment = 1
-vertical_alignment = 1

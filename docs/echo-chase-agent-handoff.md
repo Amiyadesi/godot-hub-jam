@@ -81,7 +81,7 @@ run_countdown_expired
 run_countdown_remaining
 ```
 
-延迟台是可重复机关，类名仍为 `DelayPickup`。每个场景必须恰好一个默认 `3s` 台，所有台使用唯一 ID；`EchoChaseStart` 从 authored `gameplay_world` 收集它们。倒计时剩余秒数与当前延迟台选择是槽位级状态，不依赖是否刚触碰 checkpoint；任意后续 `SaveSystem.save_slot()` 都会写入最新内存值，Continue 再恢复。MemoryShard、BranchProgressionDevice 和倒计时归零都会立即保存；Latched ALL 状态仍随现有存档流程持久化。触碰 `current_room` 且尚未完成对话时会启动中央 NPC 剧情。被过去体抓到后，玩家冻结 `0.4s`，随后先恢复坐标，再用保存的延迟和台 ID 调用 `EchoTimeline.reset_timeline()`。Continue 同样建立干净时间线。
+延迟台是可重复机关，类名仍为 `DelayPickup`。每个场景必须恰好一个默认 `3s` 台，所有台使用唯一 ID；`EchoChaseStart` 从 authored `gameplay_world` 收集它们。倒计时剩余秒数与当前延迟台选择是槽位级状态，不依赖是否刚触碰 checkpoint；任意后续 `SaveSystem.save_slot()` 都会写入最新内存值，Continue 再恢复。MemoryShard、BranchProgressionDevice 和倒计时归零都会立即保存；Latched ALL 状态先保留在运行态，下一次触碰 EchoCheckpoint 才提交到槽位，失败或 Restart 会丢弃未提交锁存。触碰 `current_room` 且尚未完成对话时会启动中央 NPC 剧情。被过去体抓到后，玩家冻结 `0.4s`，随后先恢复坐标，再用保存的延迟和台 ID 调用 `EchoTimeline.reset_timeline()`。Continue 同样建立干净时间线。
 
 终点 `World/Finnal/StaticBody2D` 使用 `MemoryFloorGate`。它只统计四个稳定记忆 ID，按数量从左到右点亮 A-D；四枚齐全后禁用地块碰撞，播放一次红色闪光并持续透明闪烁，读档直接恢复。地块下方两个房间保持用户当前空白，不包含 agent 生成谜题或路线。
 

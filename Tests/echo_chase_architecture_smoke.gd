@@ -194,6 +194,7 @@ func _test_progress_round_trip() -> void:
 	source.activate_progression_device("long_route")
 	source.collect_item("memory_shard_a")
 	source.open_latched_door("delay_5s_latched_1")
+	source.commit_latched_doors()
 	_expect(source.unlock_present_hub(), "first present hub unlock should succeed")
 	_expect(not source.unlock_present_hub(), "present hub unlock should be idempotent")
 	_expect(source.mark_run_countdown_expired(), "first run countdown expiration should be stored")

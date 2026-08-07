@@ -19,6 +19,7 @@ var delay_switch_id := "delay_3s"
 var activated_progression_device_ids: Array[String] = []
 var collected_item_ids: Array[String] = []
 var opened_latched_door_ids: Array[String] = []
+var pending_latched_door_ids: Array[String] = []
 var present_hub_unlocked := false
 var run_countdown_expired := false
 var run_countdown_remaining := DEFAULT_RUN_COUNTDOWN_REMAINING
@@ -236,21 +237,38 @@ func is_progression_device_active(device_id: String) -> bool:
 	return activated_progression_device_ids.has(device_id.strip_edges())
 
 
-# Stores one authored Latched ALL door after it has opened.
+# Marks one Latched ALL door in runtime memory; checkpoint commits it.
 func open_latched_door(door_id: String) -> bool:
 	var normalized_id := door_id.strip_edges()
 	if normalized_id.is_empty():
 		push_error("LevelModule.open_latched_door requires a non-empty id")
 		return false
-	if opened_latched_door_ids.has(normalized_id):
+	if opened_latched_door_ids.has(normalized_id) or pending_latched_door_ids.has(normalized_id):
 		return false
-	opened_latched_door_ids.append(normalized_id)
+	pending_latched_door_ids.append(normalized_id)
 	return true
 
 
-# Reports whether one authored Latched ALL door was restored as open.
+# Reports whether one authored Latched ALL door is open in the current run.
 func is_latched_door_open(door_id: String) -> bool:
-	return opened_latched_door_ids.has(door_id.strip_edges())
+	var normalized_id := door_id.strip_edges()
+	return opened_latched_door_ids.has(normalized_id) or pending_latched_door_ids.has(normalized_id)
+
+
+# Commits all runtime-open Latched ALL doors when a checkpoint is touched.
+func commit_latched_doors() -> bool:
+	var changed := false
+	for door_id in pending_latched_door_ids:
+		if not opened_latched_door_ids.has(door_id):
+			opened_latched_door_ids.append(door_id)
+			changed = true
+	pending_latched_door_ids.clear()
+	return changed
+
+
+# Drops uncommitted Latched ALL doors before checkpoint-based reset.
+func discard_pending_latched_doors() -> void:
+	pending_latched_door_ids.clear()
 
 
 # Stores one authored collectible in memory; the current checkpoint commits it.
@@ -307,6 +325,7 @@ func clear_world_progress() -> void:
 	activated_progression_device_ids.clear()
 	collected_item_ids.clear()
 	opened_latched_door_ids.clear()
+	pending_latched_door_ids.clear()
 	present_hub_unlocked = false
 	run_countdown_expired = false
 	run_countdown_remaining = DEFAULT_RUN_COUNTDOWN_REMAINING
@@ -329,6 +348,7 @@ func _apply_world_progress(data: Dictionary) -> void:
 			if not normalized_id.is_empty() and not collected_item_ids.has(normalized_id):
 				collected_item_ids.append(normalized_id)
 	opened_latched_door_ids.clear()
+	pending_latched_door_ids.clear()
 	var stored_door_ids: Variant = data.get("opened_latched_door_ids", [])
 	if stored_door_ids is Array or stored_door_ids is PackedStringArray:
 		for stored_id: Variant in stored_door_ids:
