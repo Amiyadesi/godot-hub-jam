@@ -8,7 +8,7 @@ enum CreditsOrigin {
 }
 
 const ENTER_TRANSITION := preload("res://resources/scene_transitions/stage_enter_fade_to_black.tres")
-const ENTRY_STATE_META := &"echo_chase_entry_temporal_state"
+const ENTRY_STATE_META := &"delay_trace_entry_temporal_state"
 const ENTRY_STATE_PRESENT := &"present"
 const ENTRY_STATE_PAST := &"past"
 const MENU_INTRO := &"menu_enter"
@@ -24,7 +24,7 @@ const BACKGROUND_ORIGIN := Vector2.ZERO
 const BACKGROUND_PARALLAX := Vector2(4.0, 2.5)
 const BACKGROUND_FOLLOW_SPEED := 7.0
 
-@export_file("*.tscn") var echo_chase_entry_scene_path := ""
+@export_file("*.tscn") var delay_trace_entry_scene_path := ""
 @export var menu_music: AudioStream
 @export var start_transition: SceneTransition
 @export var start_transition_reduced: SceneTransition
@@ -138,7 +138,7 @@ func _on_start_pressed() -> void:
 	EchoTimeline.start_run_countdown()
 	SaveSystem.save_slot(1)
 	start_requested.emit()
-	await _transition_to_game(echo_chase_entry_scene_path, ENTRY_STATE_PRESENT)
+	await _transition_to_game(delay_trace_entry_scene_path, ENTRY_STATE_PRESENT)
 
 
 # 加载最近的干净 checkpoint，并以过去体转场进入。
@@ -349,7 +349,7 @@ func _has_saved_run() -> bool:
 
 # 只接受真实存在的 authored 灰盒入口。
 func _has_authored_entry_scene() -> bool:
-	return not echo_chase_entry_scene_path.is_empty() and ResourceLoader.exists(echo_chase_entry_scene_path)
+	return not delay_trace_entry_scene_path.is_empty() and ResourceLoader.exists(delay_trace_entry_scene_path)
 
 
 # 只把离散按下识别为入场跳过，忽略键盘重复事件。

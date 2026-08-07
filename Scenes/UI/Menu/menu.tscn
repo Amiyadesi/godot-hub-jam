@@ -4,13 +4,13 @@
 [ext_resource type="PackedScene" uid="uid://dssid7iw4aqb6" path="res://Scenes/UIorgan/ShaderButton/shader_button.tscn" id="2_button"]
 [ext_resource type="PackedScene" uid="uid://b7hivg2dnaer8" path="res://Scenes/UI/Menu/setting_screen.tscn" id="3_settings"]
 [ext_resource type="PackedScene" uid="uid://bbq46x1emgrc3" path="res://Scenes/UI/Menu/thank_screen.tscn" id="4_thanks"]
-[ext_resource type="AudioStream" uid="uid://bimcr3aamkxsc" path="res://assets/echo_chase/audio/music/mysterious_futuristic_loop.ogg" id="5_music"]
+[ext_resource type="AudioStream" uid="uid://bimcr3aamkxsc" path="res://assets/delay_trace/audio/music/mysterious_futuristic_loop.ogg" id="5_music"]
 [ext_resource type="Theme" uid="uid://136hg33mma1d" path="res://resources/main_theme.tres" id="7_theme"]
 [ext_resource type="Resource" path="res://resources/scene_transitions/echo_start_present_radial.tres" id="13_start_transition"]
 [ext_resource type="Resource" path="res://resources/scene_transitions/echo_start_present_radial_reduced.tres" id="14_start_transition_reduced"]
 [ext_resource type="Resource" path="res://resources/scene_transitions/echo_continue_past_radial.tres" id="15_continue_transition"]
 [ext_resource type="Resource" path="res://resources/scene_transitions/echo_continue_past_radial_reduced.tres" id="16_continue_transition_reduced"]
-[ext_resource type="Shader" uid="uid://md56douhfy8h" path="res://assets/echo_chase/vfx/menu_edge_glow.gdshader" id="17_edge_glow"]
+[ext_resource type="Shader" uid="uid://md56douhfy8h" path="res://assets/delay_trace/vfx/menu_edge_glow.gdshader" id="17_edge_glow"]
 [ext_resource type="PackedScene" path="res://Scenes/UI/Menu/menu_world.tscn" id="18_world"]
 
 [sub_resource type="ShaderMaterial" id="Material_menu_top_glow"]
@@ -495,7 +495,7 @@ grow_vertical = 2
 theme = ExtResource("7_theme")
 auto_translate_mode = 0
 script = ExtResource("1_menu")
-echo_chase_entry_scene_path = "res://Scenes/EchoChase/echo_chase_start.tscn"
+delay_trace_entry_scene_path = "res://Scenes/DelayTrace/delay_trace_start.tscn"
 menu_music = ExtResource("5_music")
 start_transition = ExtResource("13_start_transition")
 start_transition_reduced = ExtResource("14_start_transition_reduced")

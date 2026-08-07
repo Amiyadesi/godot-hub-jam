@@ -1,0 +1,100 @@
+[gd_scene format=3 uid="uid://du0ula74m4132"]
+
+[ext_resource type="Script" uid="uid://vjm275e07v6b" path="res://Scripts/DelayTrace/persistent_gate.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://bgrnghgd1ccr6" path="res://assets/delay_trace/tilemap/monochrome_tilemap_transparent_packed.png" id="2_tilemap"]
+[ext_resource type="AudioStream" uid="uid://clhdgwbiyjt4t" path="res://assets/phase_lag/audio/sfx/boss_core_open.ogg" id="3_audio"]
+
+[sub_resource type="RectangleShape2D" id="Shape_gate"]
+size = Vector2(48, 48)
+
+[sub_resource type="AtlasTexture" id="Atlas_gate"]
+atlas = ExtResource("2_tilemap")
+region = Rect2(176, 272, 48, 48)
+
+[sub_resource type="Animation" id="Animation_closed"]
+resource_name = "closed"
+length = 0.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Visual:position")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [Vector2(0, -24)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Visual:modulate")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [Color(0.74, 0.9, 1, 1)]
+}
+
+[sub_resource type="Animation" id="Animation_open"]
+resource_name = "open"
+length = 0.35
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Visual:position")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.35),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector2(0, -24), Vector2(0, -72)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Visual:modulate")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.35),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Color(0.74, 0.9, 1, 1), Color(0.74, 0.9, 1, 0.18)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_gate"]
+_data = {
+&"closed": SubResource("Animation_closed"),
+&"open": SubResource("Animation_open")
+}
+
+[node name="PersistentGate" type="StaticBody2D" unique_id=2091378735]
+collision_mask = 0
+script = ExtResource("1_script")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=463328318]
+unique_name_in_owner = true
+position = Vector2(0, -24)
+shape = SubResource("Shape_gate")
+
+[node name="Visual" type="Sprite2D" parent="." unique_id=1850142271]
+unique_name_in_owner = true
+modulate = Color(0.74, 0.9, 1, 1)
+texture_filter = 1
+position = Vector2(0, -24)
+texture = SubResource("Atlas_gate")
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=348903952]
+unique_name_in_owner = true
+libraries/ = SubResource("AnimationLibrary_gate")
+
+[node name="OpenAudio" type="AudioStreamPlayer2D" parent="." unique_id=22481286]
+unique_name_in_owner = true
+stream = ExtResource("3_audio")
+volume_db = -5.0
+bus = &"SFX"

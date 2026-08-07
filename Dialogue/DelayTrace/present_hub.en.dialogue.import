@@ -1,0 +1,16 @@
+[remap]
+
+importer="dialogue_manager"
+importer_version=15
+type="Resource"
+uid="uid://ro5r7rbvvjnr"
+path="res://.godot/imported/present_hub.en.dialogue-9e195295759a561809033ae89efe020a.tres"
+
+[deps]
+
+source_file="res://Dialogue/DelayTrace/present_hub.en.dialogue"
+dest_files=["res://.godot/imported/present_hub.en.dialogue-9e195295759a561809033ae89efe020a.tres"]
+
+[params]
+
+defaults=true

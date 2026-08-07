@@ -1,0 +1,66 @@
+[gd_resource type="Resource" script_class="TerrainAuthoringManifest" load_steps=9 format=3]
+
+[ext_resource type="Script" path="res://addons/godot_terrain_authoring/terrain_authoring_manifest.gd" id="1_manifest"]
+[ext_resource type="Script" path="res://addons/godot_terrain_authoring/terrain_input_spec.gd" id="2_input"]
+
+[sub_resource type="Resource" id="TerrainInputSpec_panel_a_clean"]
+script = ExtResource("2_input")
+terrain_name = "Panel A Clean"
+input_format = "4x4_sides"
+source_image_path = "res://assets/delay_trace/tilemap/monochrome_tilemap_transparent_packed.png"
+source_origin_tiles = Vector2i(10, 5)
+terrain_set_index = 0
+collision_policy = 1
+
+[sub_resource type="Resource" id="TerrainInputSpec_panel_a_worn"]
+script = ExtResource("2_input")
+terrain_name = "Panel A Worn"
+input_format = "4x4_sides"
+source_image_path = "res://assets/delay_trace/tilemap/monochrome_tilemap_transparent_packed.png"
+source_origin_tiles = Vector2i(15, 5)
+terrain_set_index = 1
+collision_policy = 1
+
+[sub_resource type="Resource" id="TerrainInputSpec_panel_b_clean"]
+script = ExtResource("2_input")
+terrain_name = "Panel B Clean"
+input_format = "4x4_sides"
+source_image_path = "res://assets/delay_trace/tilemap/monochrome_tilemap_transparent_packed.png"
+source_origin_tiles = Vector2i(10, 9)
+terrain_set_index = 2
+collision_policy = 1
+
+[sub_resource type="Resource" id="TerrainInputSpec_panel_b_worn"]
+script = ExtResource("2_input")
+terrain_name = "Panel B Worn"
+input_format = "4x4_sides"
+source_image_path = "res://assets/delay_trace/tilemap/monochrome_tilemap_transparent_packed.png"
+source_origin_tiles = Vector2i(15, 9)
+terrain_set_index = 3
+collision_policy = 1
+
+[sub_resource type="Resource" id="TerrainInputSpec_panel_c_clean"]
+script = ExtResource("2_input")
+terrain_name = "Panel C Clean"
+input_format = "4x4_sides"
+source_image_path = "res://assets/delay_trace/tilemap/monochrome_tilemap_transparent_packed.png"
+source_origin_tiles = Vector2i(10, 13)
+terrain_set_index = 4
+collision_policy = 1
+
+[sub_resource type="Resource" id="TerrainInputSpec_panel_c_worn"]
+script = ExtResource("2_input")
+terrain_name = "Panel C Worn"
+input_format = "4x4_sides"
+source_image_path = "res://assets/delay_trace/tilemap/monochrome_tilemap_transparent_packed.png"
+source_origin_tiles = Vector2i(15, 13)
+terrain_set_index = 5
+collision_policy = 1
+
+[resource]
+script = ExtResource("1_manifest")
+target_tileset_path = "res://assets/delay_trace/tilemap/echo_platform_tileset.tres"
+output_atlas_path = "res://assets/delay_trace/tilemap/generated/echo_platform_terrain_47.png"
+output_source_id = 1
+tile_size = 16
+terrain_entries = Array[ExtResource("2_input")]([SubResource("TerrainInputSpec_panel_a_clean"), SubResource("TerrainInputSpec_panel_a_worn"), SubResource("TerrainInputSpec_panel_b_clean"), SubResource("TerrainInputSpec_panel_b_worn"), SubResource("TerrainInputSpec_panel_c_clean"), SubResource("TerrainInputSpec_panel_c_worn")])

@@ -1,6 +1,6 @@
 # 当前保留资源归因
 
-Delay Trace 已接入 CC0 占位角色、施工平台、菜单地图、机关图块、动作/状态音效、菜单与施工玩法循环音乐，以及一套 OFL 中文像素字体；它们不是正式美术方向。内部路径保留 `EchoChase` 兼容标识，部分通用 UI 音频仍临时引用旧目录资源；目录名 `assets/phase_lag` 是历史路径，不代表它们属于当前玩法。
+Delay Trace 已接入 CC0 占位角色、施工平台、菜单地图、机关图块、动作/状态音效、菜单与施工玩法循环音乐，以及一套 OFL 中文像素字体；它们不是正式美术方向。内部路径保留 `DelayTrace` 兼容标识，部分通用 UI 音频仍临时引用旧目录资源；目录名 `assets/phase_lag` 是历史路径，不代表它们属于当前玩法。
 
 下列条目分别记录可确认的下载日期或“原始日期未保留”，不伪造来源链。SHA256 用于确认当前仓库中实际保留的文件。未来候选素材必须先放入隔离目录，并记录下载日期、修改内容、来源 URL、作者、许可证与 SHA256；正式接入前由项目作者确认。
 
@@ -15,15 +15,15 @@ Delay Trace 已接入 CC0 占位角色、施工平台、菜单地图、机关图
 
 | 文件 | SHA256 |
 | --- | --- |
-| `assets/echo_chase/character/idle.png` | `057ABD77AB9BA8BF570AEE93054622644D8F3F2C04032B63D84A59D29AE9F13B` |
-| `assets/echo_chase/character/run.png` | `3FC5C639CDF5A7257185963796FCE8FB95FEA387946A7AFDE5B6D973ED22FAE8` |
-| `assets/echo_chase/character/jump.png` | `924CDE6099E1F947615E9642B5DA0291EFEF983E806604FDD57840403113A3A0` |
-| `assets/echo_chase/character/fall.png` | `DDC59C0489903FFEC8610DA579C6B96A794F236CD94B6CCE0595811433012B80` |
-| `assets/echo_chase/character/wallslide.png` | `6A20A8F36A856266D0EA6227F00D3CD30625B540B34EA674C79137FB5BD2029B` |
-| `assets/echo_chase/character/climb.png` | `19972333E792F867E7346D0EFB5639D6B3BB8739D6541C5A1CAD272B085BC1AD` |
-| `assets/echo_chase/character/dash.png` | `674756DA16332D1C2BD7E3BABC9F93965CBA0DF6D1BB7CFEE13CE678A648E489` |
-| `assets/echo_chase/character/hit.png` | `3BE1CD59704BAAFAD8EEB21A9652F62B0714275AD915E46CDA96C7B5E2FD6347` |
-| `assets/echo_chase/character/death.png` | `693EA8F9E9572EE7AB739C1B4583D305F0DB51AEED40453C848E2CB4DA6B1DAA` |
+| `assets/delay_trace/character/idle.png` | `057ABD77AB9BA8BF570AEE93054622644D8F3F2C04032B63D84A59D29AE9F13B` |
+| `assets/delay_trace/character/run.png` | `3FC5C639CDF5A7257185963796FCE8FB95FEA387946A7AFDE5B6D973ED22FAE8` |
+| `assets/delay_trace/character/jump.png` | `924CDE6099E1F947615E9642B5DA0291EFEF983E806604FDD57840403113A3A0` |
+| `assets/delay_trace/character/fall.png` | `DDC59C0489903FFEC8610DA579C6B96A794F236CD94B6CCE0595811433012B80` |
+| `assets/delay_trace/character/wallslide.png` | `6A20A8F36A856266D0EA6227F00D3CD30625B540B34EA674C79137FB5BD2029B` |
+| `assets/delay_trace/character/climb.png` | `19972333E792F867E7346D0EFB5639D6B3BB8739D6541C5A1CAD272B085BC1AD` |
+| `assets/delay_trace/character/dash.png` | `674756DA16332D1C2BD7E3BABC9F93965CBA0DF6D1BB7CFEE13CE678A648E489` |
+| `assets/delay_trace/character/hit.png` | `3BE1CD59704BAAFAD8EEB21A9652F62B0714275AD915E46CDA96C7B5E2FD6347` |
+| `assets/delay_trace/character/death.png` | `693EA8F9E9572EE7AB739C1B4583D305F0DB51AEED40453C848E2CB4DA6B1DAA` |
 
 ## Kenney: Delay Trace 施工素材
 
@@ -36,12 +36,12 @@ Delay Trace 已接入 CC0 占位角色、施工平台、菜单地图、机关图
 
 | 当前用途 | 文件 | 来源包与修改 | SHA256 |
 | --- | --- | --- | --- |
-| 施工 TileMap、checkpoint 与机关图标 | `assets/echo_chase/tilemap/monochrome_tilemap_transparent_packed.png` | 1-Bit Platformer Pack；未改源像素，碰撞与 Terrain 数据保存在项目 TileSet。 | `497C68067960694C11D1D678CF04E0E8A4778CC40BCEFAD822FE398364E0E204` |
-| 冲刺 | `assets/echo_chase/audio/phaseJump2.ogg` | Digital Audio；原文件直接接入。 | `5D85717CFCA231F7DA7887CEF5F44B2131BBE3308EB0C1FEE0B4F9E61D59B571` |
-| 过去体出现 | `assets/echo_chase/audio/phaserUp4.ogg` | Digital Audio；原文件直接接入。 | `A64A69368AF9D85DFCE8DD38432FD6C9935A7766621782193102C9CB276571FC` |
-| 失败/复位 | `assets/echo_chase/audio/phaserDown2.ogg` | Digital Audio；原文件直接接入。 | `0EAADBBC5C259CC89A1DFBB0C99B61CA07E08710D035CC9BFC805B68CB0BDC9E` |
-| checkpoint 激活 | `assets/echo_chase/audio/powerUp5.ogg` | Digital Audio；原文件直接接入。 | `528E7245A1B61C6FD94BCB8DF1D747E6E9B76DCE58A36E44BE992CF9E09884F8` |
-| 落地 | `assets/echo_chase/audio/impactGeneric_light_001.ogg` | Impact Sounds；原文件直接接入。 | `C3CD1C073D186AE8FA35788BA94DE581F1826E7427A7BB26490B2695FAC18EFA` |
+| 施工 TileMap、checkpoint 与机关图标 | `assets/delay_trace/tilemap/monochrome_tilemap_transparent_packed.png` | 1-Bit Platformer Pack；未改源像素，碰撞与 Terrain 数据保存在项目 TileSet。 | `497C68067960694C11D1D678CF04E0E8A4778CC40BCEFAD822FE398364E0E204` |
+| 冲刺 | `assets/delay_trace/audio/phaseJump2.ogg` | Digital Audio；原文件直接接入。 | `5D85717CFCA231F7DA7887CEF5F44B2131BBE3308EB0C1FEE0B4F9E61D59B571` |
+| 过去体出现 | `assets/delay_trace/audio/phaserUp4.ogg` | Digital Audio；原文件直接接入。 | `A64A69368AF9D85DFCE8DD38432FD6C9935A7766621782193102C9CB276571FC` |
+| 失败/复位 | `assets/delay_trace/audio/phaserDown2.ogg` | Digital Audio；原文件直接接入。 | `0EAADBBC5C259CC89A1DFBB0C99B61CA07E08710D035CC9BFC805B68CB0BDC9E` |
+| checkpoint 激活 | `assets/delay_trace/audio/powerUp5.ogg` | Digital Audio；原文件直接接入。 | `528E7245A1B61C6FD94BCB8DF1D747E6E9B76DCE58A36E44BE992CF9E09884F8` |
+| 落地 | `assets/delay_trace/audio/impactGeneric_light_001.ogg` | Impact Sounds；原文件直接接入。 | `C3CD1C073D186AE8FA35788BA94DE581F1826E7427A7BB26490B2695FAC18EFA` |
 
 ## TakWolf: Fusion Pixel Font
 
@@ -55,7 +55,7 @@ Delay Trace 已接入 CC0 占位角色、施工平台、菜单地图、机关图
 | 当前用途 | 文件 | SHA256 |
 | --- | --- | --- |
 | 菜单、设置、感谢、暂停与通用 UI | `assets/fonts/fusion-pixel-12px-proportional-zh_hans.ttf` | `FFA464AAE492ED7A8526367DEBCCE62603CEC8157F59548CC50CEBF1ED81A53F` |
-| 许可证副本 | `assets/echo_chase/licenses/fusion_pixel_font_ofl.txt` | 见仓库文件 |
+| 许可证副本 | `assets/delay_trace/licenses/fusion_pixel_font_ofl.txt` | 见仓库文件 |
 
 ## Frenchyboy: Mysterious, Futuristic 8-bit Music Loop
 
@@ -69,8 +69,8 @@ Delay Trace 已接入 CC0 占位角色、施工平台、菜单地图、机关图
 
 | 当前用途 | 文件 | SHA256 |
 | --- | --- | --- |
-| 主菜单循环音乐 | `assets/echo_chase/audio/music/mysterious_futuristic_loop.ogg` | `A8CF299AA1F2C703EA5DE249DFA864254DE8AC76571A9DA70F7D33873AD08CCB` |
-| 来源与许可记录 | `assets/echo_chase/licenses/frenchyboy_mysterious_futuristic_cc0.txt` | 见仓库文件 |
+| 主菜单循环音乐 | `assets/delay_trace/audio/music/mysterious_futuristic_loop.ogg` | `A8CF299AA1F2C703EA5DE249DFA864254DE8AC76571A9DA70F7D33873AD08CCB` |
+| 来源与许可记录 | `assets/delay_trace/licenses/frenchyboy_mysterious_futuristic_cc0.txt` | 见仓库文件 |
 
 ## SRG774: Dark Sci-Fi Audio Pack
 
@@ -84,9 +84,9 @@ Delay Trace 已接入 CC0 占位角色、施工平台、菜单地图、机关图
 
 | 当前用途 | 文件 | SHA256 |
 | --- | --- | --- |
-| 施工玩法循环音乐 | `assets/echo_chase/audio/music/dark_sci_fi_sector.ogg` | `D5862627E6D0C424FC157EAFFAA5421BAE4F0BB177E7628D520BFB6A45AA9676` |
-| 支路永久装置激活 | `assets/echo_chase/audio/progression_victory.ogg` | `9ACDE356C84B1D326A3E7B813E43E8849596A285796144F7FABED898F2C21007` |
-| 来源与许可记录 | `assets/echo_chase/licenses/srg774_dark_sci_fi_audio_pack_cc0.txt` | `D03D122DDDEB5AFCF541ED32B84B334BFCDE91F143F40BD3821896EDF1C1B209` |
+| 施工玩法循环音乐 | `assets/delay_trace/audio/music/dark_sci_fi_sector.ogg` | `D5862627E6D0C424FC157EAFFAA5421BAE4F0BB177E7628D520BFB6A45AA9676` |
+| 支路永久装置激活 | `assets/delay_trace/audio/progression_victory.ogg` | `9ACDE356C84B1D326A3E7B813E43E8849596A285796144F7FABED898F2C21007` |
+| 来源与许可记录 | `assets/delay_trace/licenses/srg774_dark_sci_fi_audio_pack_cc0.txt` | `D03D122DDDEB5AFCF541ED32B84B334BFCDE91F143F40BD3821896EDF1C1B209` |
 
 ## Ansimuz: Sideview Sci-Fi - Patreon Collection
 

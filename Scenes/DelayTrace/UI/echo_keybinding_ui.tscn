@@ -1,0 +1,234 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://Scripts/DelayTrace/UI/echo_keybinding_ui.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://addons/enhance_save_system/Components/InputRemapping/key_capture_dialog.tscn" id="2_capture"]
+
+[node name="EchoKeybindingUI" type="VBoxContainer"]
+custom_minimum_size = Vector2(680, 0)
+size_flags_horizontal = 3
+theme_override_constants/separation = 14
+script = ExtResource("1_script")
+
+[node name="Rows" type="VBoxContainer" parent="."]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 5
+
+[node name="MoveLeftRow" type="VBoxContainer" parent="Rows"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="RowContent" type="HBoxContainer" parent="Rows/MoveLeftRow"]
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Rows/MoveLeftRow/RowContent"]
+custom_minimum_size = Vector2(230, 50)
+layout_mode = 2
+text = "INPUT_MOVE_LEFT"
+vertical_alignment = 1
+
+[node name="Spacer" type="Control" parent="Rows/MoveLeftRow/RowContent"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="MoveLeftButton" type="Button" parent="Rows/MoveLeftRow/RowContent"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(210, 50)
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+
+[node name="Separator" type="HSeparator" parent="Rows/MoveLeftRow"]
+layout_mode = 2
+
+[node name="MoveRightRow" type="VBoxContainer" parent="Rows"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="RowContent" type="HBoxContainer" parent="Rows/MoveRightRow"]
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Rows/MoveRightRow/RowContent"]
+custom_minimum_size = Vector2(230, 50)
+layout_mode = 2
+text = "INPUT_MOVE_RIGHT"
+vertical_alignment = 1
+
+[node name="Spacer" type="Control" parent="Rows/MoveRightRow/RowContent"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="MoveRightButton" type="Button" parent="Rows/MoveRightRow/RowContent"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(210, 50)
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+
+[node name="Separator" type="HSeparator" parent="Rows/MoveRightRow"]
+layout_mode = 2
+
+[node name="MoveUpRow" type="VBoxContainer" parent="Rows"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="RowContent" type="HBoxContainer" parent="Rows/MoveUpRow"]
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Rows/MoveUpRow/RowContent"]
+custom_minimum_size = Vector2(230, 50)
+layout_mode = 2
+text = "INPUT_MOVE_UP"
+vertical_alignment = 1
+
+[node name="Spacer" type="Control" parent="Rows/MoveUpRow/RowContent"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="MoveUpButton" type="Button" parent="Rows/MoveUpRow/RowContent"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(210, 50)
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+
+[node name="Separator" type="HSeparator" parent="Rows/MoveUpRow"]
+layout_mode = 2
+
+[node name="MoveDownRow" type="VBoxContainer" parent="Rows"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="RowContent" type="HBoxContainer" parent="Rows/MoveDownRow"]
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Rows/MoveDownRow/RowContent"]
+custom_minimum_size = Vector2(230, 50)
+layout_mode = 2
+text = "INPUT_MOVE_DOWN"
+vertical_alignment = 1
+
+[node name="Spacer" type="Control" parent="Rows/MoveDownRow/RowContent"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="MoveDownButton" type="Button" parent="Rows/MoveDownRow/RowContent"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(210, 50)
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+
+[node name="Separator" type="HSeparator" parent="Rows/MoveDownRow"]
+layout_mode = 2
+
+[node name="DashRow" type="VBoxContainer" parent="Rows"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="RowContent" type="HBoxContainer" parent="Rows/DashRow"]
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Rows/DashRow/RowContent"]
+custom_minimum_size = Vector2(230, 50)
+layout_mode = 2
+text = "INPUT_DASH"
+vertical_alignment = 1
+
+[node name="Spacer" type="Control" parent="Rows/DashRow/RowContent"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="DashButton" type="Button" parent="Rows/DashRow/RowContent"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(210, 50)
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+
+[node name="Separator" type="HSeparator" parent="Rows/DashRow"]
+layout_mode = 2
+
+[node name="JumpRow" type="VBoxContainer" parent="Rows"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="RowContent" type="HBoxContainer" parent="Rows/JumpRow"]
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Rows/JumpRow/RowContent"]
+custom_minimum_size = Vector2(230, 50)
+layout_mode = 2
+text = "INPUT_JUMP"
+vertical_alignment = 1
+
+[node name="Spacer" type="Control" parent="Rows/JumpRow/RowContent"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="JumpButton" type="Button" parent="Rows/JumpRow/RowContent"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(210, 50)
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+
+[node name="Separator" type="HSeparator" parent="Rows/JumpRow"]
+layout_mode = 2
+
+[node name="RecallRow" type="VBoxContainer" parent="Rows"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="RowContent" type="HBoxContainer" parent="Rows/RecallRow"]
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Rows/RecallRow/RowContent"]
+custom_minimum_size = Vector2(230, 50)
+layout_mode = 2
+text = "INPUT_RECALL"
+vertical_alignment = 1
+
+[node name="Spacer" type="Control" parent="Rows/RecallRow/RowContent"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="RecallButton" type="Button" parent="Rows/RecallRow/RowContent"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(210, 50)
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+
+[node name="Separator" type="HSeparator" parent="Rows/RecallRow"]
+layout_mode = 2
+
+[node name="PauseRow" type="VBoxContainer" parent="Rows"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="RowContent" type="HBoxContainer" parent="Rows/PauseRow"]
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Rows/PauseRow/RowContent"]
+custom_minimum_size = Vector2(230, 50)
+layout_mode = 2
+text = "INPUT_PAUSE"
+vertical_alignment = 1
+
+[node name="Spacer" type="Control" parent="Rows/PauseRow/RowContent"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="PauseButton" type="Button" parent="Rows/PauseRow/RowContent"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(210, 50)
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+
+[node name="Separator" type="HSeparator" parent="Rows/PauseRow"]
+layout_mode = 2
+
+[node name="KeyCaptureDialog" parent="." instance=ExtResource("2_capture")]
+unique_name_in_owner = true

@@ -1,0 +1,16 @@
+[remap]
+
+importer="dialogue_manager"
+importer_version=15
+type="Resource"
+uid="uid://dmfk0nnapdll1"
+path="res://.godot/imported/present_hub.zh.dialogue-1c7f326486792c693ea706e19c2d74e0.tres"
+
+[deps]
+
+source_file="res://Dialogue/DelayTrace/present_hub.zh.dialogue"
+dest_files=["res://.godot/imported/present_hub.zh.dialogue-1c7f326486792c693ea706e19c2d74e0.tres"]
+
+[params]
+
+defaults=true

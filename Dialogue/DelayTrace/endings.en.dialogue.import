@@ -1,0 +1,16 @@
+[remap]
+
+importer="dialogue_manager"
+importer_version=15
+type="Resource"
+uid="uid://ca2jqg2100p6t"
+path="res://.godot/imported/endings.en.dialogue-1f0acb3115ae63244623778404aa5786.tres"
+
+[deps]
+
+source_file="res://Dialogue/DelayTrace/endings.en.dialogue"
+dest_files=["res://.godot/imported/endings.en.dialogue-1f0acb3115ae63244623778404aa5786.tres"]
+
+[params]
+
+defaults=true

@@ -1,0 +1,266 @@
+[gd_scene load_steps=24 format=3]
+
+[ext_resource type="Script" path="res://Scripts/DelayTrace/future_echo.gd" id="1_script"]
+[ext_resource type="SpriteFrames" path="res://assets/delay_trace/character/echo_character_frames.tres" id="2_frames"]
+[ext_resource type="SpriteFrames" path="res://assets/delay_trace/character/echo_character_outline_frames.tres" id="3_outline_frames"]
+[ext_resource type="Shader" path="res://assets/delay_trace/vfx/temporal_outline.gdshader" id="4_outline_shader"]
+[ext_resource type="Texture2D" path="res://assets/delay_trace/vfx/temporal_particle.svg" id="5_particle"]
+[ext_resource type="AudioStream" path="res://assets/phase_lag/audio/sfx/laser_small.ogg" id="6_appear_audio"]
+[ext_resource type="AudioStream" path="res://assets/phase_lag/audio/sfx/explosion_crunch.ogg" id="7_dissipate_audio"]
+[ext_resource type="PackedScene" path="res://Scenes/DelayTrace/Prefabs/temporal_departure_vfx.tscn" id="8_departure"]
+[ext_resource type="Shader" path="res://assets/delay_trace/vfx/temporal_glow.gdshader" id="9_glow_shader"]
+
+[sub_resource type="RectangleShape2D" id="Shape_future"]
+size = Vector2(10, 15)
+
+[sub_resource type="ShaderMaterial" id="Material_visual"]
+shader = ExtResource("9_glow_shader")
+shader_parameter/shadow_color = Color(0.24, 0.12, 0.006, 1)
+shader_parameter/light_color = Color(1, 0.82, 0.2, 1)
+shader_parameter/opacity = 0.94
+shader_parameter/glow_strength = 0.78
+
+[sub_resource type="ShaderMaterial" id="Material_outline"]
+shader = ExtResource("4_outline_shader")
+shader_parameter/temporal_color = Color(1, 0.7, 0.2, 1)
+shader_parameter/outline_alpha = 1.0
+shader_parameter/fill_alpha = 0.0
+
+[sub_resource type="ShaderMaterial" id="Material_outer_outline"]
+shader = ExtResource("4_outline_shader")
+shader_parameter/temporal_color = Color(1, 0.72, 0.18, 0.66)
+shader_parameter/outline_alpha = 0.72
+shader_parameter/fill_alpha = 0.0
+
+[sub_resource type="ParticleProcessMaterial" id="Particle_future"]
+particle_flag_disable_z = true
+direction = Vector3(1, 0, 0)
+spread = 46.0
+initial_velocity_min = 32.0
+initial_velocity_max = 68.0
+gravity = Vector3(0, 12, 0)
+scale_min = 0.75
+scale_max = 1.5
+color = Color(1, 0.7, 0.2, 0.92)
+emission_shape = 1
+emission_sphere_radius = 7.0
+
+[sub_resource type="ParticleProcessMaterial" id="Particle_future_motion"]
+particle_flag_disable_z = true
+direction = Vector3(-1, 0, 0)
+spread = 180.0
+initial_velocity_min = 4.0
+initial_velocity_max = 16.0
+damping_min = 3.0
+damping_max = 7.0
+scale_min = 0.28
+scale_max = 0.72
+color = Color(1, 0.72, 0.18, 0.6)
+emission_shape = 1
+emission_sphere_radius = 3.0
+
+[sub_resource type="StyleBoxFlat" id="Style_timer_background"]
+bg_color = Color(0.08, 0.055, 0.012, 0.84)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(1, 0.68, 0.16, 0.72)
+
+[sub_resource type="StyleBoxFlat" id="Style_timer_fill"]
+bg_color = Color(1, 0.76, 0.18, 0.96)
+
+[sub_resource type="Animation" id="Animation_reset"]
+resource_name = "RESET"
+length = 0.05
+tracks/0/type = "value"
+tracks/0/path = NodePath("Visual:visible")
+tracks/0/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 1, "values": [true]}
+tracks/1/type = "value"
+tracks/1/path = NodePath("Visual:self_modulate")
+tracks/1/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 1, "values": [Color(1, 1, 1, 1)]}
+tracks/2/type = "value"
+tracks/2/path = NodePath("OutlineVisual:visible")
+tracks/2/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 1, "values": [false]}
+tracks/3/type = "value"
+tracks/3/path = NodePath("OutlineVisual:scale")
+tracks/3/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 1, "values": [Vector2(1, 1)]}
+tracks/4/type = "value"
+tracks/4/path = NodePath("OutlineVisual:modulate")
+tracks/4/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 1, "values": [Color(1, 1, 1, 0)]}
+
+[sub_resource type="Animation" id="Animation_solid"]
+resource_name = "solid"
+length = 0.05
+tracks/0/type = "value"
+tracks/0/path = NodePath("Visual:visible")
+tracks/0/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 1, "values": [true]}
+tracks/1/type = "value"
+tracks/1/path = NodePath("Visual:self_modulate")
+tracks/1/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 1, "values": [Color(1, 1, 1, 1)]}
+tracks/2/type = "value"
+tracks/2/path = NodePath("OutlineVisual:visible")
+tracks/2/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 1, "values": [true]}
+
+[sub_resource type="Animation" id="Animation_materialize"]
+resource_name = "materialize"
+length = 0.35
+tracks/0/type = "value"
+tracks/0/path = NodePath("Visual:self_modulate")
+tracks/0/interp = 1
+tracks/0/keys = {"times": PackedFloat32Array(0, 0.35), "transitions": PackedFloat32Array(1, 1), "update": 0, "values": [Color(1, 1, 1, 0.12), Color(1, 1, 1, 1)]}
+tracks/1/type = "value"
+tracks/1/path = NodePath("OutlineVisual:visible")
+tracks/1/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 1, "values": [true]}
+tracks/2/type = "value"
+tracks/2/path = NodePath("OutlineVisual:scale")
+tracks/2/interp = 1
+tracks/2/keys = {"times": PackedFloat32Array(0, 0.35), "transitions": PackedFloat32Array(0.55, 1), "update": 0, "values": [Vector2(1.8, 1.8), Vector2(1, 1)]}
+tracks/3/type = "value"
+tracks/3/path = NodePath("OutlineVisual:modulate")
+tracks/3/interp = 1
+tracks/3/keys = {"times": PackedFloat32Array(0, 0.28, 0.35), "transitions": PackedFloat32Array(1, 1, 1), "update": 0, "values": [Color(1, 1, 1, 0.12), Color(1, 1, 1, 1), Color(1, 1, 1, 0.25)]}
+
+[sub_resource type="Animation" id="Animation_materialize_reduced"]
+resource_name = "materialize_reduced"
+length = 0.35
+tracks/0/type = "value"
+tracks/0/path = NodePath("Visual:self_modulate")
+tracks/0/interp = 1
+tracks/0/keys = {"times": PackedFloat32Array(0, 0.35), "transitions": PackedFloat32Array(1, 1), "update": 0, "values": [Color(1, 1, 1, 0.24), Color(1, 1, 1, 1)]}
+tracks/1/type = "value"
+tracks/1/path = NodePath("OutlineVisual:visible")
+tracks/1/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 1, "values": [true]}
+tracks/2/type = "value"
+tracks/2/path = NodePath("OutlineVisual:scale")
+tracks/2/interp = 1
+tracks/2/keys = {"times": PackedFloat32Array(0, 0.35), "transitions": PackedFloat32Array(1, 1), "update": 0, "values": [Vector2(1.25, 1.25), Vector2(1, 1)]}
+tracks/3/type = "value"
+tracks/3/path = NodePath("OutlineVisual:modulate")
+tracks/3/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 1, "values": [Color(1, 1, 1, 0.62)]}
+
+[sub_resource type="Animation" id="Animation_dissipate"]
+resource_name = "dissipate"
+length = 0.25
+tracks/0/type = "value"
+tracks/0/path = NodePath("Visual:self_modulate")
+tracks/0/interp = 1
+tracks/0/keys = {"times": PackedFloat32Array(0, 0.25), "transitions": PackedFloat32Array(1, 1), "update": 0, "values": [Color(1, 1, 1, 0.78), Color(1, 1, 1, 0)]}
+tracks/1/type = "value"
+tracks/1/path = NodePath("OutlineVisual:visible")
+tracks/1/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 1, "values": [false]}
+
+[sub_resource type="Animation" id="Animation_dissipate_reduced"]
+resource_name = "dissipate_reduced"
+length = 0.25
+tracks/0/type = "value"
+tracks/0/path = NodePath("Visual:self_modulate")
+tracks/0/interp = 1
+tracks/0/keys = {"times": PackedFloat32Array(0, 0.25), "transitions": PackedFloat32Array(1, 1), "update": 0, "values": [Color(1, 1, 1, 0.78), Color(1, 1, 1, 0.18)]}
+tracks/1/type = "value"
+tracks/1/path = NodePath("OutlineVisual:visible")
+tracks/1/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 1, "values": [false]}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_vfx"]
+_data = {&"RESET": SubResource("Animation_reset"), &"dissipate": SubResource("Animation_dissipate"), &"dissipate_reduced": SubResource("Animation_dissipate_reduced"), &"materialize": SubResource("Animation_materialize"), &"materialize_reduced": SubResource("Animation_materialize_reduced"), &"solid": SubResource("Animation_solid")}
+
+[node name="FutureEcho" type="Area2D"]
+collision_layer = 8
+collision_mask = 2
+monitoring = true
+monitorable = true
+script = ExtResource("1_script")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+unique_name_in_owner = true
+shape = SubResource("Shape_future")
+
+[node name="Visual" type="AnimatedSprite2D" parent="."]
+unique_name_in_owner = true
+material = SubResource("Material_visual")
+sprite_frames = ExtResource("2_frames")
+animation = &"idle"
+
+[node name="PredictionVisual" type="AnimatedSprite2D" parent="."]
+unique_name_in_owner = true
+position = Vector2(6, 0)
+self_modulate = Color(1, 0.66, 0.1, 0.28)
+show_behind_parent = true
+sprite_frames = ExtResource("2_frames")
+animation = &"idle"
+
+[node name="OutlineVisual" type="AnimatedSprite2D" parent="."]
+unique_name_in_owner = true
+visible = false
+material = SubResource("Material_outline")
+sprite_frames = ExtResource("3_outline_frames")
+animation = &"idle"
+
+[node name="OuterOutlineVisual" type="AnimatedSprite2D" parent="."]
+unique_name_in_owner = true
+visible = false
+material = SubResource("Material_outer_outline")
+scale = Vector2(1.14, 1.14)
+sprite_frames = ExtResource("3_outline_frames")
+animation = &"idle"
+
+[node name="DepartureVfx" parent="." instance=ExtResource("8_departure")]
+unique_name_in_owner = true
+temporal_color = Color(1, 0.7, 0.2, 1)
+
+[node name="PlaybackTimer" type="ProgressBar" parent="."]
+unique_name_in_owner = true
+visible = false
+z_index = 5
+offset_left = -11.0
+offset_top = -14.0
+offset_right = 11.0
+offset_bottom = -10.0
+mouse_filter = 2
+theme_override_styles/background = SubResource("Style_timer_background")
+theme_override_styles/fill = SubResource("Style_timer_fill")
+max_value = 1.0
+step = 0.01
+value = 1.0
+show_percentage = false
+
+[node name="MotionTrail" type="GPUParticles2D" parent="."]
+unique_name_in_owner = true
+show_behind_parent = true
+emitting = false
+amount = 16
+texture = ExtResource("5_particle")
+lifetime = 0.55
+preprocess = 0.25
+randomness = 0.62
+visibility_rect = Rect2(-48, -48, 96, 96)
+local_coords = false
+process_material = SubResource("Particle_future_motion")
+
+[node name="PixelBurst" type="GPUParticles2D" parent="."]
+unique_name_in_owner = true
+emitting = false
+amount = 18
+process_material = SubResource("Particle_future")
+texture = ExtResource("5_particle")
+lifetime = 0.25
+one_shot = true
+explosiveness = 1.0
+local_coords = false
+visibility_rect = Rect2(-64, -64, 128, 128)
+
+[node name="VfxAnimationPlayer" type="AnimationPlayer" parent="."]
+unique_name_in_owner = true
+libraries = {&"": SubResource("AnimationLibrary_vfx")}
+
+[node name="AppearAudio" type="AudioStreamPlayer2D" parent="."]
+unique_name_in_owner = true
+stream = ExtResource("6_appear_audio")
+volume_db = -7.0
+bus = &"SFX"
+
+[node name="DissipateAudio" type="AudioStreamPlayer2D" parent="."]
+unique_name_in_owner = true
+stream = ExtResource("7_dissipate_audio")
+volume_db = -8.0
+bus = &"SFX"

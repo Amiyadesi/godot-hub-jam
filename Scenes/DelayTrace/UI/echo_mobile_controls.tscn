@@ -1,0 +1,192 @@
+[gd_scene load_steps=20 format=3]
+
+[ext_resource type="Script" path="res://Scripts/DelayTrace/UI/echo_mobile_controls.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/delay_trace/ui/gdb-xbox-2.png" id="2_texture"]
+[ext_resource type="Texture2D" path="res://assets/delay_trace/ui/gdb-keyboard-2.png" id="3_keyboard"]
+
+[sub_resource type="AtlasTexture" id="Atlas_A_normal"]
+atlas = ExtResource("2_texture")
+region = Rect2(17, 177, 14, 14)
+
+[sub_resource type="AtlasTexture" id="Atlas_A_pressed"]
+atlas = ExtResource("2_texture")
+region = Rect2(65, 178, 14, 14)
+
+[sub_resource type="AtlasTexture" id="Atlas_B_normal"]
+atlas = ExtResource("2_texture")
+region = Rect2(17, 193, 14, 14)
+
+[sub_resource type="AtlasTexture" id="Atlas_B_pressed"]
+atlas = ExtResource("2_texture")
+region = Rect2(65, 194, 14, 14)
+
+[sub_resource type="AtlasTexture" id="Atlas_X_normal"]
+atlas = ExtResource("2_texture")
+region = Rect2(17, 209, 14, 14)
+
+[sub_resource type="AtlasTexture" id="Atlas_X_pressed"]
+atlas = ExtResource("2_texture")
+region = Rect2(65, 210, 14, 14)
+
+[sub_resource type="AtlasTexture" id="Atlas_Y_normal"]
+atlas = ExtResource("2_texture")
+region = Rect2(17, 225, 14, 14)
+
+[sub_resource type="AtlasTexture" id="Atlas_Y_pressed"]
+atlas = ExtResource("2_texture")
+region = Rect2(65, 226, 14, 14)
+
+[sub_resource type="AtlasTexture" id="Atlas_Up_normal"]
+atlas = ExtResource("2_texture")
+region = Rect2(100, 210, 8, 12)
+
+[sub_resource type="AtlasTexture" id="Atlas_Up_pressed"]
+atlas = ExtResource("2_texture")
+region = Rect2(132, 178, 8, 12)
+
+[sub_resource type="AtlasTexture" id="Atlas_Down_normal"]
+atlas = ExtResource("2_texture")
+region = Rect2(116, 210, 8, 12)
+
+[sub_resource type="AtlasTexture" id="Atlas_Down_pressed"]
+atlas = ExtResource("2_texture")
+region = Rect2(148, 178, 8, 12)
+
+[sub_resource type="AtlasTexture" id="Atlas_Left_normal"]
+atlas = ExtResource("2_texture")
+region = Rect2(98, 227, 12, 8)
+
+[sub_resource type="AtlasTexture" id="Atlas_Left_pressed"]
+atlas = ExtResource("2_texture")
+region = Rect2(130, 195, 12, 8)
+
+[sub_resource type="AtlasTexture" id="Atlas_Right_normal"]
+atlas = ExtResource("2_texture")
+region = Rect2(114, 227, 12, 8)
+
+[sub_resource type="AtlasTexture" id="Atlas_Right_pressed"]
+atlas = ExtResource("2_texture")
+region = Rect2(146, 195, 12, 8)
+
+[sub_resource type="AtlasTexture" id="Atlas_Escape_normal"]
+atlas = ExtResource("3_keyboard")
+region = Rect2(32, 16, 16, 16)
+
+[sub_resource type="AtlasTexture" id="Atlas_Escape_pressed"]
+atlas = ExtResource("3_keyboard")
+region = Rect2(32, 129, 16, 16)
+
+[node name="EchoMobileControls" type="Control"]
+process_mode = 3
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("1_script")
+
+[node name="DirectionPad" type="Control" parent="."]
+layout_mode = 1
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 48.0
+offset_top = -304.0
+offset_right = 320.0
+offset_bottom = -40.0
+grow_vertical = 0
+mouse_filter = 2
+
+[node name="Up" type="TouchScreenButton" parent="DirectionPad"]
+position = Vector2(126, 0)
+scale = Vector2(4.5, 4.5)
+texture_normal = SubResource("Atlas_Up_normal")
+texture_pressed = SubResource("Atlas_Up_pressed")
+action = "echo_move_up"
+visibility_mode = 1
+
+[node name="Down" type="TouchScreenButton" parent="DirectionPad"]
+position = Vector2(126, 154)
+scale = Vector2(4.5, 4.5)
+texture_normal = SubResource("Atlas_Down_normal")
+texture_pressed = SubResource("Atlas_Down_pressed")
+action = "echo_move_down"
+visibility_mode = 1
+
+[node name="Left" type="TouchScreenButton" parent="DirectionPad"]
+position = Vector2(42, 78)
+scale = Vector2(4.5, 4.5)
+texture_normal = SubResource("Atlas_Left_normal")
+texture_pressed = SubResource("Atlas_Left_pressed")
+action = "echo_move_left"
+visibility_mode = 1
+
+[node name="Right" type="TouchScreenButton" parent="DirectionPad"]
+position = Vector2(210, 78)
+scale = Vector2(4.5, 4.5)
+texture_normal = SubResource("Atlas_Right_normal")
+texture_pressed = SubResource("Atlas_Right_pressed")
+action = "echo_move_right"
+visibility_mode = 1
+
+[node name="ActionPad" type="Control" parent="."]
+layout_mode = 1
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -320.0
+offset_top = -320.0
+offset_right = -32.0
+offset_bottom = -32.0
+grow_horizontal = 0
+grow_vertical = 0
+mouse_filter = 2
+
+[node name="Y" type="TouchScreenButton" parent="ActionPad"]
+position = Vector2(116, 0)
+scale = Vector2(4.0, 4.0)
+texture_normal = SubResource("Atlas_Y_normal")
+texture_pressed = SubResource("Atlas_Y_pressed")
+action = "echo_jump"
+visibility_mode = 1
+
+[node name="X" type="TouchScreenButton" parent="ActionPad"]
+position = Vector2(0, 100)
+scale = Vector2(4.0, 4.0)
+texture_normal = SubResource("Atlas_X_normal")
+texture_pressed = SubResource("Atlas_X_pressed")
+action = "echo_dash"
+visibility_mode = 1
+
+[node name="B" type="TouchScreenButton" parent="ActionPad"]
+position = Vector2(232, 100)
+scale = Vector2(4.0, 4.0)
+texture_normal = SubResource("Atlas_B_normal")
+texture_pressed = SubResource("Atlas_B_pressed")
+action = "echo_interact"
+visibility_mode = 1
+
+[node name="A" type="TouchScreenButton" parent="ActionPad"]
+position = Vector2(116, 200)
+scale = Vector2(4.0, 4.0)
+texture_normal = SubResource("Atlas_A_normal")
+texture_pressed = SubResource("Atlas_A_pressed")
+action = "echo_recall"
+visibility_mode = 1
+
+[node name="Escape" type="Control" parent="."]
+layout_mode = 1
+offset_left = 48.0
+offset_top = 48.0
+offset_right = 112.0
+offset_bottom = 112.0
+mouse_filter = 2
+
+[node name="EscButton" type="TouchScreenButton" parent="Escape"]
+scale = Vector2(4.0, 4.0)
+texture_normal = SubResource("Atlas_Escape_normal")
+texture_pressed = SubResource("Atlas_Escape_pressed")
+action = "pause"
+visibility_mode = 1

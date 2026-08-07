@@ -1,7 +1,7 @@
 [gd_scene load_steps=5 format=3 uid="uid://b7hivg2dnaer8"]
 
 [ext_resource type="Script" uid="uid://bj5gndwwp7gnn" path="res://Scenes/UI/Menu/setting_screen.gd" id="1_script"]
-[ext_resource type="PackedScene" path="res://Scenes/EchoChase/UI/echo_keybinding_ui.tscn" id="2_keybind"]
+[ext_resource type="PackedScene" path="res://Scenes/DelayTrace/UI/echo_keybinding_ui.tscn" id="2_keybind"]
 [ext_resource type="PackedScene" uid="uid://dssid7iw4aqb6" path="res://Scenes/UIorgan/ShaderButton/shader_button.tscn" id="3_button"]
 [ext_resource type="Theme" uid="uid://136hg33mma1d" path="res://resources/main_theme.tres" id="4_theme"]
 

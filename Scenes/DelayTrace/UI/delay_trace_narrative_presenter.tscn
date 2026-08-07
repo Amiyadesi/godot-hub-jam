@@ -1,0 +1,750 @@
+[gd_scene load_steps=19 format=3]
+
+[ext_resource type="Script" path="res://Scripts/DelayTrace/delay_trace_narrative_presenter.gd" id="1_script"]
+[ext_resource type="Resource" uid="uid://ccqi3twteg66e" path="res://Dialogue/DelayTrace/endings.zh.dialogue" id="2_ending_zh"]
+[ext_resource type="Resource" uid="uid://ca2jqg2100p6t" path="res://Dialogue/DelayTrace/endings.en.dialogue" id="3_ending_en"]
+[ext_resource type="Texture2D" path="res://assets/delay_trace/character/idle.png" id="4_player"]
+[ext_resource type="Texture2D" uid="uid://ckikvugdg0f5o" path="res://assets/delay_trace/character/delay_trace_mystery_sprite.png" id="5_keeper"]
+[ext_resource type="Theme" path="res://resources/main_theme.tres" id="6_theme"]
+[ext_resource type="Script" path="res://addons/richtext2/richer_text_label.gd" id="7_richer_text"]
+[ext_resource type="Texture2D" path="res://assets/delay_trace/vfx/temporal_particle.svg" id="8_particle"]
+[ext_resource type="SpriteFrames" path="res://assets/delay_trace/character/echo_character_frames.tres" id="9_character_frames"]
+[ext_resource type="Shader" path="res://assets/delay_trace/vfx/temporal_glow.gdshader" id="10_temporal_glow"]
+
+[sub_resource type="AtlasTexture" id="Atlas_player"]
+atlas = ExtResource("4_player")
+region = Rect2(0, 0, 16, 16)
+
+[sub_resource type="ShaderMaterial" id="Material_opening_runner"]
+shader = ExtResource("10_temporal_glow")
+shader_parameter/shadow_color = Color(0.12, 0.002, 0.004, 1)
+shader_parameter/light_color = Color(0.72, 0.025, 0.04, 1)
+shader_parameter/opacity = 0.92
+shader_parameter/glow_strength = 0.5
+
+[sub_resource type="ParticleProcessMaterial" id="Particle_exit_stream"]
+particle_flag_disable_z = true
+direction = Vector3(1, 0, 0)
+spread = 22.0
+initial_velocity_min = 70.0
+initial_velocity_max = 130.0
+damping_min = 2.0
+damping_max = 5.0
+scale_min = 0.45
+scale_max = 1.05
+color = Color(1, 1, 1, 0.82)
+emission_shape = 3
+emission_box_extents = Vector3(8, 180, 1)
+
+[sub_resource type="ParticleProcessMaterial" id="Particle_merge_trail"]
+particle_flag_disable_z = true
+direction = Vector3(0, -1, 0)
+spread = 180.0
+initial_velocity_min = 5.0
+initial_velocity_max = 18.0
+damping_min = 2.0
+damping_max = 6.0
+scale_min = 0.45
+scale_max = 1.05
+color = Color(1, 1, 1, 0.72)
+emission_shape = 1
+emission_sphere_radius = 6.0
+
+[sub_resource type="ParticleProcessMaterial" id="Particle_ending_burst"]
+particle_flag_disable_z = true
+direction = Vector3(1, 0, 0)
+spread = 180.0
+initial_velocity_min = 42.0
+initial_velocity_max = 98.0
+damping_min = 2.0
+damping_max = 5.0
+scale_min = 0.55
+scale_max = 1.35
+color = Color(1, 1, 1, 0.92)
+emission_shape = 1
+emission_sphere_radius = 10.0
+
+[sub_resource type="ParticleProcessMaterial" id="Particle_golden_path"]
+particle_flag_disable_z = true
+direction = Vector3(1, -0.08, 0)
+spread = 18.0
+initial_velocity_min = 48.0
+initial_velocity_max = 92.0
+damping_min = 1.0
+damping_max = 3.0
+scale_min = 0.35
+scale_max = 0.9
+color = Color(1, 0.78, 0.24, 0.82)
+emission_shape = 3
+emission_box_extents = Vector3(390, 30, 1)
+
+[sub_resource type="Animation" id="Animation_keeper_idle"]
+resource_name = "idle"
+length = 2.0
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/path = NodePath(".:frame")
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.5, 1, 1.5, 2),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1),
+"update": 1,
+"values": [0, 1, 2, 3, 0]
+}
+
+[sub_resource type="Animation" id="Animation_keeper_run"]
+resource_name = "run"
+loop_mode = 1
+step = 0.2
+tracks/0/type = "value"
+tracks/0/path = NodePath(".:frame")
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.2, 0.4, 0.6, 0.8),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1),
+"update": 1,
+"values": [5, 6, 7, 8, 9]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_keeper"]
+_data = {
+&"idle": SubResource("Animation_keeper_idle"),
+&"run": SubResource("Animation_keeper_run")
+}
+
+[node name="DelayTraceNarrativePresenter" type="Node"]
+process_mode = 3
+auto_translate_mode = 2
+script = ExtResource("1_script")
+ending_dialogue_resource_zh = ExtResource("2_ending_zh")
+ending_dialogue_resource_en = ExtResource("3_ending_en")
+
+[node name="MemoryLayer" type="CanvasLayer" parent="."]
+unique_name_in_owner = true
+layer = 80
+visible = false
+
+[node name="Backdrop" type="ColorRect" parent="MemoryLayer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0, 0, 0, 1)
+
+[node name="OpeningRunner" type="AnimatedSprite2D" parent="MemoryLayer"]
+unique_name_in_owner = true
+visible = false
+material = SubResource("Material_opening_runner")
+scale = Vector2(4, 4)
+sprite_frames = ExtResource("9_character_frames")
+animation = &"run"
+
+[node name="MemoryTag" type="Label" parent="MemoryLayer"]
+unique_name_in_owner = true
+anchors_preset = 10
+anchor_right = 1.0
+offset_top = 86.0
+offset_bottom = 142.0
+grow_horizontal = 2
+theme = ExtResource("6_theme")
+theme_override_colors/font_color = Color(0.72, 0.08, 0.12, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 28
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="MemoryText" type="RichTextLabel" parent="MemoryLayer"]
+unique_name_in_owner = true
+visible = false
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 140.0
+offset_top = 270.0
+offset_right = -140.0
+offset_bottom = -270.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("7_richer_text")
+bbcode = "[jit2 scale=2.0 freq=18.0]RUN[]"
+effects = 1
+alignment = 1
+color = Color(0.92, 0.08, 0.12, 1)
+font = "SmileySans-Oblique"
+font_size = 88
+outline_size = 8
+markdown_enabled = false
+context_enabled = false
+autostyle_numbers = false
+autostyle_emojis = false
+override_fitContent = false
+fit_content = false
+scroll_active = false
+vertical_alignment = 1
+autowrap_mode = 2
+
+[node name="EndingLayer" type="CanvasLayer" parent="."]
+unique_name_in_owner = true
+layer = 70
+visible = false
+
+[node name="Backdrop" type="ColorRect" parent="EndingLayer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.008, 0.012, 0.015, 1)
+
+[node name="Horizon" type="ColorRect" parent="EndingLayer"]
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -340.0
+offset_bottom = -332.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 2
+color = Color(0.27, 0.48, 0.52, 0.52)
+
+[node name="EndingDim" type="ColorRect" parent="EndingLayer"]
+unique_name_in_owner = true
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+modulate = Color(1, 1, 1, 0)
+color = Color(0, 0, 0, 1)
+
+[node name="EndingRoot" type="Control" parent="EndingLayer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("6_theme")
+mouse_filter = 2
+
+[node name="NormalGroup" type="Node2D" parent="EndingLayer/EndingRoot"]
+unique_name_in_owner = true
+visible = false
+
+[node name="Exit" type="Line2D" parent="EndingLayer/EndingRoot/NormalGroup"]
+points = PackedVector2Array(1510, 330, 1510, 740)
+width = 14.0
+default_color = Color(0.72, 0.92, 1, 0.78)
+
+[node name="NormalExitParticles" type="GPUParticles2D" parent="EndingLayer/EndingRoot/NormalGroup"]
+unique_name_in_owner = true
+show_behind_parent = true
+position = Vector2(1510, 535)
+emitting = false
+amount = 80
+texture = ExtResource("8_particle")
+lifetime = 1.15
+preprocess = 0.8
+randomness = 0.62
+visibility_rect = Rect2(-80, -230, 280, 460)
+local_coords = true
+process_material = SubResource("Particle_exit_stream")
+
+[node name="LoopPlayerStart" type="Marker2D" parent="EndingLayer/EndingRoot/NormalGroup"]
+unique_name_in_owner = true
+position = Vector2(960, 600)
+
+[node name="LoopKeeperStart" type="Marker2D" parent="EndingLayer/EndingRoot/NormalGroup"]
+unique_name_in_owner = true
+position = Vector2(190, 600)
+
+[node name="LoopKeeperTalkTarget" type="Marker2D" parent="EndingLayer/EndingRoot/NormalGroup"]
+unique_name_in_owner = true
+position = Vector2(1160, 600)
+
+[node name="LoopExitTarget" type="Marker2D" parent="EndingLayer/EndingRoot/NormalGroup"]
+unique_name_in_owner = true
+position = Vector2(1730, 600)
+
+[node name="LoopRebirthTarget" type="Marker2D" parent="EndingLayer/EndingRoot/NormalGroup"]
+unique_name_in_owner = true
+position = Vector2(430, 600)
+
+[node name="LoopPlayer" type="Sprite2D" parent="EndingLayer/EndingRoot/NormalGroup"]
+unique_name_in_owner = true
+position = Vector2(960, 600)
+scale = Vector2(8, 8)
+texture = SubResource("Atlas_player")
+
+[node name="LoopReplacementKeeper" type="Sprite2D" parent="EndingLayer/EndingRoot/NormalGroup"]
+unique_name_in_owner = true
+modulate = Color(1, 1, 1, 0)
+position = Vector2(960, 600)
+scale = Vector2(8, 8)
+texture = ExtResource("5_keeper")
+hframes = 5
+vframes = 2
+
+[node name="IdentityPulseParticles" type="GPUParticles2D" parent="EndingLayer/EndingRoot/NormalGroup"]
+unique_name_in_owner = true
+position = Vector2(960, 600)
+emitting = false
+amount = 64
+texture = ExtResource("8_particle")
+lifetime = 0.72
+one_shot = true
+explosiveness = 1.0
+visibility_rect = Rect2(-140, -140, 280, 280)
+local_coords = true
+process_material = SubResource("Particle_ending_burst")
+
+[node name="LoopOldKeeper" type="Sprite2D" parent="EndingLayer/EndingRoot/NormalGroup"]
+unique_name_in_owner = true
+position = Vector2(190, 600)
+scale = Vector2(8, 8)
+texture = ExtResource("5_keeper")
+hframes = 5
+vframes = 2
+
+[node name="LoopKeeperAnimationPlayer" type="AnimationPlayer" parent="EndingLayer/EndingRoot/NormalGroup"]
+unique_name_in_owner = true
+root_node = NodePath("../LoopOldKeeper")
+libraries/ = SubResource("AnimationLibrary_keeper")
+
+[node name="LoopRebornPlayer" type="Sprite2D" parent="EndingLayer/EndingRoot/NormalGroup"]
+unique_name_in_owner = true
+visible = false
+modulate = Color(1, 1, 1, 0)
+position = Vector2(430, 600)
+scale = Vector2(8, 8)
+texture = SubResource("Atlas_player")
+
+[node name="LoopRunLabel" type="Label" parent="EndingLayer/EndingRoot/NormalGroup"]
+unique_name_in_owner = true
+visible = false
+modulate = Color(1, 1, 1, 0)
+offset_left = 330.0
+offset_top = 386.0
+offset_right = 530.0
+offset_bottom = 466.0
+theme_override_colors/font_color = Color(0.75, 0.96, 1, 1)
+theme_override_colors/font_outline_color = Color(0.01, 0.02, 0.025, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 42
+text = "Run"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="PlayerBindings" type="Node2D" parent="EndingLayer/EndingRoot/NormalGroup"]
+unique_name_in_owner = true
+visible = false
+position = Vector2(960, 600)
+
+[node name="Ring" type="Line2D" parent="EndingLayer/EndingRoot/NormalGroup/PlayerBindings"]
+points = PackedVector2Array(-120, -34, -72, -72, 72, -72, 120, -34, 72, 4, -72, 4)
+width = 8.0
+default_color = Color(0.75, 0.12, 0.2, 0.9)
+closed = true
+
+[node name="Cross" type="Line2D" parent="EndingLayer/EndingRoot/NormalGroup/PlayerBindings"]
+points = PackedVector2Array(-106, 42, 106, -42, -106, -42, 106, 42)
+width = 4.0
+default_color = Color(0.96, 0.36, 0.42, 0.72)
+
+[node name="TrueGroup" type="Node2D" parent="EndingLayer/EndingRoot"]
+unique_name_in_owner = true
+visible = false
+
+[node name="PastStart" type="Marker2D" parent="EndingLayer/EndingRoot/TrueGroup"]
+unique_name_in_owner = true
+position = Vector2(590, 350)
+
+[node name="PresentStart" type="Marker2D" parent="EndingLayer/EndingRoot/TrueGroup"]
+unique_name_in_owner = true
+position = Vector2(650, 735)
+
+[node name="FutureStart" type="Marker2D" parent="EndingLayer/EndingRoot/TrueGroup"]
+unique_name_in_owner = true
+position = Vector2(1270, 735)
+
+[node name="KeeperStart" type="Marker2D" parent="EndingLayer/EndingRoot/TrueGroup"]
+unique_name_in_owner = true
+position = Vector2(1330, 350)
+
+[node name="MergeTarget" type="Marker2D" parent="EndingLayer/EndingRoot/TrueGroup"]
+unique_name_in_owner = true
+position = Vector2(960, 530)
+
+[node name="RewrittenHeroStart" type="Marker2D" parent="EndingLayer/EndingRoot/TrueGroup"]
+unique_name_in_owner = true
+position = Vector2(610, 610)
+
+[node name="LiaStart" type="Marker2D" parent="EndingLayer/EndingRoot/TrueGroup"]
+unique_name_in_owner = true
+position = Vector2(770, 610)
+
+[node name="TrueExitTarget" type="Marker2D" parent="EndingLayer/EndingRoot/TrueGroup"]
+unique_name_in_owner = true
+position = Vector2(1480, 510)
+
+[node name="LiaExitTarget" type="Marker2D" parent="EndingLayer/EndingRoot/TrueGroup"]
+unique_name_in_owner = true
+position = Vector2(1360, 510)
+
+[node name="PastFigure" type="Sprite2D" parent="EndingLayer/EndingRoot/TrueGroup"]
+unique_name_in_owner = true
+modulate = Color(1, 0.24, 0.29, 1)
+position = Vector2(590, 350)
+scale = Vector2(7, 7)
+texture = SubResource("Atlas_player")
+
+[node name="PresentFigure" type="Sprite2D" parent="EndingLayer/EndingRoot/TrueGroup"]
+unique_name_in_owner = true
+modulate = Color(0.66, 0.96, 1, 1)
+position = Vector2(650, 735)
+scale = Vector2(7, 7)
+texture = SubResource("Atlas_player")
+
+[node name="FutureFigure" type="Sprite2D" parent="EndingLayer/EndingRoot/TrueGroup"]
+unique_name_in_owner = true
+modulate = Color(1, 0.74, 0.2, 1)
+position = Vector2(1270, 735)
+scale = Vector2(7, 7)
+texture = SubResource("Atlas_player")
+
+[node name="KeeperFigure" type="Sprite2D" parent="EndingLayer/EndingRoot/TrueGroup"]
+unique_name_in_owner = true
+position = Vector2(1330, 350)
+scale = Vector2(7, 7)
+texture = ExtResource("5_keeper")
+hframes = 5
+vframes = 2
+
+[node name="TrueKeeperAnimationPlayer" type="AnimationPlayer" parent="EndingLayer/EndingRoot/TrueGroup"]
+unique_name_in_owner = true
+root_node = NodePath("../KeeperFigure")
+libraries/ = SubResource("AnimationLibrary_keeper")
+
+[node name="PastMergeTrail" type="GPUParticles2D" parent="EndingLayer/EndingRoot/TrueGroup"]
+unique_name_in_owner = true
+modulate = Color(1, 0.2, 0.32, 1)
+position = Vector2(590, 350)
+emitting = false
+amount = 40
+texture = ExtResource("8_particle")
+lifetime = 0.82
+randomness = 0.7
+visibility_rect = Rect2(-480, -360, 960, 720)
+local_coords = false
+process_material = SubResource("Particle_merge_trail")
+
+[node name="PresentMergeTrail" type="GPUParticles2D" parent="EndingLayer/EndingRoot/TrueGroup"]
+unique_name_in_owner = true
+modulate = Color(0.54, 0.94, 1, 1)
+position = Vector2(650, 735)
+emitting = false
+amount = 40
+texture = ExtResource("8_particle")
+lifetime = 0.82
+randomness = 0.7
+visibility_rect = Rect2(-480, -360, 960, 720)
+local_coords = false
+process_material = SubResource("Particle_merge_trail")
+
+[node name="FutureMergeTrail" type="GPUParticles2D" parent="EndingLayer/EndingRoot/TrueGroup"]
+unique_name_in_owner = true
+modulate = Color(1, 0.72, 0.18, 1)
+position = Vector2(1270, 735)
+emitting = false
+amount = 40
+texture = ExtResource("8_particle")
+lifetime = 0.82
+randomness = 0.7
+visibility_rect = Rect2(-480, -360, 960, 720)
+local_coords = false
+process_material = SubResource("Particle_merge_trail")
+
+[node name="KeeperMergeTrail" type="GPUParticles2D" parent="EndingLayer/EndingRoot/TrueGroup"]
+unique_name_in_owner = true
+modulate = Color(0.78, 0.82, 0.84, 1)
+position = Vector2(1330, 350)
+emitting = false
+amount = 40
+texture = ExtResource("8_particle")
+lifetime = 0.82
+randomness = 0.7
+visibility_rect = Rect2(-480, -360, 960, 720)
+local_coords = false
+process_material = SubResource("Particle_merge_trail")
+
+[node name="MergeBurstParticles" type="GPUParticles2D" parent="EndingLayer/EndingRoot/TrueGroup"]
+unique_name_in_owner = true
+modulate = Color(1, 0.84, 0.34, 1)
+position = Vector2(960, 530)
+emitting = false
+amount = 110
+texture = ExtResource("8_particle")
+lifetime = 0.9
+one_shot = true
+explosiveness = 1.0
+visibility_rect = Rect2(-220, -220, 440, 440)
+local_coords = true
+process_material = SubResource("Particle_ending_burst")
+
+[node name="MergedFigure" type="Sprite2D" parent="EndingLayer/EndingRoot/TrueGroup"]
+unique_name_in_owner = true
+visible = false
+modulate = Color(0.9, 0.98, 1, 0)
+position = Vector2(960, 530)
+scale = Vector2(9, 9)
+texture = SubResource("Atlas_player")
+
+[node name="FutureTrace" type="Line2D" parent="EndingLayer/EndingRoot/TrueGroup"]
+unique_name_in_owner = true
+visible = false
+position = Vector2(1120, 535)
+scale = Vector2(0, 1)
+points = PackedVector2Array(0, 0, -150, 18, -310, 34, -510, 76)
+width = 10.0
+default_color = Color(1, 0.72, 0.16, 0.94)
+
+[node name="TracePulseParticles" type="GPUParticles2D" parent="EndingLayer/EndingRoot/TrueGroup"]
+unique_name_in_owner = true
+position = Vector2(865, 570)
+rotation = 3.02
+emitting = false
+amount = 84
+texture = ExtResource("8_particle")
+lifetime = 0.72
+one_shot = true
+explosiveness = 0.88
+visibility_rect = Rect2(-480, -120, 960, 240)
+local_coords = true
+process_material = SubResource("Particle_golden_path")
+
+[node name="ThirdPath" type="Line2D" parent="EndingLayer/EndingRoot/TrueGroup"]
+unique_name_in_owner = true
+visible = false
+points = PackedVector2Array(540, 650, 820, 615, 1120, 565, 1520, 500)
+width = 12.0
+default_color = Color(1, 0.72, 0.16, 0.9)
+
+[node name="ThirdPathParticles" type="GPUParticles2D" parent="EndingLayer/EndingRoot/TrueGroup"]
+unique_name_in_owner = true
+position = Vector2(1030, 575)
+rotation = -0.13
+emitting = false
+amount = 92
+texture = ExtResource("8_particle")
+lifetime = 1.2
+preprocess = 0.8
+randomness = 0.58
+visibility_rect = Rect2(-500, -120, 1000, 240)
+local_coords = true
+process_material = SubResource("Particle_golden_path")
+
+[node name="RewrittenHero" type="Sprite2D" parent="EndingLayer/EndingRoot/TrueGroup"]
+unique_name_in_owner = true
+visible = false
+position = Vector2(610, 610)
+scale = Vector2(8, 8)
+texture = SubResource("Atlas_player")
+
+[node name="LiaFigure" type="Sprite2D" parent="EndingLayer/EndingRoot/TrueGroup"]
+unique_name_in_owner = true
+visible = false
+modulate = Color(1, 0.55, 0.72, 1)
+position = Vector2(770, 610)
+scale = Vector2(-8, 8)
+texture = SubResource("Atlas_player")
+
+[node name="TrueRunLabel" type="Label" parent="EndingLayer/EndingRoot/TrueGroup"]
+unique_name_in_owner = true
+visible = false
+modulate = Color(1, 1, 1, 0)
+offset_left = 500.0
+offset_top = 330.0
+offset_right = 700.0
+offset_bottom = 410.0
+theme_override_colors/font_color = Color(1, 0.78, 0.28, 1)
+theme_override_colors/font_outline_color = Color(0.01, 0.02, 0.025, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 42
+text = "RUN"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="NormalEndingText" type="RichTextLabel" parent="EndingLayer/EndingRoot"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_left = 220.0
+offset_top = 92.0
+offset_right = -220.0
+offset_bottom = 262.0
+grow_horizontal = 2
+theme_override_colors/font_color = Color(0.78, 0.94, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 6
+theme_override_font_sizes/font_size = 38
+script = ExtResource("7_richer_text")
+bbcode = "[sway]ENDING_NORMAL_KEEPER_1[]"
+effects = 1
+alignment = 1
+font = "SmileySans-Oblique"
+font_size = 38
+outline_size = 6
+markdown_enabled = false
+context_enabled = false
+autostyle_numbers = false
+autostyle_emojis = false
+override_fitContent = false
+fit_content = false
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 2
+
+[node name="TrueEndingText" type="RichTextLabel" parent="EndingLayer/EndingRoot"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_left = 220.0
+offset_top = 92.0
+offset_right = -220.0
+offset_bottom = 262.0
+grow_horizontal = 2
+theme_override_colors/font_color = Color(1, 0.76, 0.22, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 6
+theme_override_font_sizes/font_size = 38
+script = ExtResource("7_richer_text")
+bbcode = "[jit2 scale=1.0 freq=7.0]ENDING_TRUE_ACCEPTANCE_1[]"
+effects = 1
+alignment = 1
+font = "SmileySans-Oblique"
+font_size = 38
+outline_size = 6
+markdown_enabled = false
+context_enabled = false
+autostyle_numbers = false
+autostyle_emojis = false
+override_fitContent = false
+fit_content = false
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 2
+
+[node name="NormalEndingTitle" type="RichTextLabel" parent="EndingLayer/EndingRoot"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_left = 280.0
+offset_top = 260.0
+offset_right = -280.0
+offset_bottom = 360.0
+grow_horizontal = 2
+theme_override_colors/font_color = Color(0.84, 0.96, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 6
+script = ExtResource("7_richer_text")
+bbcode = "[beat]ENDING_NORMAL_TITLE[]"
+effects = 1
+alignment = 1
+font = "SmileySans-Oblique"
+font_size = 58
+outline_size = 6
+markdown_enabled = false
+context_enabled = false
+autostyle_numbers = false
+autostyle_emojis = false
+override_fitContent = false
+fit_content = false
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="NormalEndingHint" type="RichTextLabel" parent="EndingLayer/EndingRoot"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_left = 300.0
+offset_top = 700.0
+offset_right = -300.0
+offset_bottom = 760.0
+grow_horizontal = 2
+theme_override_colors/font_color = Color(0.58, 0.72, 0.76, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.9)
+theme_override_constants/outline_size = 3
+script = ExtResource("7_richer_text")
+bbcode = "[sway]ENDING_NORMAL_HINT[]"
+effects = 1
+alignment = 1
+font = "SmileySans-Oblique"
+font_size = 22
+outline_size = 3
+markdown_enabled = false
+context_enabled = false
+autostyle_numbers = false
+autostyle_emojis = false
+override_fitContent = false
+fit_content = false
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="NormalContinueButton" type="Button" parent="EndingLayer/EndingRoot"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -180.0
+offset_top = -156.0
+offset_right = 180.0
+offset_bottom = -84.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_font_sizes/font_size = 28
+text = "ENDING_CONTINUE"
+
+[node name="TrueReturnButton" type="Button" parent="EndingLayer/EndingRoot"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -180.0
+offset_top = -156.0
+offset_right = 180.0
+offset_bottom = -84.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_font_sizes/font_size = 28
+text = "ENDING_RETURN_TITLE"
+
+[node name="EndingFlash" type="ColorRect" parent="EndingLayer"]
+unique_name_in_owner = true
+visible = false
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.78, 0.94, 1, 1)

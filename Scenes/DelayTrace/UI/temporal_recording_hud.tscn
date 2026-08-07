@@ -1,0 +1,143 @@
+[gd_scene load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://Scripts/DelayTrace/UI/temporal_recording_hud.gd" id="1_script"]
+[ext_resource type="Shader" path="res://resources/shader/temporal_recording_edge.gdshader" id="2_edge_shader"]
+
+[sub_resource type="ShaderMaterial" id="Material_edge"]
+shader = ExtResource("2_edge_shader")
+shader_parameter/glow_color = Color(1, 0.69, 0.2, 0.72)
+shader_parameter/intensity = 0.55
+shader_parameter/edge_width = 0.065
+
+[sub_resource type="StyleBoxFlat" id="Style_progress_background"]
+bg_color = Color(0.015, 0.02, 0.018, 0.78)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(1, 0.82, 0.42, 0.54)
+
+[sub_resource type="StyleBoxFlat" id="Style_progress_fill"]
+bg_color = Color(1, 0.68, 0.18, 0.92)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(1, 0.9, 0.58, 1)
+
+[sub_resource type="Animation" id="Animation_reset"]
+resource_name = "RESET"
+length = 0.05
+tracks/0/type = "value"
+tracks/0/path = NodePath("ScreenEdge:material:shader_parameter/intensity")
+tracks/0/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 1, "values": [0.0]}
+tracks/1/type = "value"
+tracks/1/path = NodePath("RecallPrompt:modulate")
+tracks/1/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 1, "values": [Color(1, 1, 1, 1)]}
+
+[sub_resource type="Animation" id="Animation_recording"]
+resource_name = "recording"
+length = 1.2
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/path = NodePath("ScreenEdge:material:shader_parameter/intensity")
+tracks/0/interp = 1
+tracks/0/keys = {"times": PackedFloat32Array(0, 0.6, 1.2), "transitions": PackedFloat32Array(1, 1, 1), "update": 0, "values": [0.28, 0.78, 0.28]}
+tracks/1/type = "value"
+tracks/1/path = NodePath("RecallPrompt:modulate")
+tracks/1/interp = 1
+tracks/1/keys = {"times": PackedFloat32Array(0, 0.6, 1.2), "transitions": PackedFloat32Array(1, 1, 1), "update": 0, "values": [Color(1, 1, 1, 0.44), Color(1, 1, 1, 1), Color(1, 1, 1, 0.44)]}
+
+[sub_resource type="Animation" id="Animation_recording_reduced"]
+resource_name = "recording_reduced"
+length = 1.2
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/path = NodePath("ScreenEdge:material:shader_parameter/intensity")
+tracks/0/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 1, "values": [0.34]}
+tracks/1/type = "value"
+tracks/1/path = NodePath("RecallPrompt:modulate")
+tracks/1/keys = {"times": PackedFloat32Array(0), "transitions": PackedFloat32Array(1), "update": 1, "values": [Color(1, 1, 1, 0.82)]}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_hud"]
+_data = {&"RESET": SubResource("Animation_reset"), &"recording": SubResource("Animation_recording"), &"recording_reduced": SubResource("Animation_recording_reduced")}
+
+[node name="TemporalRecordingHUD" type="Control"]
+visible = false
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("1_script")
+
+[node name="ScreenEdge" type="ColorRect" parent="."]
+unique_name_in_owner = true
+material = SubResource("Material_edge")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(1, 1, 1, 1)
+
+[node name="ProgressFrame" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 0
+offset_left = 48.0
+offset_top = 44.0
+offset_right = 336.0
+offset_bottom = 68.0
+mouse_filter = 2
+
+[node name="ProgressBar" type="ProgressBar" parent="ProgressFrame"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(288, 14)
+layout_mode = 2
+mouse_filter = 2
+theme_override_styles/background = SubResource("Style_progress_background")
+theme_override_styles/fill = SubResource("Style_progress_fill")
+max_value = 5.0
+step = 0.01
+show_percentage = false
+
+[node name="RecallPrompt" type="HBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -190.0
+offset_top = 38.0
+offset_right = -48.0
+offset_bottom = 84.0
+grow_horizontal = 0
+mouse_filter = 2
+theme_override_constants/separation = 12
+alignment = 2
+
+[node name="PromptLine" type="ColorRect" parent="RecallPrompt"]
+custom_minimum_size = Vector2(48, 2)
+layout_mode = 2
+mouse_filter = 2
+color = Color(1, 0.76, 0.32, 0.82)
+
+[node name="RecallKeyLabel" type="Label" parent="RecallPrompt"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(72, 42)
+layout_mode = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(1, 0.82, 0.42, 1)
+theme_override_colors/font_outline_color = Color(0.02, 0.02, 0.015, 1)
+theme_override_constants/outline_size = 3
+theme_override_font_sizes/font_size = 30
+text = "L"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+unique_name_in_owner = true
+libraries = {&"": SubResource("AnimationLibrary_hud")}

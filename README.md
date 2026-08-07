@@ -2,7 +2,7 @@
 
 《延迟追迹》是 Godot 4.7 制作中的横版时态追逐游戏。现在体留下的路径会在延迟后变成过去体追上自己；玩家还能从记录器回传一段已走过的路线，短暂生成未来可能性。
 
-游戏显示名统一为 `Delay Trace`；内部资源路径、类名和存档键保留 `EchoChase` 兼容标识。
+游戏显示名统一为 `Delay Trace`；内部资源路径、类名和存档键均已统一为 `DelayTrace`。
 
 当前仓库完成核心机制、独立 prefab、黑白时间轨迹菜单、设置/存档框架，以及一个可直接试玩全部时间机关的施工入口。入口已接入 Phantom Camera 房间镜头，但正式灰盒、路线、出口、最终机关摆位、镜头参数、角色成稿和最终试玩仍由项目作者决定。
 
@@ -29,11 +29,11 @@
 - 未来体播放结束即停止机关作用并消散；过去体永久存在。
 - 过去体会抓住现在体并消散未来体；现在体也能消散未来体；未来体彼此穿透。
 
-完整术语与边界见 [CONTEXT.md](CONTEXT.md)，设计目标见 [echo-chase-jam-design.md](docs/echo-chase-jam-design.md)，黑白地图界面规则见 [echo-chase-ui-design.md](docs/echo-chase-ui-design.md)。
+完整术语与边界见 [CONTEXT.md](CONTEXT.md)，设计目标见 [delay-trace-jam-design.md](docs/delay-trace-jam-design.md)，黑白地图界面规则见 [delay-trace-ui-design.md](docs/delay-trace-ui-design.md)。
 
 ## 给灰盒作者的接线入口
 
-可直接实例化的场景位于 [Scenes/EchoChase/Prefabs](Scenes/EchoChase/Prefabs)：
+可直接实例化的场景位于 [Scenes/DelayTrace/Prefabs](Scenes/DelayTrace/Prefabs)：
 
 - `echo_timeline_controller.tscn`
 - `echo_player.tscn`
@@ -43,9 +43,9 @@
 - `temporal_door.tscn`
 - `echo_checkpoint.tscn`
 
-施工入口是 [echo_chase_start.tscn](Scenes/EchoChase/echo_chase_start.tscn)：包含一个玩家、一组 `480×270` 测试房（当前 19 房 A–S）、Phantom Camera Host 与每房固定 PCam、一个 checkpoint、`1/3/5s` 延迟台、一台自带未来体的记录器、已接线压力板与时间门、支路进度与收集样例、录制 HUD、同色时态淡入、出界复位和暂停/设置 UI。它是机制展台，不代表正式路线。
+施工入口是 [delay_trace_start.tscn](Scenes/DelayTrace/delay_trace_start.tscn)：包含一个玩家、一组 `480×270` 测试房（当前 19 房 A–S）、Phantom Camera Host 与每房固定 PCam、一个 checkpoint、`1/3/5s` 延迟台、一台自带未来体的记录器、已接线压力板与时间门、支路进度与收集样例、录制 HUD、同色时态淡入、出界复位和暂停/设置 UI。它是机制展台，不代表正式路线。
 
-接线步骤、碰撞层和检查点调用顺序见 [echo-chase-wiring.md](docs/echo-chase-wiring.md)。不要用脚本动态补节点；每个关卡场景必须显式实例化并绑定所需组件。
+接线步骤、碰撞层和检查点调用顺序见 [delay-trace-wiring.md](docs/delay-trace-wiring.md)。不要用脚本动态补节点；每个关卡场景必须显式实例化并绑定所需组件。
 
 ## 存档
 
@@ -55,8 +55,8 @@
 
 ```powershell
 godot --headless --editor --path . --quit
-godot --headless --path . --scene res://Tests/EchoChase/run_tests.tscn
-godot --headless --path . --scene res://Scenes/EchoChase/echo_chase_start.tscn --quit-after 5
+godot --headless --path . --scene res://Tests/DelayTrace/run_tests.tscn
+godot --headless --path . --scene res://Scenes/DelayTrace/delay_trace_start.tscn --quit-after 5
 ```
 
 原型阶段只保留路径插值与回传断点两项算法检查。关卡结构、Prefab 数量、资源、视觉、UI、相机和 Inspector 调参均以编辑器中的当前 authored 内容为准，不用硬测试锁死。

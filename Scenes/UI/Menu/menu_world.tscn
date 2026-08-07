@@ -1,12 +1,12 @@
 [gd_scene format=4 uid="uid://cefxu5bksgx2"]
 
-[ext_resource type="TileSet" uid="uid://ckrayr142ya8" path="res://assets/echo_chase/tilemap/echo_platform_tileset.tres" id="1_tileset"]
-[ext_resource type="Shader" uid="uid://cq0yno2f7ecwx" path="res://assets/echo_chase/vfx/menu_cross_grid.gdshader" id="2_grid"]
-[ext_resource type="SpriteFrames" uid="uid://c5fwtfmpwe8fq" path="res://assets/echo_chase/character/echo_character_frames.tres" id="3_frames"]
-[ext_resource type="SpriteFrames" uid="uid://da37aey76yc08" path="res://assets/echo_chase/character/echo_character_outline_frames.tres" id="4_outline_frames"]
-[ext_resource type="Shader" uid="uid://ccnr3f2ov4cnc" path="res://assets/echo_chase/vfx/temporal_outline.gdshader" id="5_outline_shader"]
-[ext_resource type="Texture2D" uid="uid://bqyfshrwdgvmw" path="res://assets/echo_chase/vfx/temporal_transition_ring.svg" id="6_ring"]
-[ext_resource type="Texture2D" uid="uid://cvfu3k8hdr2x5" path="res://assets/echo_chase/vfx/temporal_particle.svg" id="7_particle"]
+[ext_resource type="TileSet" uid="uid://ckrayr142ya8" path="res://assets/delay_trace/tilemap/echo_platform_tileset.tres" id="1_tileset"]
+[ext_resource type="Shader" uid="uid://cq0yno2f7ecwx" path="res://assets/delay_trace/vfx/menu_cross_grid.gdshader" id="2_grid"]
+[ext_resource type="SpriteFrames" uid="uid://c5fwtfmpwe8fq" path="res://assets/delay_trace/character/echo_character_frames.tres" id="3_frames"]
+[ext_resource type="SpriteFrames" uid="uid://da37aey76yc08" path="res://assets/delay_trace/character/echo_character_outline_frames.tres" id="4_outline_frames"]
+[ext_resource type="Shader" uid="uid://ccnr3f2ov4cnc" path="res://assets/delay_trace/vfx/temporal_outline.gdshader" id="5_outline_shader"]
+[ext_resource type="Texture2D" uid="uid://bqyfshrwdgvmw" path="res://assets/delay_trace/vfx/temporal_transition_ring.svg" id="6_ring"]
+[ext_resource type="Texture2D" uid="uid://cvfu3k8hdr2x5" path="res://assets/delay_trace/vfx/temporal_particle.svg" id="7_particle"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_grid_world"]
 shader = ExtResource("2_grid")
