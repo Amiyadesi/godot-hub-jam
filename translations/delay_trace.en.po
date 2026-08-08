@@ -114,6 +114,15 @@ msgstr "PAST ROUTE PREVIEW"
 msgid "SETTINGS_FUTURE_TIMER"
 msgstr "FUTURE TIME BAR"
 
+msgid "SETTINGS_MOBILE_JOYSTICK_SIZE"
+msgstr "MOBILE JOYSTICK SIZE"
+
+msgid "SETTINGS_MOBILE_OPACITY"
+msgstr "MOBILE CONTROL OPACITY"
+
+msgid "SETTINGS_MOBILE_HAPTICS"
+msgstr "MOBILE HAPTICS"
+
 msgid "SETTINGS_RESET_DEFAULTS"
 msgstr "RESET DEFAULTS"
 
@@ -394,8 +403,14 @@ msgstr "{left} / {right}  MOVE"
 msgid "TUTORIAL_JUMP"
 msgstr "{jump}  JUMP"
 
+msgid "TUTORIAL_JUMP_CLIMB"
+msgstr "{jump}  JUMP / WALL JUMP"
+
 msgid "TUTORIAL_DASH"
 msgstr "{dash} + DIRECTION  DASH"
+
+msgid "TUTORIAL_DROP"
+msgstr "{down}  DROP THROUGH"
 
 msgid "STORY_RUN"
 msgstr "RUN"

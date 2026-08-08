@@ -238,8 +238,21 @@ func start_future_recording(recorder: FutureRecorder) -> bool:
 	return true
 
 
-# 提交录像、补足最短时长、回传玩家并启动 authored 未来体。
+# 正常提交录像并保留最短可用回放时长。
 func commit_future_recording() -> bool:
+	return _finish_future_recording(false)
+
+
+# 将陷阱接触补成录像末帧，让未来体在该位置结束生命。
+func commit_future_recording_due_to_failure() -> bool:
+	if _recording_track == null:
+		return false
+	record_player_frame(player.build_temporal_frame(_timeline_seconds))
+	return _finish_future_recording(true)
+
+
+# 回传当前体、恢复录制起点世界，并启动对应未来回放。
+func _finish_future_recording(dies_at_end: bool) -> bool:
 	if _recording_track == null:
 		return false
 	var duration := _timeline_seconds - _recording_started_at
@@ -252,7 +265,8 @@ func commit_future_recording() -> bool:
 	var finished_anchor := _recording_anchor
 	var finished_future_states := _recording_future_states.duplicate()
 	var finished_run_countdown_remaining := _recording_run_countdown_remaining
-	var playback_duration := clampf(duration, FUTURE_MINIMUM_SECONDS, FUTURE_MAXIMUM_SECONDS)
+	var minimum_duration := 0.0 if dies_at_end else FUTURE_MINIMUM_SECONDS
+	var playback_duration := clampf(duration, minimum_duration, FUTURE_MAXIMUM_SECONDS)
 	finished_track.hold_last_frame_until(playback_duration)
 	_recording_track = null
 	_recording_recorder = null
@@ -269,45 +283,12 @@ func commit_future_recording() -> bool:
 		if not playback_state.is_empty():
 			recorder.get_future_echo().restore_playback_state(playback_state)
 		recorder.refresh_future_state()
-	future_echo.start_playback(finished_track, playback_duration, TEMPORAL_PHASE_SECONDS)
+	future_echo.start_playback(finished_track, playback_duration, TEMPORAL_PHASE_SECONDS, dies_at_end)
 	finished_recorder.recording_finished()
 	_set_run_countdown_remaining(finished_run_countdown_remaining)
 	_sync_future_slot_count()
 	future_recording_finished.emit()
 	return true
-
-
-# 让触发陷阱的录制未来消散，并把当前体与世界恢复到录像锚点。
-func cancel_future_recording_due_to_failure() -> bool:
-	if _recording_track == null:
-		return false
-	var cancelled_recorder := _recording_recorder
-	var cancelled_anchor := _recording_anchor
-	var cancelled_future_states := _recording_future_states.duplicate()
-	var cancelled_run_countdown_remaining := _recording_run_countdown_remaining
-	_recording_track = null
-	_recording_recorder = null
-	_recording_future_echo = null
-	_recording_future_states.clear()
-	_recording_anchor = {}
-	_recording_run_countdown_remaining = -1.0
-	_timeline_seconds = _recording_started_at
-	_run_track.trim_after(_timeline_seconds)
-	player.apply_temporal_recall(cancelled_anchor, TEMPORAL_PHASE_SECONDS)
-	_restore_past_anchor(cancelled_anchor)
-	for recorder in recorders:
-		var playback_state: Dictionary = cancelled_future_states.get(recorder.get_instance_id(), {})
-		if not playback_state.is_empty():
-			recorder.get_future_echo().restore_playback_state(playback_state)
-		recorder.refresh_future_state()
-	if cancelled_recorder != null:
-		cancelled_recorder.recording_cancelled(true)
-	_set_run_countdown_remaining(cancelled_run_countdown_remaining)
-	_sync_future_slot_count()
-	future_recording_finished.emit()
-	return true
-
-
 # 请求切换过去延迟；连续请求只覆盖目标，不重置既有预警。
 func request_past_delay(seconds: float, switch_id: StringName) -> bool:
 	if not DELAY_OPTIONS.has(seconds):

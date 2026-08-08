@@ -78,9 +78,6 @@ var _ending_uses_chinese := false
 
 # Hides all authored story surfaces until a sequence explicitly owns the screen.
 func _ready() -> void:
-	if ending_dialogue_resource_zh == null or ending_dialogue_resource_en == null:
-		push_error("DelayTraceNarrativePresenter requires zh and en ending dialogue resources")
-		return
 	memory_layer.visible = false
 	opening_runner.hide()
 	ending_layer.visible = false
@@ -97,24 +94,26 @@ func _ready() -> void:
 
 # Locks both ending tableaux to the language selected once by the scene controller.
 func select_dialogue_language(use_chinese: bool) -> void:
-	if _active_ending_dialogue_resource != null:
-		push_error("DelayTraceNarrativePresenter dialogue language was already selected")
-		return
 	_ending_uses_chinese = use_chinese
 	_active_ending_dialogue_resource = (
 		ending_dialogue_resource_zh if use_chinese else ending_dialogue_resource_en
 	)
 
 
-# Plays the localized command while a separate silhouette reaches the real spawn position.
-func play_opening_run_card(target_screen_position: Vector2) -> void:
+# Plays the localized command while a separate silhouette reaches the checkpoint.
+func play_opening_run_card(
+	start_screen_position: Vector2,
+	target_screen_position: Vector2
+) -> void:
 	if _sequence_active:
 		push_error("DelayTraceNarrativePresenter cannot overlap story sequences")
 		return
 	_sequence_active = true
+	var was_paused := _pause_world()
 	memory_tag.hide()
 	memory_layer.visible = true
-	opening_runner.position = Vector2(-64.0, target_screen_position.y)
+	opening_runner.position = start_screen_position
+	opening_runner.flip_h = target_screen_position.x < start_screen_position.x
 	opening_runner.show()
 	opening_runner.play(&"run")
 	memory_text.bbcode = MEMORY_JITTER_BBCODE % tr("STORY_RUN")
@@ -133,6 +132,7 @@ func play_opening_run_card(target_screen_position: Vector2) -> void:
 	memory_text.hide()
 	memory_layer.visible = false
 	memory_tag.show()
+	_restore_world(was_paused)
 	_sequence_active = false
 
 
@@ -334,9 +334,6 @@ func _play_lines(label: RicherTextLabel, lines: Array[String], hold_seconds: flo
 # Reads one ending title sequentially from the language resource chosen at startup.
 func _read_ending_lines(title: StringName, include_character := true) -> Array[String]:
 	var lines: Array[String] = []
-	if _active_ending_dialogue_resource == null:
-		push_error("DelayTraceNarrativePresenter has no active ending dialogue resource")
-		return lines
 	var line: DialogueLine = await _active_ending_dialogue_resource.get_next_dialogue_line(
 		String(title),
 		[],
@@ -517,7 +514,4 @@ func _set_alpha(item: CanvasItem, alpha: float) -> void:
 
 # Reads the existing accessibility setting for ending flashes and dense particle bursts.
 func _uses_low_flash_mode() -> bool:
-	return (
-		SettingsModule.instance != null
-		and bool(SettingsModule.instance.get_value("low_flash_mode", false))
-	)
+	return bool(SettingsModule.instance.get_value("low_flash_mode", false))

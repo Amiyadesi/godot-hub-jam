@@ -1,32 +1,34 @@
-[gd_scene load_steps=20 format=3]
+[gd_scene format=3 uid="uid://dmcj4p174tvy5"]
 
-[ext_resource type="Script" path="res://Scripts/DelayTrace/UI/echo_mobile_controls.gd" id="1_script"]
-[ext_resource type="Texture2D" path="res://assets/delay_trace/ui/gdb-xbox-2.png" id="2_texture"]
-[ext_resource type="Texture2D" path="res://assets/delay_trace/ui/gdb-keyboard-2.png" id="3_keyboard"]
+[ext_resource type="Script" uid="uid://c6xnxlns2bbkf" path="res://Scripts/DelayTrace/UI/echo_mobile_controls.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://c7widyjtao65w" path="res://assets/delay_trace/ui/gdb-xbox-2.png" id="2_texture"]
+[ext_resource type="Texture2D" uid="uid://dmidwkj6h6kro" path="res://assets/delay_trace/ui/gdb-keyboard-2.png" id="3_keyboard"]
 
-[sub_resource type="AtlasTexture" id="Atlas_A_normal"]
+[sub_resource type="AtlasTexture" id="Atlas_joystick_base"]
 atlas = ExtResource("2_texture")
-region = Rect2(17, 177, 14, 14)
+region = Rect2(177, 353, 14, 14)
 
-[sub_resource type="AtlasTexture" id="Atlas_A_pressed"]
-atlas = ExtResource("2_texture")
-region = Rect2(65, 178, 14, 14)
+[sub_resource type="StyleBoxTexture" id="Style_joystick_normal"]
+texture = SubResource("Atlas_joystick_base")
 
-[sub_resource type="AtlasTexture" id="Atlas_B_normal"]
+[sub_resource type="AtlasTexture" id="Atlas_joystick_tip"]
 atlas = ExtResource("2_texture")
-region = Rect2(17, 193, 14, 14)
+region = Rect2(193, 353, 14, 14)
 
-[sub_resource type="AtlasTexture" id="Atlas_B_pressed"]
-atlas = ExtResource("2_texture")
-region = Rect2(65, 194, 14, 14)
+[sub_resource type="StyleBoxTexture" id="Style_tip_normal"]
+texture = SubResource("Atlas_joystick_tip")
+expand_margin_left = 30.0
+expand_margin_top = 30.0
+expand_margin_right = 30.0
+expand_margin_bottom = 30.0
 
-[sub_resource type="AtlasTexture" id="Atlas_X_normal"]
-atlas = ExtResource("2_texture")
-region = Rect2(17, 209, 14, 14)
+[sub_resource type="StyleBoxTexture" id="Style_joystick_pressed"]
+texture = SubResource("Atlas_joystick_base")
+modulate_color = Color(1.2, 1.2, 1.2, 1)
 
-[sub_resource type="AtlasTexture" id="Atlas_X_pressed"]
-atlas = ExtResource("2_texture")
-region = Rect2(65, 210, 14, 14)
+[sub_resource type="StyleBoxTexture" id="Style_tip_pressed"]
+texture = SubResource("Atlas_joystick_tip")
+modulate_color = Color(1.25, 1.25, 1.25, 1)
 
 [sub_resource type="AtlasTexture" id="Atlas_Y_normal"]
 atlas = ExtResource("2_texture")
@@ -36,37 +38,32 @@ region = Rect2(17, 225, 14, 14)
 atlas = ExtResource("2_texture")
 region = Rect2(65, 226, 14, 14)
 
-[sub_resource type="AtlasTexture" id="Atlas_Up_normal"]
-atlas = ExtResource("2_texture")
-region = Rect2(100, 210, 8, 12)
+[sub_resource type="CircleShape2D" id="Shape_action"]
+radius = 8.0
 
-[sub_resource type="AtlasTexture" id="Atlas_Up_pressed"]
+[sub_resource type="AtlasTexture" id="Atlas_X_normal"]
 atlas = ExtResource("2_texture")
-region = Rect2(132, 178, 8, 12)
+region = Rect2(17, 209, 14, 14)
 
-[sub_resource type="AtlasTexture" id="Atlas_Down_normal"]
+[sub_resource type="AtlasTexture" id="Atlas_X_pressed"]
 atlas = ExtResource("2_texture")
-region = Rect2(116, 210, 8, 12)
+region = Rect2(65, 210, 14, 14)
 
-[sub_resource type="AtlasTexture" id="Atlas_Down_pressed"]
+[sub_resource type="AtlasTexture" id="Atlas_B_normal"]
 atlas = ExtResource("2_texture")
-region = Rect2(148, 178, 8, 12)
+region = Rect2(17, 193, 14, 14)
 
-[sub_resource type="AtlasTexture" id="Atlas_Left_normal"]
+[sub_resource type="AtlasTexture" id="Atlas_B_pressed"]
 atlas = ExtResource("2_texture")
-region = Rect2(98, 227, 12, 8)
+region = Rect2(65, 194, 14, 14)
 
-[sub_resource type="AtlasTexture" id="Atlas_Left_pressed"]
+[sub_resource type="AtlasTexture" id="Atlas_A_normal"]
 atlas = ExtResource("2_texture")
-region = Rect2(130, 195, 12, 8)
+region = Rect2(17, 177, 14, 14)
 
-[sub_resource type="AtlasTexture" id="Atlas_Right_normal"]
+[sub_resource type="AtlasTexture" id="Atlas_A_pressed"]
 atlas = ExtResource("2_texture")
-region = Rect2(114, 227, 12, 8)
-
-[sub_resource type="AtlasTexture" id="Atlas_Right_pressed"]
-atlas = ExtResource("2_texture")
-region = Rect2(146, 195, 12, 8)
+region = Rect2(65, 178, 14, 14)
 
 [sub_resource type="AtlasTexture" id="Atlas_Escape_normal"]
 atlas = ExtResource("3_keyboard")
@@ -76,7 +73,10 @@ region = Rect2(32, 16, 16, 16)
 atlas = ExtResource("3_keyboard")
 region = Rect2(32, 129, 16, 16)
 
-[node name="EchoMobileControls" type="Control"]
+[sub_resource type="CircleShape2D" id="Shape_escape"]
+radius = 12.0
+
+[node name="EchoMobileControls" type="Control" unique_id=1130596960]
 process_mode = 3
 layout_mode = 3
 anchors_preset = 15
@@ -87,106 +87,95 @@ grow_vertical = 2
 mouse_filter = 2
 script = ExtResource("1_script")
 
-[node name="DirectionPad" type="Control" parent="."]
+[node name="MoveJoystick" type="VirtualJoystick" parent="." unique_id=256595614]
+unique_name_in_owner = true
 layout_mode = 1
+anchors_preset = 2
 anchor_top = 1.0
 anchor_bottom = 1.0
-offset_left = 48.0
-offset_top = -304.0
-offset_right = 320.0
-offset_bottom = -40.0
+offset_left = 40.0
+offset_top = -352.0
+offset_right = 360.0
+offset_bottom = -32.0
 grow_vertical = 0
-mouse_filter = 2
+theme_override_styles/normal_joystick = SubResource("Style_joystick_normal")
+theme_override_styles/normal_tip = SubResource("Style_tip_normal")
+theme_override_styles/pressed_joystick = SubResource("Style_joystick_pressed")
+theme_override_styles/pressed_tip = SubResource("Style_tip_pressed")
+joystick_size = 240.0
+tip_size = 96.0
+deadzone_ratio = 0.18
+action_left = &"echo_move_left"
+action_right = &"echo_move_right"
+action_up = &"echo_move_up"
+action_down = &"echo_move_down"
 
-[node name="Up" type="TouchScreenButton" parent="DirectionPad"]
-position = Vector2(126, 0)
-scale = Vector2(4.5, 4.5)
-texture_normal = SubResource("Atlas_Up_normal")
-texture_pressed = SubResource("Atlas_Up_pressed")
-action = "echo_move_up"
-visibility_mode = 1
-
-[node name="Down" type="TouchScreenButton" parent="DirectionPad"]
-position = Vector2(126, 154)
-scale = Vector2(4.5, 4.5)
-texture_normal = SubResource("Atlas_Down_normal")
-texture_pressed = SubResource("Atlas_Down_pressed")
-action = "echo_move_down"
-visibility_mode = 1
-
-[node name="Left" type="TouchScreenButton" parent="DirectionPad"]
-position = Vector2(42, 78)
-scale = Vector2(4.5, 4.5)
-texture_normal = SubResource("Atlas_Left_normal")
-texture_pressed = SubResource("Atlas_Left_pressed")
-action = "echo_move_left"
-visibility_mode = 1
-
-[node name="Right" type="TouchScreenButton" parent="DirectionPad"]
-position = Vector2(210, 78)
-scale = Vector2(4.5, 4.5)
-texture_normal = SubResource("Atlas_Right_normal")
-texture_pressed = SubResource("Atlas_Right_pressed")
-action = "echo_move_right"
-visibility_mode = 1
-
-[node name="ActionPad" type="Control" parent="."]
+[node name="ActionPad" type="Control" parent="." unique_id=175698734]
+unique_name_in_owner = true
 layout_mode = 1
+anchors_preset = 3
 anchor_left = 1.0
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -320.0
-offset_top = -320.0
-offset_right = -32.0
-offset_bottom = -32.0
+offset_left = -408.0
+offset_top = -368.0
+offset_right = -48.0
+offset_bottom = -48.0
 grow_horizontal = 0
 grow_vertical = 0
 mouse_filter = 2
 
-[node name="Y" type="TouchScreenButton" parent="ActionPad"]
-position = Vector2(116, 0)
-scale = Vector2(4.0, 4.0)
+[node name="Y" type="TouchScreenButton" parent="ActionPad" unique_id=1885105052]
+unique_name_in_owner = true
+position = Vector2(180, 52)
+scale = Vector2(8, 8)
 texture_normal = SubResource("Atlas_Y_normal")
 texture_pressed = SubResource("Atlas_Y_pressed")
+shape = SubResource("Shape_action")
 action = "echo_jump"
-visibility_mode = 1
 
-[node name="X" type="TouchScreenButton" parent="ActionPad"]
-position = Vector2(0, 100)
-scale = Vector2(4.0, 4.0)
+[node name="X" type="TouchScreenButton" parent="ActionPad" unique_id=1130028805]
+unique_name_in_owner = true
+position = Vector2(78, 154)
+scale = Vector2(8, 8)
 texture_normal = SubResource("Atlas_X_normal")
 texture_pressed = SubResource("Atlas_X_pressed")
+shape = SubResource("Shape_action")
 action = "echo_dash"
-visibility_mode = 1
 
-[node name="B" type="TouchScreenButton" parent="ActionPad"]
-position = Vector2(232, 100)
-scale = Vector2(4.0, 4.0)
+[node name="B" type="TouchScreenButton" parent="ActionPad" unique_id=1173982888]
+unique_name_in_owner = true
+position = Vector2(282, 154)
+scale = Vector2(8, 8)
 texture_normal = SubResource("Atlas_B_normal")
 texture_pressed = SubResource("Atlas_B_pressed")
+shape = SubResource("Shape_action")
 action = "echo_interact"
-visibility_mode = 1
 
-[node name="A" type="TouchScreenButton" parent="ActionPad"]
-position = Vector2(116, 200)
-scale = Vector2(4.0, 4.0)
+[node name="A" type="TouchScreenButton" parent="ActionPad" unique_id=2014278836]
+unique_name_in_owner = true
+position = Vector2(180, 256)
+scale = Vector2(8, 8)
 texture_normal = SubResource("Atlas_A_normal")
 texture_pressed = SubResource("Atlas_A_pressed")
+shape = SubResource("Shape_action")
 action = "echo_recall"
-visibility_mode = 1
 
-[node name="Escape" type="Control" parent="."]
+[node name="Escape" type="Control" parent="." unique_id=1836607648]
+unique_name_in_owner = true
 layout_mode = 1
-offset_left = 48.0
-offset_top = 48.0
-offset_right = 112.0
-offset_bottom = 112.0
+anchors_preset = 0
+offset_left = 36.0
+offset_top = 36.0
+offset_right = 148.0
+offset_bottom = 148.0
 mouse_filter = 2
 
-[node name="EscButton" type="TouchScreenButton" parent="Escape"]
-scale = Vector2(4.0, 4.0)
+[node name="EscButton" type="TouchScreenButton" parent="Escape" unique_id=1438195647]
+unique_name_in_owner = true
+scale = Vector2(6, 6)
 texture_normal = SubResource("Atlas_Escape_normal")
 texture_pressed = SubResource("Atlas_Escape_pressed")
+shape = SubResource("Shape_escape")
 action = "pause"
-visibility_mode = 1

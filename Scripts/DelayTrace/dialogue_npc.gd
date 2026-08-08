@@ -101,6 +101,11 @@ func set_face_target(target: Node2D) -> void:
 		_process(0.0)
 
 
+# Reports whether the nearby player may currently open this authored dialogue.
+func is_interaction_available() -> bool:
+	return _player_inside and not _dialogue_active
+
+
 # Shows the interaction prompt for the current EchoPlayer only.
 func _on_body_entered(body: Node2D) -> void:
 	if body != EchoTimeline.player:
@@ -119,9 +124,9 @@ func _on_body_exited(body: Node2D) -> void:
 	interact_prompt.hide()
 
 
-# Shows the touch action on mobile and the live keyboard binding on desktop.
+# Shows the touch action on touchscreen devices and the live keyboard binding elsewhere.
 func _refresh_interact_prompt() -> void:
-	if OS.has_feature("mobile"):
+	if DisplayServer.is_touchscreen_available():
 		interact_prompt.text = "B"
 		return
 	var events := InputMap.action_get_events(&"echo_interact")

@@ -19,6 +19,7 @@ var delay_switch_id := "delay_3s"
 var activated_progression_device_ids: Array[String] = []
 var collected_item_ids: Array[String] = []
 var opened_latched_door_ids: Array[String] = []
+var closed_latched_door_ids: Array[String] = []
 var pending_latched_door_ids: Array[String] = []
 var present_hub_unlocked := false
 var run_countdown_expired := false
@@ -55,6 +56,7 @@ func collect_data() -> Dictionary:
 		"activated_progression_device_ids": activated_progression_device_ids.duplicate(),
 		"collected_item_ids": collected_item_ids.duplicate(),
 		"opened_latched_door_ids": opened_latched_door_ids.duplicate(),
+		"closed_latched_door_ids": closed_latched_door_ids.duplicate(),
 		"present_hub_unlocked": present_hub_unlocked,
 		"run_countdown_expired": run_countdown_expired,
 		"run_countdown_remaining": run_countdown_remaining,
@@ -116,6 +118,7 @@ func get_default_data() -> Dictionary:
 		"activated_progression_device_ids": [],
 		"collected_item_ids": [],
 		"opened_latched_door_ids": [],
+		"closed_latched_door_ids": [],
 		"present_hub_unlocked": false,
 		"run_countdown_expired": false,
 		"run_countdown_remaining": DEFAULT_RUN_COUNTDOWN_REMAINING,
@@ -243,6 +246,8 @@ func open_latched_door(door_id: String) -> bool:
 	if normalized_id.is_empty():
 		push_error("LevelModule.open_latched_door requires a non-empty id")
 		return false
+	if closed_latched_door_ids.has(normalized_id):
+		return false
 	if opened_latched_door_ids.has(normalized_id) or pending_latched_door_ids.has(normalized_id):
 		return false
 	pending_latched_door_ids.append(normalized_id)
@@ -252,14 +257,40 @@ func open_latched_door(door_id: String) -> bool:
 # Reports whether one authored Latched ALL door is open in the current run.
 func is_latched_door_open(door_id: String) -> bool:
 	var normalized_id := door_id.strip_edges()
+	if closed_latched_door_ids.has(normalized_id):
+		return false
 	return opened_latched_door_ids.has(normalized_id) or pending_latched_door_ids.has(normalized_id)
+
+
+# Persists a checkpoint-forced closed state and removes any open state.
+func close_latched_door(door_id: String) -> bool:
+	var normalized_id := door_id.strip_edges()
+	if normalized_id.is_empty():
+		push_error("LevelModule.close_latched_door requires a non-empty id")
+		return false
+	var changed := false
+	if opened_latched_door_ids.has(normalized_id):
+		opened_latched_door_ids.erase(normalized_id)
+		changed = true
+	if pending_latched_door_ids.has(normalized_id):
+		pending_latched_door_ids.erase(normalized_id)
+		changed = true
+	if not closed_latched_door_ids.has(normalized_id):
+		closed_latched_door_ids.append(normalized_id)
+		changed = true
+	return changed
+
+
+# Reports whether a checkpoint permanently closed one Latched ALL door.
+func is_latched_door_closed(door_id: String) -> bool:
+	return closed_latched_door_ids.has(door_id.strip_edges())
 
 
 # Commits all runtime-open Latched ALL doors when a checkpoint is touched.
 func commit_latched_doors() -> bool:
 	var changed := false
 	for door_id in pending_latched_door_ids:
-		if not opened_latched_door_ids.has(door_id):
+		if not closed_latched_door_ids.has(door_id) and not opened_latched_door_ids.has(door_id):
 			opened_latched_door_ids.append(door_id)
 			changed = true
 	pending_latched_door_ids.clear()
@@ -325,6 +356,7 @@ func clear_world_progress() -> void:
 	activated_progression_device_ids.clear()
 	collected_item_ids.clear()
 	opened_latched_door_ids.clear()
+	closed_latched_door_ids.clear()
 	pending_latched_door_ids.clear()
 	present_hub_unlocked = false
 	run_countdown_expired = false
@@ -348,12 +380,23 @@ func _apply_world_progress(data: Dictionary) -> void:
 			if not normalized_id.is_empty() and not collected_item_ids.has(normalized_id):
 				collected_item_ids.append(normalized_id)
 	opened_latched_door_ids.clear()
+	closed_latched_door_ids.clear()
 	pending_latched_door_ids.clear()
+	var stored_closed_door_ids: Variant = data.get("closed_latched_door_ids", [])
+	if stored_closed_door_ids is Array or stored_closed_door_ids is PackedStringArray:
+		for stored_id: Variant in stored_closed_door_ids:
+			var normalized_id := str(stored_id).strip_edges()
+			if not normalized_id.is_empty() and not closed_latched_door_ids.has(normalized_id):
+				closed_latched_door_ids.append(normalized_id)
 	var stored_door_ids: Variant = data.get("opened_latched_door_ids", [])
 	if stored_door_ids is Array or stored_door_ids is PackedStringArray:
 		for stored_id: Variant in stored_door_ids:
 			var normalized_id := str(stored_id).strip_edges()
-			if not normalized_id.is_empty() and not opened_latched_door_ids.has(normalized_id):
+			if (
+				not normalized_id.is_empty()
+				and not closed_latched_door_ids.has(normalized_id)
+				and not opened_latched_door_ids.has(normalized_id)
+			):
 				opened_latched_door_ids.append(normalized_id)
 	present_hub_unlocked = bool(data.get("present_hub_unlocked", false))
 	run_countdown_expired = bool(data.get("run_countdown_expired", false))

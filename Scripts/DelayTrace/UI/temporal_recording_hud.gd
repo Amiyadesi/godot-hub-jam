@@ -25,7 +25,7 @@ func _ready() -> void:
 
 # 从当前 InputMap 刷新回传键，重绑定后无需重载场景。
 func refresh_recall_binding() -> void:
-	if OS.has_feature("mobile"):
+	if DisplayServer.is_touchscreen_available():
 		recall_key_label.text = "A"
 		return
 	if KeybindingModule.instance != null:

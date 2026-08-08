@@ -2,7 +2,8 @@
 
 ## 当前可验证基线
 
-- 新游戏按当前语言播放黑屏红字 `跑/RUN`；玩家接近 `World/BeforeHub/FloatText` 后，世界内手写飘字显示当前跳跃与方向冲刺键位；Continue 跳过开场。
+- 新档出生在教学房，入场淡出后直接恢复操作；玩家依次接近 `World/BeforeHub/FloatText`、`FloatText2`、`FloatText3` 后，世界内手写飘字分别显示跳跃/爬墙、冲刺、下穿平台键位。首次触碰 checkpoint 才播放当前语言的黑屏红字 `跑/RUN`，红色虚影从门左侧跑到存档点；Continue 已有 checkpoint 时跳过。
+- 主场景现有 22 组 authored Phantom Camera 区域：教学房 + A–U；下方 T/U 两房只补了相机，仍保持空白。
 - `DelayTraceStart` 启动时只判断一次 locale，同时锁定 `present_hub.zh/en.dialogue` 与 `endings.zh/en.dialogue`，整局不再重新选择或经过 PO 二次翻译；现在房内 NPC 持续面向玩家，离开后恢复朝右。
 - 四段记忆使用黑屏、红色倾斜字与 RichText2 抖动，不显示说话者；不满足条件的 Keeper 选项完全隐藏，`askname/askheart/asktime` 任一新选项可用时头顶闪烁 `!`。
 - 倒计时更大、更清晰，归零只保存状态；玩家再次主动询问 Keeper 时才出现一次坦白选项，不失败、不清档。
@@ -10,8 +11,8 @@
 - 爱心数 `>= 1` 时出现一次主动问题；终点 A-D 按数量点亮，四枚后地块闪光、透明闪烁并允许落入下方。
 - 下方两个房间保持空白，旧真结局路线与 KnowledgeLock 已删除；金色全屏真结局演出仍保留。
 - `ProgressionShortcut`、Future 凝固结构、Past/Future 移动拖尾、全局时间尘埃和双结局粒子已接入；`low_flash_mode` 会抑制密集爆发并降低持续粒子密度。
-- 手机版已接入参考项目的触控素材：左下方向十字、右下 `X/Y/A/B`、左上 `ESC`；它们只在 `OS.has_feature("mobile")` 时显示，桌面继续使用 `WASD/J/K/L/E/ESC`。
-- 当前导出 preset 已统一到 `D:\Hopes_and_Dream\ExportGame\DelayTrace\Windows\DelayTrace.exe`、`D:\Hopes_and_Dream\ExportGame\DelayTrace\Web\index.html` 与 `D:\Hopes_and_Dream\ExportGame\DelayTrace\Android\DelayTrace.apk`；Windows 版本已通过导出后 headless 启动检查。
+- 触屏版已接入参考项目素材：左下虚拟摇杆、右下 `X/Y/A/B`、左上 `ESC`；显示、提示和设置页统一使用 `DisplayServer.is_touchscreen_available()`，不再依赖 `OS.has_feature("mobile")`。无触屏桌面继续使用 `WASD/J/K/L/E/ESC`。
+- 当前导出 preset 已统一到 `D:\Hopes_and_Dream\ExportGame\DelayTrace\Windows\DelayTrace.exe`、`D:\Hopes_and_Dream\ExportGame\DelayTrace\Web\index.html` 与 `D:\Hopes_and_Dream\ExportGame\DelayTrace\Android\DelayTrace.apk`；旧 Windows 包曾通过启动检查，当前工作树仍需重新导出后才是发布候选。
 
 ## 自己修改这些内容
 
@@ -28,12 +29,13 @@
 
 找三名没看过设计文档的玩家，从新存档开始。测试者不要解释操作或谜底，只记录：
 
-1. 看完 `跑/RUN` 后，玩家是否自然移动到世界飘字，并在 30 秒内完成跳跃和一次带方向冲刺。
-2. 第一次被 Past 抓到后，玩家能否说出“它在重走我刚才的路线”。
-3. 到 Hub 时，玩家是否注意到倒计时、三条支路和 Keeper，而不会把倒计时误读成真实失败条件。
-4. 每条支路首题的首次错误假设、失败次数、解开时间，以及解开后能否复述该支路的新规则。
-5. 到终点时，玩家是否自然看见普通出口；全碎片玩家是否注意到 A-D 全亮、地块透明闪烁，并理解可以主动落到下方。
-6. 在 `1s` 或 `5s` 支路存档后 Continue，确认倒计时与延迟不变；录制 Future 主动撞一次 Trap，确认只看到金色退场并回到 Recorder。
+1. 玩家能否在教学房内自然看见飘字，并在 30 秒内完成跳跃和一次带方向冲刺。
+2. 首次 checkpoint 的 `跑/RUN` 是否紧接玩家路线出现，红色虚影是否清楚跑到存档点，而不是像重新播放开场。
+3. 第一次被 Past 抓到后，玩家能否说出“它在重走我刚才的路线”。
+4. 到 Hub 时，玩家是否注意到倒计时、三条支路和 Keeper，而不会把倒计时误读成真实失败条件。
+5. 每条支路首题的首次错误假设、失败次数、解开时间，以及解开后能否复述该支路的新规则。
+6. 到终点时，玩家是否自然看见普通出口；全碎片玩家是否注意到 A-D 全亮、地块透明闪烁，并理解可以主动落到下方。
+7. 在 `1s` 或 `5s` 支路存档后 Continue，确认倒计时与延迟不变；录制 Future 主动撞一次 Trap，确认只看到金色退场并回到 Recorder。
 
 停止条件：若两名玩家在同一处卡住超过三分钟，下一轮只改那一处的构图、落点或反馈，不继续加谜题和说明文字。
 

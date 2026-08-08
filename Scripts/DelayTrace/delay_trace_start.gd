@@ -9,7 +9,6 @@ const ENTRY_STATE_META := &"delay_trace_entry_temporal_state"
 const ENTRY_STATE_PRESENT := &"present"
 const ENTRY_STATE_PAST := &"past"
 const CURRENT_ROOM_CHECKPOINT_ID := &"current_room"
-const FUTURE_FAILURE_COLOR := Color(1.0, 0.68, 0.16, 1.0)
 
 @export_file("*.tscn") var checkpoint_scene_path := ""
 @export_file("*.tscn") var menu_scene_path := ""
@@ -31,6 +30,7 @@ const FUTURE_FAILURE_COLOR := Color(1.0, 0.68, 0.16, 1.0)
 
 @onready var present_hub_time_label: Label = $"../World/PresentHub/Label"
 @onready var final_time_label: Label = $"../World/Finnal/Label"
+@onready var opening_run_start: Marker2D = %OpeningRunStart
 
 var _checkpoints: Array[EchoCheckpoint] = []
 var _delay_switches: Array[DelayPickup] = []
@@ -41,9 +41,9 @@ var _respawn_past_delay_seconds := EchoTimeline.DEFAULT_PAST_DELAY
 var _respawn_delay_switch_id := EchoTimeline.DEFAULT_DELAY_SWITCH_ID
 var _reset_in_progress := false
 var _entry_intro_active := false
-var _entry_card_playing := false
 var _entry_tween: Tween
 var _show_onboarding_on_entry := true
+var _tutorial_room_quiet := false
 var _death_flash_tween: Tween
 var _death_shake_tween: Tween
 var _camera_rest_offset := Vector2.ZERO
@@ -53,31 +53,21 @@ var _camera_rest_offset := Vector2.ZERO
 func _ready() -> void:
 	DialogueManager.translation_source = DMConstants.TranslationSource.None
 	EchoTimeline.set_gameplay_active(false)
-	if (
-		present_room == null
-		or onboarding == null
-		or narrative_presenter == null
-		or gameplay_camera == null
-		or death_vfx == null
-		or death_flash == null
-	):
-		push_error("DelayTraceStart requires its authored room, story, camera, and failure feedback nodes")
-		return
 	_camera_rest_offset = gameplay_camera.offset
 	_reset_failure_feedback()
 	var use_chinese := str(SettingsModule.instance.get_value("language", "en")) == "zh_CN"
 	present_room.dialogue_npc.select_dialogue_language(use_chinese)
 	narrative_presenter.select_dialogue_language(use_chinese)
-	if gameplay_music == null:
-		push_error("DelayTraceStart requires gameplay_music")
-	else:
-		GameAudio.play_music("delay_trace_gameplay", gameplay_music, 0.6)
+	GameAudio.play_music("delay_trace_gameplay", gameplay_music, 0.6)
 	_resolve_checkpoints()
 	_resolve_delay_switches()
 	_resolve_temporal_doors()
 	_connect_gameplay_signals()
 	_configure_ui()
+	_tutorial_room_quiet = not LevelModule.instance.has_continue_point()
 	_restore_entry_position()
+	if _tutorial_room_quiet:
+		EchoTimeline.enter_present_room()
 	_on_run_countdown_changed(EchoTimeline.get_run_countdown_remaining(), 0.0)
 	_play_entry_intro()
 
@@ -87,7 +77,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	if _reset_in_progress:
 		return
 	if _entry_intro_active:
-		if not _entry_card_playing and _is_entry_skip_event(event):
+		if _is_entry_skip_event(event):
 			_finish_entry_intro()
 			get_viewport().set_input_as_handled()
 		return
@@ -175,15 +165,14 @@ func _restore_entry_position() -> void:
 	if _default_delay_switch != null:
 		_respawn_past_delay_seconds = float(_default_delay_switch.delay_seconds)
 		_respawn_delay_switch_id = _default_delay_switch.get_delay_switch_id()
-	if LevelModule.instance != null:
-		var saved_delay := LevelModule.instance.get_past_delay_seconds()
-		var saved_switch_id := LevelModule.instance.get_delay_switch_id()
-		var persisted_delay_switch := _get_delay_switch(saved_switch_id)
-		if EchoTimeline.DELAY_OPTIONS.has(saved_delay) and persisted_delay_switch != null:
-			_respawn_past_delay_seconds = saved_delay
-			_respawn_delay_switch_id = saved_switch_id
-	var checkpoint := LevelModule.instance.get_checkpoint() if LevelModule.instance != null else {}
-	if checkpoint.is_empty() or checkpoint.get("scene_path", "") != checkpoint_scene_path:
+	var slot_delay_seconds := LevelModule.instance.get_past_delay_seconds()
+	var slot_switch_id := LevelModule.instance.get_delay_switch_id()
+	var persisted_delay_switch := _get_delay_switch(slot_switch_id)
+	if EchoTimeline.DELAY_OPTIONS.has(slot_delay_seconds) and persisted_delay_switch != null:
+		_respawn_past_delay_seconds = slot_delay_seconds
+		_respawn_delay_switch_id = slot_switch_id
+	var checkpoint := LevelModule.instance.get_checkpoint()
+	if LevelModule.instance.get_continue_scene_path() != checkpoint_scene_path:
 		player.reset_player(_respawn_position)
 		EchoTimeline.reset_timeline(_respawn_past_delay_seconds, _respawn_delay_switch_id)
 		return
@@ -194,18 +183,20 @@ func _restore_entry_position() -> void:
 		player.reset_player(_respawn_position)
 		EchoTimeline.reset_timeline(_respawn_past_delay_seconds, _respawn_delay_switch_id)
 		return
-	var saved_switch_id := StringName(str(checkpoint.get("delay_switch_id", "")))
-	var saved_delay := float(checkpoint.get("past_delay_seconds", 0.0))
-	var saved_delay_switch := _get_delay_switch(saved_switch_id)
-	if saved_delay_switch == null or not is_equal_approx(float(saved_delay_switch.delay_seconds), saved_delay):
-		push_error("DelayTraceStart cannot restore invalid delay switch '%s'" % saved_switch_id)
+	var checkpoint_switch_id := StringName(str(checkpoint.get("delay_switch_id", "")))
+	var checkpoint_delay_seconds := float(checkpoint.get("past_delay_seconds", 0.0))
+	var checkpoint_delay_switch := _get_delay_switch(checkpoint_switch_id)
+	if checkpoint_delay_switch == null or not is_equal_approx(
+		float(checkpoint_delay_switch.delay_seconds), checkpoint_delay_seconds
+	):
+		push_error("DelayTraceStart cannot restore invalid delay switch '%s'" % checkpoint_switch_id)
 		LevelModule.instance.clear_checkpoint()
 		player.reset_player(_respawn_position)
 		EchoTimeline.reset_timeline(_respawn_past_delay_seconds, _respawn_delay_switch_id)
 		return
 	_respawn_position = checkpoint.get("position", active_checkpoint.get_respawn_position()) as Vector2
-	_respawn_past_delay_seconds = saved_delay
-	_respawn_delay_switch_id = saved_switch_id
+	_respawn_past_delay_seconds = checkpoint_delay_seconds
+	_respawn_delay_switch_id = checkpoint_switch_id
 	_show_onboarding_on_entry = false
 	active_checkpoint.set_active(true, false)
 	player.reset_player(_respawn_position)
@@ -222,35 +213,24 @@ func _play_entry_intro() -> void:
 		SceneManager.remove_meta(ENTRY_STATE_META)
 	var transition := past_entry_transition if temporal_state == ENTRY_STATE_PAST else present_entry_transition
 	_entry_tween = SceneManager.transition_start(transition, true)
-	if _entry_tween == null:
-		_finish_entry_intro()
-		return
 	_entry_tween.finished.connect(_finish_entry_intro, CONNECT_ONE_SHOT)
 
 
 # 清掉同色遮罩并恢复正常玩法时间。
 func _finish_entry_intro() -> void:
-	if not _entry_intro_active or _entry_card_playing:
+	if not _entry_intro_active:
 		return
-	if _entry_tween != null and _entry_tween.is_valid():
+	if _entry_tween.is_valid():
 		_entry_tween.kill()
 	_entry_tween = null
 	SceneManager.transition_clear()
-	if _show_onboarding_on_entry:
-		_entry_card_playing = true
-		await narrative_presenter.play_opening_run_card(_get_player_screen_position())
-		_entry_card_playing = false
 	gameplay_world.process_mode = Node.PROCESS_MODE_PAUSABLE
 	EchoTimeline.set_gameplay_active(true)
-	EchoTimeline.resume_run_countdown()
+	if not _tutorial_room_quiet:
+		EchoTimeline.resume_run_countdown()
 	_entry_intro_active = false
 	if _show_onboarding_on_entry:
 		onboarding.start()
-
-
-# Converts the authored player origin into the presenter CanvasLayer's viewport coordinates.
-func _get_player_screen_position() -> Vector2:
-	return player.get_global_transform_with_canvas().origin
 
 
 # 识别键盘、手柄和鼠标的离散跳过输入。
@@ -284,11 +264,19 @@ func _get_delay_switch(switch_id: StringName) -> DelayPickup:
 func _on_checkpoint_activation_requested(checkpoint: EchoCheckpoint) -> void:
 	if EchoTimeline.is_future_recording():
 		return
+	var should_play_opening_run := (
+		LevelModule.instance.get_continue_scene_path() != checkpoint_scene_path
+	)
+	if _tutorial_room_quiet:
+		_tutorial_room_quiet = false
+		EchoTimeline.leave_present_room()
 	for authored_checkpoint in _checkpoints:
 		authored_checkpoint.set_active(authored_checkpoint == checkpoint, authored_checkpoint == checkpoint)
 	_respawn_position = checkpoint.get_respawn_position()
 	_respawn_past_delay_seconds = EchoTimeline.get_selected_past_delay_seconds()
 	_respawn_delay_switch_id = EchoTimeline.get_selected_delay_switch_id()
+	for door in _temporal_doors:
+		door.close_at_checkpoint()
 	LevelModule.instance.commit_latched_doors()
 	LevelModule.instance.set_checkpoint(
 		checkpoint_scene_path,
@@ -298,8 +286,18 @@ func _on_checkpoint_activation_requested(checkpoint: EchoCheckpoint) -> void:
 		String(_respawn_delay_switch_id)
 	)
 	SaveSystem.save_slot(1)
+	if should_play_opening_run:
+		await narrative_presenter.play_opening_run_card(
+			_get_world_screen_position(opening_run_start.global_position),
+			_get_world_screen_position(checkpoint.get_respawn_position())
+		)
 	if checkpoint.get_checkpoint_id() == CURRENT_ROOM_CHECKPOINT_ID:
 		present_room.request_checkpoint_dialogue()
+
+
+# Converts a world-space point into the active CanvasLayer coordinate space.
+func _get_world_screen_position(world_position: Vector2) -> Vector2:
+	return gameplay_world.get_global_transform_with_canvas() * world_position
 
 
 # 过去体抓到玩家时播放失败反馈并排入复位。
@@ -307,16 +305,11 @@ func _on_player_caught() -> void:
 	_begin_failure_reset(&"hit")
 
 
-# 玩家 Hurtbox 在普通状态进入 checkpoint 失败；录制状态只摧毁当前 Future。
+# 玩家 Hurtbox 在普通状态进入 checkpoint 失败；录制状态提交一条致死 Future。
 func _on_player_failure_requested(animation_name: StringName) -> void:
 	if EchoTimeline.is_future_recording():
-		var authored_death_color := death_vfx.temporal_color
-		death_vfx.temporal_color = FUTURE_FAILURE_COLOR
-		death_vfx.play_from_sprites(player.visual, player.recording_outline, player.velocity)
-		death_vfx.temporal_color = authored_death_color
-		_play_failure_feedback()
-		if not EchoTimeline.cancel_future_recording_due_to_failure():
-			push_error("DelayTraceStart failed to cancel a Future recording after trap contact")
+		if not EchoTimeline.commit_future_recording_due_to_failure():
+			push_error("DelayTraceStart failed to commit a fatal Future recording after trap contact")
 		return
 	_begin_failure_reset(animation_name)
 

@@ -25,6 +25,7 @@ var _playback_seconds := 0.0
 var _active := false
 var _phase_remaining := 0.0
 var _last_velocity := Vector2.ZERO
+var _dies_at_end := false
 
 
 # 连接玩家接触，并让 authored 实体以未激活状态开始。
@@ -36,12 +37,13 @@ func _ready() -> void:
 	reset_echo()
 
 
-# 在当前固定槽中开始一次路径回放。
-func start_playback(track: TemporalTrack, duration: float, phase_seconds: float) -> void:
+# 在当前固定槽中开始一次路径回放，并保留 authored 结尾类型。
+func start_playback(track: TemporalTrack, duration: float, phase_seconds: float, dies_at_end := false) -> void:
 	_track = track
 	_duration = duration
 	_playback_seconds = 0.0
 	_phase_remaining = phase_seconds
+	_dies_at_end = dies_at_end
 	visible = true
 	visual.visible = true
 	outline_visual.visible = true
@@ -61,14 +63,14 @@ func start_playback(track: TemporalTrack, duration: float, phase_seconds: float)
 func restart_playback(phase_seconds: float) -> void:
 	if _track == null:
 		return
-	start_playback(_track, _duration, phase_seconds)
+	start_playback(_track, _duration, phase_seconds, _dies_at_end)
 
 
 # 只推进当前 authored 路径；退场快照拥有独立视觉生命周期。
 func advance(delta: float) -> void:
 	if not _active:
 		return
-	_playback_seconds += delta
+	_playback_seconds = minf(_playback_seconds + delta, _duration)
 	_phase_remaining = maxf(_phase_remaining - delta, 0.0)
 	var frame: TemporalFrame = _track.sample_at(_playback_seconds)
 	if frame != null:
@@ -77,7 +79,10 @@ func advance(delta: float) -> void:
 		_apply_frame_visual(frame)
 	_refresh_playback_timer()
 	if _playback_seconds >= _duration or frame == null:
-		_release_slot()
+		if _dies_at_end:
+			dissipate(_last_velocity)
+		else:
+			_release_slot()
 
 
 # 立即停止未来体世界影响，只保留短暂视觉尾段。
@@ -116,6 +121,7 @@ func capture_playback_state() -> Dictionary:
 		"playback_seconds": _playback_seconds,
 		"phase_remaining": _phase_remaining,
 		"last_velocity": _last_velocity,
+		"dies_at_end": _dies_at_end,
 	}
 
 
@@ -129,6 +135,7 @@ func restore_playback_state(state: Dictionary) -> void:
 	_playback_seconds = float(state["playback_seconds"])
 	_phase_remaining = float(state["phase_remaining"])
 	_last_velocity = state["last_velocity"] as Vector2
+	_dies_at_end = bool(state["dies_at_end"])
 	visible = true
 	visual.visible = true
 	outline_visual.visible = true
@@ -152,6 +159,7 @@ func reset_echo() -> void:
 	_duration = 0.0
 	_playback_seconds = 0.0
 	_phase_remaining = 0.0
+	_dies_at_end = false
 	_set_active(false)
 	visible = false
 	visual.flip_h = false

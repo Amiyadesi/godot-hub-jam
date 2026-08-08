@@ -27,7 +27,7 @@ YourGrayboxRoot (Node2D)
 │   ├── TemporalRecordingHUD
 │   ├── PauseScreen
 │   ├── SettingScreen
-│   └── MobileControls            [mobile only; authored touch actions]
+│   └── MobileControls            [touchscreen only; authored touch actions]
 └── SceneController (Node, PROCESS_MODE_ALWAYS)
 ```
 
@@ -40,7 +40,7 @@ YourGrayboxRoot (Node2D)
 | 节点 | Inspector 字段 | 指向 |
 | --- | --- | --- |
 | `DelayPickup` | `delay_seconds/delay_switch_id/default_active` | `1/3/5`、场景内唯一 ID；恰好一个默认 `3s` 台 |
-| `TemporalDoor` | `mode/source_plates/latched_door_id` | `MOMENTARY_ALL` 或 `LATCHED_ALL`；锁存门填写唯一 ID；显式拖入最多 4 块板 |
+| `TemporalDoor` | `mode/source_plates/latched_door_id/close_on_checkpoint` | `MOMENTARY_ALL` 或 `LATCHED_ALL`；锁存门填写唯一 ID；需要 checkpoint 后关门时勾选 `close_on_checkpoint`；显式拖入最多 4 块板 |
 | `MemoryFloorGate` | `memory_item_ids/indicator_fills` | 四个稳定记忆 ID；A-D 亮灯按画面左到右排列 |
 | `FutureCondensationBarrier` | `source_recorder` | 唯一负责该屏障的 `FutureRecorder` |
 | `ProgressionDevice` | `device_id` | 当前场景稳定且唯一的世界进度 ID；触碰激活后立即写入当前槽位 |
@@ -56,7 +56,7 @@ YourGrayboxRoot (Node2D)
 
 ## 手机控件
 
-`Scenes/DelayTrace/UI/echo_mobile_controls.tscn` 是独立的 authored 手机控件场景：动作键复用参考游戏的 `gdb-xbox-2.png` Atlas，左上暂停键复用 `gdb-keyboard-2.png` 中真实的 ESC normal/pressed 两帧。根节点挂在 `UI` CanvasLayer 下并使用 `PROCESS_MODE_ALWAYS`。每个 `TouchScreenButton` 直接填写现有 Input action，不新增或改写 `InputMap`：
+`Scenes/DelayTrace/UI/echo_mobile_controls.tscn` 是独立的 authored 触屏控件场景：动作键复用参考游戏的 `gdb-xbox-2.png` Atlas，左上暂停键复用 `gdb-keyboard-2.png` 中真实的 ESC normal/pressed 两帧。根节点挂在 `UI` CanvasLayer 下并使用 `PROCESS_MODE_ALWAYS`。每个 `TouchScreenButton` 直接填写现有 Input action，不新增或改写 `InputMap`：
 
 | 手机位置 | 图标 | 现有 action | 桌面对应 |
 | --- | --- | --- | --- |
@@ -67,7 +67,7 @@ YourGrayboxRoot (Node2D)
 | 右下右键 | `B` | `echo_interact` | `E` |
 | 左上 | `ESC` | `pause` | `ESC` |
 
-`visibility_mode = TOUCHSCREEN_ONLY` 和 `OS.has_feature("mobile")` 双重区分平台：桌面不会绘制这些按钮；手机设置页隐藏 Controls tab，不能误改桌面键位。触控按钮支持长按方向和多指组合。暂停菜单、设置页、Keeper 对话、开场和终局演出暂停世界时由 `EchoMobileControls` 自动隐藏，结束后恢复。开场飘字、录像 HUD、NPC 交互提示分别显示手机的 `X/Y`、`A`、`B`，桌面继续读取当前可重绑定按键。
+`visibility_mode = TOUCHSCREEN_ONLY` 与 `DisplayServer.is_touchscreen_available()` 双重区分平台：无触屏桌面不会绘制这些按钮；触屏设备设置页隐藏 Controls tab，不能误改桌面键位。触控按钮支持长按方向和多指组合。暂停菜单、设置页、Keeper 对话、开场和终局演出暂停世界时由 `EchoMobileControls` 自动隐藏，结束后恢复。开场飘字、录像 HUD、NPC 交互提示分别显示触屏设备的 `X/Y`、`A`、`B`，无触屏桌面继续读取当前可重绑定按键。
 
 要调位置或大小，直接在 Godot Editor 选中 `DirectionPad`、`ActionPad` 或其中一个 `TouchScreenButton` 修改 `offset_*`、`position`、`scale`；不要在脚本里动态创建按钮，也不要把手机按键写入 `project.godot`。建议至少用 1280×720 和 640×360 横屏预览一次，确认左右两组不重叠且底部留出安全边距。
 
@@ -108,6 +108,7 @@ YourGrayboxRoot (Node2D)
 
 - `MOMENTARY_ALL`：全部板同时按下才保持开启，任一释放立即关闭。
 - `LATCHED_ALL`：全部板同时按下一次后保持开启；填写 `latched_door_id` 后先保留在运行态，玩家下一次触碰 `EchoCheckpoint` 时才写入槽位存档，读档直接恢复打开。失败或暂停菜单 Restart 会丢弃尚未提交的锁存。未填写 ID 的原型门只保留运行时锁存。
+- `close_on_checkpoint`：该锁存门在 checkpoint 激活时强制关闭，并把关闭状态写入槽位；后续压力板不会重新打开它。当前 `BeforeHub/TemporalDoor2` 使用此规则。
 
 现在体、过去体和未来体都可压板。门 prefab authored 四个状态格，未接线的格子隐藏，已接线格显示当前缺少哪个输入。不要在关卡脚本中重新组合这些板，也不要用它代替 `PersistentGate`。
 
@@ -167,18 +168,18 @@ EchoTimeline.reset_timeline(saved_past_delay_seconds, saved_delay_switch_id)
 
 - 一个 `EchoPlayer`；`EchoTimeline` 与 `PastEcho` 由全局 Autoload 提供。
 - 一台 `FutureRecorder`，内部自带一个隐藏 `FutureEcho`。
-- 用户 authored 的 16px TileMap 基线；当前镜头测试区按 19 个 `480×270` 触发范围组织（房 A–S），但不锁定正式路线。
-- `start_checkpoint` 与 `current_room` 两个 authored `EchoCheckpoint`，以及一个 `SpawnPoint`。
-- 一个 `Camera2D + PhantomCameraHost`，每房一台固定 `PhantomCamera2D`（当前 19 台），`zoom=4`，共用 `0.35s QUAD/EASE_IN_OUT` tween。
-- 每房一个 authored `Area2D` 房间触发器（当前 19 个），直接使用 Phantom Camera 官方 `2d_trigger_area.gd` 示例脚本；镜头选择、中断和补间全部由 Phantom Camera 插件负责。
+- 用户 authored 的 16px TileMap 基线；当前镜头测试区按 22 个 `480×270` 触发范围组织（教学房 + A–U），但不锁定正式路线。
+- `start_checkpoint` 与 `current_room` 两个 authored `EchoCheckpoint`，以及位于教学房的 `SpawnPoint`。
+- 一个 `Camera2D + PhantomCameraHost`，每房一台固定 `PhantomCamera2D`（当前 22 台：教学房 + A–U），`zoom=4`，共用 `0.35s QUAD/EASE_IN_OUT` tween。
+- 每房一个 authored `Area2D` 房间触发器（当前 22 个：教学房 + A–U），直接使用 Phantom Camera 官方 `2d_trigger_area.gd` 示例脚本；镜头选择、中断和补间全部由 Phantom Camera 插件负责。
 - `1s/3s/5s` 三个可重复 `DelayPickup` 延迟台、一个 `FutureRecorder`。
 - 一扇 `source_plates` 显式绑定压力板的 `TemporalDoor` 接线样例。
 - 主场景内联 `PresentHub`，内含按 `E` 交互的 NPC、`current_room` 自动对话、首次/回访剧情、全房环状冲击波、三座延迟台和 `RoomDepartureVfx`。
 - 场景内的 `BranchProgressionDevice` 与 `BranchPersistentGate` 只作为支路进度接线样例；正式谜题仍由本关脚本在条件完成时调用 `activate()`，二者素材与 checkpoint 分离。
 - `MemoryShardA/B/C/D` 使用 `TemporalCollectible`；终点 `MemoryFloorGate` 按四枚数量点亮并打开可坠落地块。
 - 一个 `TemporalRecordingHUD`：玩家金色轮廓、屏幕金边、无数字进度条和实时回传键。
-- 一个 `DelayTraceOnboarding`：新游戏的黑屏红字 `跑/RUN` 结束后，玩家接近 `World/BeforeHub/FloatText` 时读取当前跳跃和方向冲刺绑定，用世界内手写飘字显示一次；Continue 不重复播放。
-- 一个 `DelayTraceNarrativePresenter`：开场与记忆共用全黑红字、倾斜字体和 RichText2 抖动序列；普通结局与真结局从 `endings.zh.dialogue` / `endings.en.dialogue` 读取文本，分别使用青白、金色 authored tableau。Keeper 行走播放 `run`，停下说话播放 `idle`；Keeper 对话只由 `DialogueNpc` 主动交互触发。
+- 一个 `DelayTraceOnboarding`：新游戏入场淡出后直接开放教学房；玩家依次接近 `World/BeforeHub/FloatText`、`FloatText2`、`FloatText3` 时，分别读取当前跳跃/爬墙、冲刺、下穿平台绑定，用世界内手写飘字显示一次；Continue 不重复播放。
+- 一个 `DelayTraceNarrativePresenter`：新档首次触碰 checkpoint 时，黑屏红字 `跑/RUN` 与红色虚影从 authored `OpeningRunStart` 一起抵达该 checkpoint；Continue 已有 checkpoint 时跳过。记忆沿用同一套倾斜字体和 RichText2 抖动序列；普通结局与真结局从 `endings.zh.dialogue` / `endings.en.dialogue` 读取文本，分别使用青白、金色 authored tableau。Keeper 行走播放 `run`，停下说话播放 `idle`；Keeper 对话只由 `DialogueNpc` 主动交互触发。
 - 终点下方两个房间保持空白；旧 `true_ending_route` 与 `KnowledgeLock` 已删除，金色全屏演出仍保留。
 - 两套 authored 入场淡出资源：新游戏使用青白，Continue 使用洋红；淡出期间冻结 World，不再摆三人 Overlay。
 - `PauseScreen` 与 `SettingScreen`；Hint 永久禁用。

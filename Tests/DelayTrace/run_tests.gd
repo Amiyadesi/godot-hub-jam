@@ -24,7 +24,7 @@ func _ready() -> void:
 	_test_level_module_round_trip()
 	await _test_run_countdown_lifecycle()
 	await _test_past_catch_reports_recording_source()
-	await _test_future_recording_cancels_on_trap()
+	await _test_future_recording_commits_on_trap()
 	_test_dash_charge_marker_follows_player_state()
 	_test_dash_input_consumes_single_charge()
 	_test_reset_discards_buffered_dash()
@@ -78,7 +78,7 @@ func _test_player_tuning_matches_authored_envelope() -> void:
 	_expect(is_equal_approx(player.jump_speed, 320.0), "EchoPlayer uses the authored jump speed")
 	_expect(is_equal_approx(player.jump_release_multiplier, 0.65), "EchoPlayer keeps the authored short-hop cut")
 	_expect(is_equal_approx(player.gravity, 1200.0), "EchoPlayer uses the authored gravity")
-	_expect(is_equal_approx(player.wall_slide_speed, 48.0), "EchoPlayer wall-slides at 3 tiles per second")
+	_expect(is_equal_approx(player.wall_slide_speed, 28.0), "EchoPlayer uses the slower assisted wall slide")
 	_expect(is_equal_approx(player.wall_jump_speed_x, 176.0), "EchoPlayer uses the authored wall-jump push")
 	_expect(is_equal_approx(player.wall_push_seconds, 0.10), "EchoPlayer keeps the authored wall push window")
 	_expect(player.get_node_or_null("RayCast2D") is RayCast2D, "EchoPlayer has an authored head wall ray")
@@ -126,8 +126,8 @@ func _test_level_module_round_trip() -> void:
 	module.apply_data(original_data)
 
 
-# 验证 Future 录制撞陷阱时只取消录制并回到锚点，不占用失败复位流程。
-func _test_future_recording_cancels_on_trap() -> void:
+# 验证 Future 录制撞陷阱时提交致死路径并回到锚点。
+func _test_future_recording_commits_on_trap() -> void:
 	var player := PLAYER_SCENE.instantiate() as EchoPlayer
 	add_child(player)
 	player.set_physics_process(false)
@@ -141,15 +141,15 @@ func _test_future_recording_cancels_on_trap() -> void:
 	EchoTimeline._set_run_countdown_remaining(777.0)
 	player.global_position = Vector2(120, 80)
 	var anchor_position := player.global_position
-	_expect(EchoTimeline.start_future_recording(recorder), "Future recording starts before trap cancellation")
+	_expect(EchoTimeline.start_future_recording(recorder), "Future recording starts before trap contact")
 	EchoTimeline._physics_process(PHYSICS_STEP)
 	player.global_position = anchor_position + Vector2(48, 0)
-	_expect(EchoTimeline.cancel_future_recording_due_to_failure(), "trap cancels the Future recording")
-	_expect(not EchoTimeline.is_future_recording(), "trap cancellation exits recording mode")
-	_expect(player.global_position.is_equal_approx(anchor_position), "trap cancellation recalls the player to the recording anchor")
-	_expect(is_equal_approx(EchoTimeline.get_run_countdown_remaining(), 777.0), "trap cancellation restores the recording countdown")
-	_expect(recorder.get_future_echo().is_available(), "trap cancellation releases the reserved Future slot")
-	_expect(recorder.get_state_name() == &"waiting_exit", "trap cancellation requires leaving the recorder before retry")
+	_expect(EchoTimeline.commit_future_recording_due_to_failure(), "trap commits the fatal Future recording")
+	_expect(not EchoTimeline.is_future_recording(), "fatal Future commit exits recording mode")
+	_expect(player.global_position.is_equal_approx(anchor_position), "fatal Future commit recalls the player to the recording anchor")
+	_expect(is_equal_approx(EchoTimeline.get_run_countdown_remaining(), 777.0), "fatal Future commit restores the recording countdown")
+	_expect(recorder.get_future_echo().is_active(), "fatal Future commit starts the recorded playback")
+	_expect(recorder.get_state_name() == &"occupied", "fatal Future keeps the recorder occupied until its death")
 	EchoTimeline.reset_timeline()
 	LevelModule.instance.apply_data(original_data)
 	recorder.free()

@@ -86,7 +86,7 @@ Jam 首次通关目标为 `25–35min`。当前地图保留用户已完成的 Hu
 
 ## 正式地图与通关骨架
 
-- 新游戏先在全黑画面中央显示按 locale 选择的红字 `跑/RUN`，使用与记忆相同的倾斜字体和轻微抖动；随后玩家接近 `World/BeforeHub/FloatText` 时，以世界内手写飘字显示当前跳跃和方向冲刺键位。Continue 进入有效 checkpoint 时两段都不重复。
+- 新游戏先在全黑画面中央显示按 locale 选择的红字 `跑/RUN`，使用与记忆相同的倾斜字体和轻微抖动；随后玩家依次接近 `World/BeforeHub/FloatText`、`FloatText2`、`FloatText3`，以世界内手写飘字显示跳跃/爬墙、冲刺、下穿平台键位。Continue 进入有效 checkpoint 时两段都不重复。
 - Hub 前依次教学 Past 追逐、Past/Present 双板锁存、Recorder/Recall/Future 基础。三题只教已有原语，不使用金色结构。
 - PresentHub 的 NPC 只说明世界规律：“可能性存在时，金色的结构会凝固。”“撞碎可能性，冲刺会回到你身上。”“一秒逼近，三秒会合，五秒把结果留到更远处。”不讲按键或答案。
 - Hub 后三支路同时开放、自由顺序、全部必做：`1s` 是贴身追逐与空中回充，`3s` 是金桥/金墙和三态同步，`5s` 是跨空间预埋因果。每路按“展示 → 变化 → 装置压轴”推进。
@@ -94,7 +94,7 @@ Jam 首次通关目标为 `25–35min`。当前地图保留用户已完成的 Hu
 - 三门后正前方始终是普通出口。终点 A-D 按四枚记忆碎片数量从左到右点亮；四枚齐全后地块失去碰撞并持续透明闪烁，提示玩家可以主动落入下方两个额外房间。房间当前保持空白，普通出口始终可选。
 - `docs/delay-trace-puzzle-atlas.md` 保存动作链和验收；旧 HTML 不再是设计依据且不继续维护。本轮不新增 HTML，也不把动作链自动摆进地图。
 
-永久世界进度与稳定 checkpoint 分开保存。`past_delay_seconds`、`delay_switch_id`、`run_countdown_remaining`、`run_countdown_expired`、`activated_progression_device_ids`、`collected_item_ids`、`opened_latched_door_ids` 和 `present_hub_unlocked` 跨退出保留。BranchProgressionDevice 与 MemoryShard 立即写入当前槽位；玩家每次触碰 checkpoint 都会保存当前稳定状态，并把运行态锁存门提交到槽位，且同一时刻只有一个 checkpoint 生效。`NarrativeSlotModule` 保存 `askname`、`askheart`、`asktime` 与结局标记。
+永久世界进度与稳定 checkpoint 分开保存。`past_delay_seconds`、`delay_switch_id`、`run_countdown_remaining`、`run_countdown_expired`、`activated_progression_device_ids`、`collected_item_ids`、`opened_latched_door_ids`、`closed_latched_door_ids` 和 `present_hub_unlocked` 跨退出保留。BranchProgressionDevice 与 MemoryShard 立即写入当前槽位；玩家每次触碰 checkpoint 都会保存当前稳定状态，并把运行态锁存门提交到槽位，且同一时刻只有一个 checkpoint 生效。`TemporalDoor2` 在 checkpoint 激活时写入关闭状态。`NarrativeSlotModule` 保存 `askname`、`askheart`、`asktime` 与结局标记。
 
 ## 剧情定案与双结局
 

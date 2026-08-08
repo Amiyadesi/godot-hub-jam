@@ -44,7 +44,7 @@ const DASH_MARKER_SWITCH_SPEED := 225.0
 @export var gravity := 1200.0
 
 @export_group("Wall Slide")
-@export var wall_slide_speed := 48.0
+@export var wall_slide_speed := 28.0
 @export var wall_coyote_seconds := 0.12
 @export var wall_jump_speed_x := 176.0
 @export var wall_push_seconds := 0.10
@@ -91,6 +91,7 @@ var _coyote_remaining := 0.0
 var _wall_coyote_remaining := 0.0
 var _wall_push_remaining := 0.0
 var _wall_normal := Vector2.ZERO
+var _wall_detached := false
 var _wall_jump_locked := false
 var _wall_jump_lock_normal := Vector2.ZERO
 var _temporal_phase_remaining := 0.0
@@ -230,6 +231,7 @@ func capture_temporal_anchor(time_seconds: float) -> Dictionary:
 		"wall_coyote_remaining": _wall_coyote_remaining,
 		"wall_push_remaining": _wall_push_remaining,
 		"wall_normal": _wall_normal,
+		"wall_detached": _wall_detached,
 		"wall_jump_locked": _wall_jump_locked,
 		"wall_jump_lock_normal": _wall_jump_lock_normal,
 		"was_on_floor": _was_on_floor,
@@ -253,6 +255,7 @@ func apply_temporal_recall(anchor: Dictionary, phase_seconds: float) -> void:
 	_wall_coyote_remaining = float(anchor["wall_coyote_remaining"])
 	_wall_push_remaining = float(anchor["wall_push_remaining"])
 	_wall_normal = anchor["wall_normal"] as Vector2
+	_wall_detached = bool(anchor["wall_detached"])
 	_wall_jump_locked = bool(anchor.get("wall_jump_locked", false))
 	_wall_jump_lock_normal = anchor.get("wall_jump_lock_normal", Vector2.ZERO) as Vector2
 	_was_on_floor = bool(anchor["was_on_floor"])
@@ -322,6 +325,7 @@ func reset_player(reset_position: Vector2) -> void:
 	_coyote_remaining = 0.0
 	_wall_coyote_remaining = 0.0
 	_wall_push_remaining = 0.0
+	_wall_detached = false
 	_wall_jump_locked = false
 	_wall_jump_lock_normal = Vector2.ZERO
 	_temporal_phase_remaining = 0.0
@@ -372,11 +376,17 @@ func _update_floor_memory(delta: float) -> void:
 		_coyote_remaining = maxf(_coyote_remaining - delta, 0.0)
 
 
-# 短暂记住墙面法线，让延迟墙跳仍可用。
+# 维护墙面吸附、主动脱离和延迟墙跳所需的接触记忆。
 func _update_wall_memory(delta: float) -> void:
 	if is_on_wall_only():
 		var current_wall_normal := get_wall_normal()
+		if _wall_detached and _wall_normal.dot(current_wall_normal) < -0.8:
+			_wall_detached = false
 		if not _wall_rays_detect_wall(current_wall_normal):
+			_wall_coyote_remaining = 0.0
+			_wall_normal = current_wall_normal
+			return
+		if _wall_detached:
 			_wall_coyote_remaining = 0.0
 			_wall_normal = current_wall_normal
 			return
@@ -389,6 +399,7 @@ func _update_wall_memory(delta: float) -> void:
 			_wall_coyote_remaining = wall_coyote_seconds
 		_wall_normal = current_wall_normal
 	else:
+		_wall_detached = false
 		_wall_coyote_remaining = maxf(_wall_coyote_remaining - delta, 0.0)
 		_wall_push_remaining = maxf(_wall_push_remaining - delta, 0.0)
 
@@ -458,6 +469,13 @@ func _update_standard_movement(delta: float) -> void:
 		elif _coyote_remaining > 0.0:
 			_perform_standard_jump()
 			started_jump = true
+	if not started_jump and is_on_wall_only() and _wall_coyote_remaining > 0.0:
+		if (
+			Input.is_action_pressed(&"echo_move_up")
+			or Input.is_action_pressed(&"echo_move_down")
+		):
+			_wall_detached = true
+			_wall_coyote_remaining = 0.0
 	var dash_recovering := _dash_recovery_remaining > 0.0
 	if dash_recovering and not started_jump:
 		# 冲刺后短暂沿整条速度向量减速，保证八方向位移一致。
@@ -467,7 +485,12 @@ func _update_standard_movement(delta: float) -> void:
 		_resolve_standard_state()
 		return
 	velocity.y += gravity * delta
-	if is_on_wall_only() and velocity.y > 0.0 and _wall_rays_detect_wall(get_wall_normal()):
+	if (
+		not _wall_detached
+		and is_on_wall_only()
+		and velocity.y > 0.0
+		and _wall_rays_detect_wall(get_wall_normal())
+	):
 		velocity.y = minf(velocity.y, wall_slide_speed)
 	_apply_horizontal_motion(delta)
 	move_and_slide()
@@ -477,11 +500,19 @@ func _update_standard_movement(delta: float) -> void:
 # 根据水平输入加速，并保留冲刺恢复期的统一减速在上层处理。
 func _apply_horizontal_motion(delta: float) -> void:
 	var input_x := _read_move_input().x
-	if not is_zero_approx(input_x):
+	# 墙滑状态下禁止左右转向，避免"趴在空气上"的视觉问题。
+	var is_wall_sliding := (
+		is_on_wall_only()
+		and not _wall_detached
+		and _wall_rays_detect_wall(get_wall_normal())
+	)
+	if not is_zero_approx(input_x) and not is_wall_sliding:
 		facing = signf(input_x)
 	var target_speed := input_x * run_speed
 	if _wall_push_remaining > 0.0:
 		target_speed = _wall_normal.x * wall_jump_speed_x
+	elif is_wall_sliding:
+		target_speed = 0.0
 	velocity.x = move_toward(velocity.x, target_speed, run_acceleration * delta)
 
 
@@ -652,7 +683,12 @@ func _request_trap_failure() -> void:
 func _resolve_standard_state() -> void:
 	if is_on_floor():
 		_change_state(State.RUN if absf(velocity.x) > 1.0 else State.IDLE)
-	elif is_on_wall_only() and velocity.y > 0.0 and _wall_rays_detect_wall(get_wall_normal()):
+	elif (
+		not _wall_detached
+		and is_on_wall_only()
+		and velocity.y > 0.0
+		and _wall_rays_detect_wall(get_wall_normal())
+	):
 		_change_state(State.WALL_SLIDE)
 	elif velocity.y < 0.0:
 		_change_state(State.JUMP)

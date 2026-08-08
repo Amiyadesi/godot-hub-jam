@@ -10,6 +10,7 @@ enum Mode {
 @export var mode: Mode = Mode.MOMENTARY_ALL
 @export var source_plates: Array[TemporalPressurePlate] = []
 @export var latched_door_id: StringName
+@export var close_on_checkpoint := false
 
 const MOMENTARY_CLOSED_COLOR := Color(0.92, 0.34, 0.32, 0.88)
 const MOMENTARY_OPEN_COLOR := Color(1.0, 0.58, 0.34, 0.44)
@@ -35,6 +36,7 @@ const LATCHED_OPEN_COLOR := Color(0.52, 0.86, 1.0, 0.38)
 
 var _is_open := false
 var _latched := false
+var _checkpoint_closed := false
 
 
 # 连接显式来源，并从当前板状态应用门与指示格。
@@ -43,6 +45,16 @@ func _ready() -> void:
 	for plate in source_plates:
 		assert(plate != null, "TemporalDoor source_plates cannot contain null")
 		plate.pressed_changed.connect(_on_source_pressed_changed)
+	_checkpoint_closed = (
+		mode == Mode.LATCHED_ALL
+		and not latched_door_id.is_empty()
+		and LevelModule.instance != null
+		and LevelModule.instance.is_latched_door_closed(String(latched_door_id))
+	)
+	if _checkpoint_closed:
+		_update_indicators(false)
+		set_open(false, false)
+		return
 	if (
 		mode == Mode.LATCHED_ALL
 		and not latched_door_id.is_empty()
@@ -63,6 +75,10 @@ func _on_source_pressed_changed(_is_pressed: bool) -> void:
 
 # Momentary 跟随实时输入；Latched 首次全满足后保持开启。
 func _refresh_state() -> void:
+	if _checkpoint_closed:
+		_update_indicators(false)
+		set_open(false)
+		return
 	var all_pressed := _are_all_sources_pressed()
 	if mode == Mode.LATCHED_ALL and all_pressed:
 		_latch()
@@ -72,7 +88,7 @@ func _refresh_state() -> void:
 
 # Marks a Latched ALL door in memory; the current checkpoint commits it.
 func _latch() -> void:
-	if _latched:
+	if _latched or _checkpoint_closed:
 		return
 	_latched = true
 	if latched_door_id.is_empty() or LevelModule.instance == null:
@@ -83,6 +99,17 @@ func _latch() -> void:
 
 # Restores this door from committed checkpoint progress after a reset.
 func restore_checkpoint_state() -> void:
+	_checkpoint_closed = (
+		mode == Mode.LATCHED_ALL
+		and not latched_door_id.is_empty()
+		and LevelModule.instance != null
+		and LevelModule.instance.is_latched_door_closed(String(latched_door_id))
+	)
+	if _checkpoint_closed:
+		_latched = false
+		_update_indicators(false)
+		set_open(false, false)
+		return
 	_latched = (
 		mode == Mode.LATCHED_ALL
 		and not latched_door_id.is_empty()
@@ -92,6 +119,18 @@ func restore_checkpoint_state() -> void:
 	var all_pressed := _are_all_sources_pressed()
 	_update_indicators(all_pressed)
 	set_open(_latched if mode == Mode.LATCHED_ALL else all_pressed, false)
+
+
+# Closes and persists this authored door when its checkpoint is activated.
+func close_at_checkpoint() -> void:
+	if not close_on_checkpoint or mode != Mode.LATCHED_ALL:
+		return
+	_checkpoint_closed = true
+	_latched = false
+	if not latched_door_id.is_empty() and LevelModule.instance != null:
+		LevelModule.instance.close_latched_door(String(latched_door_id))
+	_update_indicators(false)
+	set_open(false)
 
 # 只有存在来源且每块板都按下时才算满足。
 func _are_all_sources_pressed() -> bool:

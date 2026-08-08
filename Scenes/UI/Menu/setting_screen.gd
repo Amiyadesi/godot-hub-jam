@@ -10,7 +10,8 @@ const LANGUAGE_CODES: Array[String] = ["zh_CN", "en"]
 const GENERAL_KEYS := [
 	"display_mode", "borderless_enabled", "window_width", "window_height", "vsync_enabled",
 	"master_volume", "music_volume", "sfx_volume", "ui_volume", "ambient_volume", "screen_shake",
-	"low_flash_mode", "show_past_trace", "show_future_timer",
+	"low_flash_mode", "show_past_trace", "show_future_timer", "mobile_joystick_scale",
+	"mobile_control_opacity", "mobile_haptics",
 ]
 const GENERAL_DEFAULTS := {
 	"display_mode": "fullscreen",
@@ -25,8 +26,11 @@ const GENERAL_DEFAULTS := {
 	"ambient_volume": 0.8,
 	"screen_shake": 0.5,
 	"low_flash_mode": false,
-	"show_past_trace": false,
+	"show_past_trace": true,
 	"show_future_timer": false,
+	"mobile_joystick_scale": 1.0,
+	"mobile_control_opacity": 0.88,
+	"mobile_haptics": true,
 }
 var is_in_menu_flag: bool
 
@@ -64,6 +68,14 @@ var is_in_menu_flag: bool
 @onready var low_flash_toggle: Button = %LowFlashToggle
 @onready var past_trace_toggle: Button = %PastTraceToggle
 @onready var future_timer_toggle: Button = %FutureTimerToggle
+@onready var mobile_joystick_row: VBoxContainer = %MobileJoystickRow
+@onready var mobile_joystick_slider: HSlider = %MobileJoystickSlider
+@onready var mobile_joystick_value: Label = %MobileJoystickValue
+@onready var mobile_opacity_row: VBoxContainer = %MobileOpacityRow
+@onready var mobile_opacity_slider: HSlider = %MobileOpacitySlider
+@onready var mobile_opacity_value: Label = %MobileOpacityValue
+@onready var mobile_haptics_row: VBoxContainer = %MobileHapticsRow
+@onready var mobile_haptics_toggle: Button = %MobileHapticsToggle
 @onready var keybinding_ui: EchoKeybindingUI = %KeybindingUI
 
 var _setting_rows: Array[Dictionary] = []
@@ -83,9 +95,13 @@ func _ready() -> void:
 	_connect_signals()
 	_configure_button_audio()
 	_sync_menu_only_controls()
-	if OS.has_feature("mobile"):
+	if DisplayServer.is_touchscreen_available():
 		controls_tab.hide()
 		controls_page.hide()
+	else:
+		mobile_joystick_row.hide()
+		mobile_opacity_row.hide()
+		mobile_haptics_row.hide()
 	refresh_from_settings()
 	_set_tab(0)
 
@@ -104,6 +120,11 @@ func refresh_from_settings() -> void:
 	low_flash_toggle.button_pressed = bool(SettingsModule.instance.get_value("low_flash_mode", false))
 	past_trace_toggle.button_pressed = bool(SettingsModule.instance.get_value("show_past_trace", false))
 	future_timer_toggle.button_pressed = bool(SettingsModule.instance.get_value("show_future_timer", false))
+	mobile_joystick_slider.value = _get_setting_value("mobile_joystick_scale")
+	_update_value_label(mobile_joystick_value, mobile_joystick_slider.value)
+	mobile_opacity_slider.value = _get_setting_value("mobile_control_opacity")
+	_update_value_label(mobile_opacity_value, mobile_opacity_slider.value)
+	mobile_haptics_toggle.button_pressed = bool(SettingsModule.instance.get_value("mobile_haptics", true))
 	_sync_toggle_labels()
 	_ignore_ui_changes = false
 	keybinding_ui.refresh_all()
@@ -134,6 +155,7 @@ func _connect_signals() -> void:
 	low_flash_toggle.toggled.connect(_on_low_flash_toggled)
 	past_trace_toggle.toggled.connect(_on_past_trace_toggled)
 	future_timer_toggle.toggled.connect(_on_future_timer_toggled)
+	mobile_haptics_toggle.toggled.connect(_on_mobile_haptics_toggled)
 	visibility_changed.connect(_on_visibility_changed)
 	close_modal_requested.connect(_on_return_pressed)
 	SettingsModule.instance.settings_changed.connect(_on_setting_changed)
@@ -141,6 +163,12 @@ func _connect_signals() -> void:
 		var key := String(item["key"])
 		var slider := item["slider"] as HSlider
 		slider.value_changed.connect(_on_general_slider_changed.bind(key, item["value"]))
+	mobile_joystick_slider.value_changed.connect(
+		_on_mobile_slider_changed.bind("mobile_joystick_scale", mobile_joystick_value)
+	)
+	mobile_opacity_slider.value_changed.connect(
+		_on_mobile_slider_changed.bind("mobile_control_opacity", mobile_opacity_value)
+	)
 
 
 # Adds the fixed display choices exposed by the general settings page.
@@ -176,6 +204,14 @@ func _register_general_rows() -> void:
 	]
 
 
+# Stores a touch-specific slider while keeping its display in percentage form.
+func _on_mobile_slider_changed(value: float, key: String, value_label: Label) -> void:
+	_update_value_label(value_label, value)
+	if _ignore_ui_changes:
+		return
+	SettingsModule.instance.set_value(key, value)
+
+
 # Synchronizes display selectors after loading or restoring settings.
 func _sync_display_controls() -> void:
 	var display_mode := str(SettingsModule.instance.get_value("display_mode", "fullscreen"))
@@ -201,11 +237,12 @@ func _sync_toggle_labels() -> void:
 	low_flash_toggle.text = "[ %s ]" % tr("SETTINGS_ON" if low_flash_toggle.button_pressed else "SETTINGS_OFF")
 	past_trace_toggle.text = "[ %s ]" % tr("SETTINGS_ON" if past_trace_toggle.button_pressed else "SETTINGS_OFF")
 	future_timer_toggle.text = "[ %s ]" % tr("SETTINGS_ON" if future_timer_toggle.button_pressed else "SETTINGS_OFF")
+	mobile_haptics_toggle.text = "[ %s ]" % tr("SETTINGS_ON" if mobile_haptics_toggle.button_pressed else "SETTINGS_OFF")
 
 
 # Switches between general settings and keybinding pages.
 func _set_tab(index: int) -> void:
-	if OS.has_feature("mobile"):
+	if DisplayServer.is_touchscreen_available():
 		index = 0
 	_current_tab = clampi(index, 0, 1)
 	general_page.visible = _current_tab == 0
@@ -301,6 +338,14 @@ func _on_future_timer_toggled(enabled: bool) -> void:
 	SettingsModule.instance.set_value("show_future_timer", enabled)
 
 
+# Persists the optional touch haptic feedback switch immediately.
+func _on_mobile_haptics_toggled(enabled: bool) -> void:
+	_sync_toggle_labels()
+	if _ignore_ui_changes:
+		return
+	SettingsModule.instance.set_value("mobile_haptics", enabled)
+
+
 # Restores only general display, sound, and accessibility fields.
 func _on_reset_general_pressed() -> void:
 	for key in GENERAL_KEYS:
@@ -390,6 +435,7 @@ func _configure_button_audio() -> void:
 	GameAudio.setup_plain_button(low_flash_toggle)
 	GameAudio.setup_plain_button(past_trace_toggle)
 	GameAudio.setup_plain_button(future_timer_toggle)
+	GameAudio.setup_plain_button(mobile_haptics_toggle)
 
 
 # Shows the credits shortcut only when this modal is opened from the menu.

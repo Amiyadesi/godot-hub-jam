@@ -23,9 +23,9 @@ DelayTraceStart
 │   │   └── Camera2D
 │   │       └── PhantomCameraHost
 │   ├── RoomCameras
-│   │   └── RoomPcamA / B / … / S
+│   │   └── RoomPcamTutorial / A / B / … / U
 │   ├── RoomCameraTriggers
-│   │   └── RoomAreaA / B / … / S
+│   │   └── RoomAreaTutorial / A / B / … / U
 │   ├── EchoCheckpoint
 │   ├── PresentHub [主场景内联；内含 CurrentRoomCheckpoint / DialogueNpc / RoomDepartureVfx]
 │   ├── DelayPickup1s / 3s / 5s
@@ -42,7 +42,7 @@ DelayTraceStart
 	└── ResetAudio
 ```
 
-场景已按用户要求接入一组 `480×270` Phantom Camera 测试房（当前 19 房 A–S）和完整机制展台。TileMap、机关顺序与房间参数只用于逐项测试，不代表作者的正式灰盒或路线；用户可以直接在 Editor 中移动、替换或删除。
+场景已按用户要求接入一组 `480×270` Phantom Camera 测试房（当前 22 个：教学房 + A–U）和完整机制展台。TileMap、机关顺序与房间参数只用于逐项测试，不代表作者的正式灰盒或路线；用户可以直接在 Editor 中移动、替换或删除。
 
 ## 可替换素材
 
@@ -60,6 +60,7 @@ DelayTraceStart
 - Keeper 使用 `delay_trace_mystery_sprite.png` 的 `idle/run` 两行序列；默认朝右，在 `PresentHub` 内持续面向玩家，离房后恢复朝右。普通结局进场/离场与真结局汇聚移动播放 `run`，停下说话播放 `idle`。
 - Past/Future prefab 的 `OutlineVisual`、`PixelBurst`、`VfxAnimationPlayer`、`DepartureVfx` 是 authored 合同；`DepartureVfx` 是 `top_level` 旧位置快照，主体移动或槽位复用都不能带走它。
 - 主菜单是严格三等分固定剪影。Start 使用现在体青白径向转场，Continue 使用过去体洋红径向转场；玩法场景只负责同色淡出，不再包含三人入场 Overlay。
+- 新档出生在教学房，入场淡出后直接恢复操作；首次触碰 checkpoint 才播放黑屏 `跑/RUN`，红色虚影从门左侧的 authored `OpeningRunStart` 跑到该 checkpoint。Continue 已有 checkpoint 时跳过。
 
 替换角色时保持动画名和约 `10x15px` 碰撞合同；替换地图时由用户在 Editor 重画 TileMapLayer，不用脚本批量生成正式路线。
 
@@ -76,6 +77,7 @@ delay_switch_id
 activated_progression_device_ids
 collected_item_ids
 opened_latched_door_ids
+closed_latched_door_ids
 present_hub_unlocked
 run_countdown_expired
 run_countdown_remaining

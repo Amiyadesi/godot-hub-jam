@@ -31,8 +31,11 @@ const DEFAULTS := {
 	"ambient_volume" : 0.8,
 	"screen_shake"   : 0.5,
 	"low_flash_mode" : false,
-	"show_past_trace": false,
+	"show_past_trace": true,
 	"show_future_timer": false,
+	"mobile_joystick_scale": 1.0,
+	"mobile_control_opacity": 0.88,
+	"mobile_haptics": true,
 	"language"       : "zh_CN",
 	"display_mode"   : "fullscreen",
 	"borderless_enabled": false,
@@ -147,7 +150,8 @@ func apply_setting(key: String, value: Variant) -> void:
 		"vsync_enabled":
 			_apply_vsync(_is_truthy(value))
 		"timezone_mode", "custom_time_hour", "custom_time_minute", "screen_shake", "low_flash_mode", \
-		"show_past_trace", "show_future_timer":
+		"show_past_trace", "show_future_timer", "mobile_joystick_scale", \
+		"mobile_control_opacity", "mobile_haptics":
 			pass
 
 
@@ -189,6 +193,17 @@ func _normalize_values() -> void:
 	_values["low_flash_mode"] = _is_truthy(_values.get("low_flash_mode", DEFAULTS["low_flash_mode"]))
 	_values["show_past_trace"] = _is_truthy(_values.get("show_past_trace", DEFAULTS["show_past_trace"]))
 	_values["show_future_timer"] = _is_truthy(_values.get("show_future_timer", DEFAULTS["show_future_timer"]))
+	_values["mobile_joystick_scale"] = clampf(
+		float(_values.get("mobile_joystick_scale", DEFAULTS["mobile_joystick_scale"])),
+		0.8,
+		1.4
+	)
+	_values["mobile_control_opacity"] = clampf(
+		float(_values.get("mobile_control_opacity", DEFAULTS["mobile_control_opacity"])),
+		0.4,
+		1.0
+	)
+	_values["mobile_haptics"] = _is_truthy(_values.get("mobile_haptics", DEFAULTS["mobile_haptics"]))
 	_values["display_mode"] = _normalize_display_mode(str(_values.get("display_mode", DEFAULTS["display_mode"])))
 	_values["borderless_enabled"] = _is_truthy(_values.get("borderless_enabled", DEFAULTS["borderless_enabled"]))
 	_values["window_width"] = maxi(640, int(_values.get("window_width", DEFAULTS["window_width"])))

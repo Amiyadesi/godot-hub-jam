@@ -29,7 +29,7 @@ var _capture_action: StringName
 
 # 将每个固定 authored 动作行连接到共享捕获对话框。
 func _ready() -> void:
-	if OS.has_feature("mobile"):
+	if DisplayServer.is_touchscreen_available():
 		hide()
 		return
 	_connect_binding_button(move_left_button, &"echo_move_left")

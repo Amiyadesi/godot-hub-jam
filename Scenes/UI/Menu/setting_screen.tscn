@@ -612,6 +612,110 @@ alignment = 1
 [node name="Line" type="HSeparator" parent="PanelRoot/Content/Pages/AudioPage/GeneralVBox/FutureTimerRow"]
 layout_mode = 2
 
+[node name="MobileJoystickRow" type="VBoxContainer" parent="PanelRoot/Content/Pages/AudioPage/GeneralVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 5
+
+[node name="RowContent" type="HBoxContainer" parent="PanelRoot/Content/Pages/AudioPage/GeneralVBox/MobileJoystickRow"]
+custom_minimum_size = Vector2(0, 52)
+layout_mode = 2
+theme_override_constants/separation = 18
+
+[node name="Title" type="Label" parent="PanelRoot/Content/Pages/AudioPage/GeneralVBox/MobileJoystickRow/RowContent"]
+custom_minimum_size = Vector2(230, 0)
+layout_mode = 2
+text = "SETTINGS_MOBILE_JOYSTICK_SIZE"
+vertical_alignment = 1
+
+[node name="MobileJoystickSlider" type="HSlider" parent="PanelRoot/Content/Pages/AudioPage/GeneralVBox/MobileJoystickRow/RowContent"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(280, 36)
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = 0.8
+max_value = 1.4
+step = 0.05
+value = 1.0
+
+[node name="MobileJoystickValue" type="Label" parent="PanelRoot/Content/Pages/AudioPage/GeneralVBox/MobileJoystickRow/RowContent"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(72, 0)
+layout_mode = 2
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="Line" type="HSeparator" parent="PanelRoot/Content/Pages/AudioPage/GeneralVBox/MobileJoystickRow"]
+layout_mode = 2
+
+[node name="MobileOpacityRow" type="VBoxContainer" parent="PanelRoot/Content/Pages/AudioPage/GeneralVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 5
+
+[node name="RowContent" type="HBoxContainer" parent="PanelRoot/Content/Pages/AudioPage/GeneralVBox/MobileOpacityRow"]
+custom_minimum_size = Vector2(0, 52)
+layout_mode = 2
+theme_override_constants/separation = 18
+
+[node name="Title" type="Label" parent="PanelRoot/Content/Pages/AudioPage/GeneralVBox/MobileOpacityRow/RowContent"]
+custom_minimum_size = Vector2(230, 0)
+layout_mode = 2
+text = "SETTINGS_MOBILE_OPACITY"
+vertical_alignment = 1
+
+[node name="MobileOpacitySlider" type="HSlider" parent="PanelRoot/Content/Pages/AudioPage/GeneralVBox/MobileOpacityRow/RowContent"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(280, 36)
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = 0.4
+max_value = 1.0
+step = 0.05
+value = 0.88
+
+[node name="MobileOpacityValue" type="Label" parent="PanelRoot/Content/Pages/AudioPage/GeneralVBox/MobileOpacityRow/RowContent"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(72, 0)
+layout_mode = 2
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="Line" type="HSeparator" parent="PanelRoot/Content/Pages/AudioPage/GeneralVBox/MobileOpacityRow"]
+layout_mode = 2
+
+[node name="MobileHapticsRow" type="VBoxContainer" parent="PanelRoot/Content/Pages/AudioPage/GeneralVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 5
+
+[node name="RowContent" type="HBoxContainer" parent="PanelRoot/Content/Pages/AudioPage/GeneralVBox/MobileHapticsRow"]
+custom_minimum_size = Vector2(0, 52)
+layout_mode = 2
+
+[node name="Title" type="Label" parent="PanelRoot/Content/Pages/AudioPage/GeneralVBox/MobileHapticsRow/RowContent"]
+custom_minimum_size = Vector2(230, 0)
+layout_mode = 2
+text = "SETTINGS_MOBILE_HAPTICS"
+vertical_alignment = 1
+
+[node name="Spacer" type="Control" parent="PanelRoot/Content/Pages/AudioPage/GeneralVBox/MobileHapticsRow/RowContent"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="MobileHapticsToggle" type="Button" parent="PanelRoot/Content/Pages/AudioPage/GeneralVBox/MobileHapticsRow/RowContent"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(132, 46)
+layout_mode = 2
+theme_type_variation = &"TextToggle"
+toggle_mode = true
+theme_override_font_sizes/font_size = 22
+text = "[ ON ]"
+alignment = 1
+
+[node name="Line" type="HSeparator" parent="PanelRoot/Content/Pages/AudioPage/GeneralVBox/MobileHapticsRow"]
+layout_mode = 2
+
 [node name="ResetAudioButton" parent="PanelRoot/Content/Pages/AudioPage/GeneralVBox" instance=ExtResource("3_button")]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(220, 52)

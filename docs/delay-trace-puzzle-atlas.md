@@ -82,7 +82,7 @@
 | 存档点 | `Scenes/DelayTrace/Prefabs/echo_checkpoint.tscn` | 唯一 `checkpoint_id` | 玩家每次触碰后保存稳定状态，并提交运行态锁存门 |
 | 收集物 | `Scenes/DelayTrace/Prefabs/temporal_collectible.tscn` | 唯一 `item_id` | 记忆碎片；立即保存，不阻挡普通出口 |
 | 终点爱心门 | `World/Finnal/StaticBody2D` + `memory_floor_gate.gd` | 四个稳定记忆 ID、A-D 亮灯引用 | 按数量点灯；四枚后清除碰撞并闪烁 |
-| 开场引导 | `Scenes/DelayTrace/UI/delay_trace_narrative_presenter.tscn` + `Scenes/DelayTrace/UI/delay_trace_onboarding.tscn` + `World/BeforeHub/FloatText` | `player`、`floating_text` | 新游戏先显示黑屏红字 `跑/RUN`；接近 authored 世界位置后，以手写飘字显示当前跳跃与方向冲刺键位 |
+| 开场引导 | `Scenes/DelayTrace/UI/delay_trace_narrative_presenter.tscn` + `Scenes/DelayTrace/UI/delay_trace_onboarding.tscn` + `FloatText` / `FloatText2` / `FloatText3` | `player`、三个 authored 浮字节点 | 新游戏先显示黑屏红字 `跑/RUN`；接近三个 authored 世界位置后，依次显示跳跃/爬墙、冲刺、下穿平台键位 |
 | 剧情演出 | `Scenes/DelayTrace/UI/delay_trace_narrative_presenter.tscn` | 无 Keeper 对话资源 | RichText2 抖动红字记忆、普通结局真相/洗忆、保留的金字真结局 tableau |
 
 标准门接线：在 `TemporalDoor.source_plates` 中按状态格从左到右拖入对应压力板。凝固屏障必须直接绑定本题的 `FutureRecorder`，不要绑定全局 Future。
