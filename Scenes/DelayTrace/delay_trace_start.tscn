@@ -947,6 +947,8 @@ scale = Vector2(0.5, 0.5)
 
 [node name="Area2D" type="Area2D" parent="World/BeforeHub/FloatText" unique_id=2068834235]
 position = Vector2(-116, -22)
+collision_layer = 0
+collision_mask = 2
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="World/BeforeHub/FloatText/Area2D" unique_id=752466786]
 shape = SubResource("RectangleShape2D_k7cka")
@@ -958,6 +960,8 @@ scale = Vector2(0.5, 0.5)
 [node name="Area2D" type="Area2D" parent="World/BeforeHub/FloatText2" unique_id=1849554135]
 position = Vector2(-6, 8)
 rotation = 1.5707964
+collision_layer = 0
+collision_mask = 2
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="World/BeforeHub/FloatText2/Area2D" unique_id=526457916]
 shape = SubResource("RectangleShape2D_k7cka")
@@ -970,6 +974,8 @@ scale = Vector2(0.5, 0.5)
 position = Vector2(-88, -14)
 rotation = 1.5707964
 scale = Vector2(0.5, 1)
+collision_layer = 0
+collision_mask = 2
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="World/BeforeHub/FloatText3/Area2D" unique_id=1728518182]
 shape = SubResource("RectangleShape2D_k7cka")

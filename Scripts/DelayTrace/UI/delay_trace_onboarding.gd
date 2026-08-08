@@ -6,14 +6,13 @@ extends Node
 @export var floating_text: Node2D
 @export var floating_text2: Node2D
 @export var floating_text3: Node2D
-@export_range(32.0, 256.0, 8.0) var trigger_distance := 64.0
 
 var _jump_hint_pending := false
 var _dash_hint_pending := false
 var _drop_hint_pending := false
 
 
-# Keeps the authored prompt dormant until the new-run intro completes.
+# Connects the three Area2D triggers and keeps prompts dormant until armed.
 func _ready() -> void:
 	if (
 		player == null
@@ -26,7 +25,18 @@ func _ready() -> void:
 	):
 		push_error("DelayTraceOnboarding requires player and three authored floating texts")
 		return
-	set_process(false)
+
+	# Connect Area2D signals for each floating text
+	var area1 := floating_text.get_node_or_null("Area2D") as Area2D
+	var area2 := floating_text2.get_node_or_null("Area2D") as Area2D
+	var area3 := floating_text3.get_node_or_null("Area2D") as Area2D
+
+	if area1 != null:
+		area1.body_entered.connect(_on_float_text1_body_entered)
+	if area2 != null:
+		area2.body_entered.connect(_on_float_text2_body_entered)
+	if area3 != null:
+		area3.body_entered.connect(_on_float_text3_body_entered)
 
 
 # Arms the three proximity-triggered prompts for a fresh run only.
@@ -34,27 +44,27 @@ func start() -> void:
 	_jump_hint_pending = true
 	_dash_hint_pending = true
 	_drop_hint_pending = true
-	set_process(true)
 
 
-# Shows each world cue once the player approaches its authored location.
-func _process(_delta: float) -> void:
-	if _jump_hint_pending and _is_near(floating_text):
+# Triggered when player enters the first hint area.
+func _on_float_text1_body_entered(body: Node2D) -> void:
+	if _jump_hint_pending and body == player:
 		_jump_hint_pending = false
 		floating_text.call(&"start", _build_jump_prompt_text())
-	if _dash_hint_pending and _is_near(floating_text2):
+
+
+# Triggered when player enters the second hint area.
+func _on_float_text2_body_entered(body: Node2D) -> void:
+	if _dash_hint_pending and body == player:
 		_dash_hint_pending = false
 		floating_text2.call(&"start", _build_dash_prompt_text())
-	if _drop_hint_pending and _is_near(floating_text3):
+
+
+# Triggered when player enters the third hint area.
+func _on_float_text3_body_entered(body: Node2D) -> void:
+	if _drop_hint_pending and body == player:
 		_drop_hint_pending = false
 		floating_text3.call(&"start", _build_drop_prompt_text())
-	if not _jump_hint_pending and not _dash_hint_pending and not _drop_hint_pending:
-		set_process(false)
-
-
-# Checks the authored hint's proximity without changing world coordinates.
-func _is_near(hint: Node2D) -> bool:
-	return player.global_position.distance_to(hint.global_position) <= trigger_distance
 
 
 # Builds the jump and wall-climb hint from the current binding.
