@@ -146,14 +146,20 @@ func _configure_ui() -> void:
 	setting_screen.return_completed.connect(_on_settings_return_completed)
 
 
+var _last_displayed_time_text := ""
+
+
 # Updates both authored world labels from the single run-limit source.
 func _on_run_countdown_changed(remaining_seconds: float, _maximum_seconds: float) -> void:
 	var total_seconds := maxi(0, ceili(remaining_seconds))
 	var minutes := int(total_seconds / 60.0)
 	var seconds := total_seconds % 60
 	var display_text := "%02d:%02d" % [minutes, seconds]
-	present_hub_time_label.text = display_text
-	final_time_label.text = display_text
+	# 只在显示内容变化时更新UI，避免每帧格式化字符串
+	if display_text != _last_displayed_time_text:
+		_last_displayed_time_text = display_text
+		present_hub_time_label.text = display_text
+		final_time_label.text = display_text
 
 
 # 新游戏使用默认3秒台；Continue 恢复坐标、延迟台和干净时间线。
@@ -338,6 +344,12 @@ func _begin_failure_reset(animation_name: StringName) -> void:
 
 # 播放失败时的红光和相机冲击，并遵守现有辅助设置。
 func _play_failure_feedback() -> void:
+	# 清理之前可能未完成的 Tween，避免快速连续死亡时的内存泄漏
+	if _death_flash_tween != null and _death_flash_tween.is_valid():
+		_death_flash_tween.kill()
+	if _death_shake_tween != null and _death_shake_tween.is_valid():
+		_death_shake_tween.kill()
+
 	var low_flash := _uses_low_flash_mode()
 	death_flash.show()
 	death_flash.self_modulate.a = 0.0

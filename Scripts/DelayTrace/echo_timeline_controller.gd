@@ -279,9 +279,13 @@ func _finish_future_recording(dies_at_end: bool) -> bool:
 	player.apply_temporal_recall(finished_anchor, TEMPORAL_PHASE_SECONDS)
 	_restore_past_anchor(finished_anchor)
 	for recorder in recorders:
+		if recorder == null or not is_instance_valid(recorder):
+			continue
 		var playback_state: Dictionary = finished_future_states.get(recorder.get_instance_id(), {})
 		if not playback_state.is_empty():
-			recorder.get_future_echo().restore_playback_state(playback_state)
+			var recorder_future := recorder.get_future_echo()
+			if recorder_future != null and is_instance_valid(recorder_future):
+				recorder_future.restore_playback_state(playback_state)
 		recorder.refresh_future_state()
 	future_echo.start_playback(finished_track, playback_duration, TEMPORAL_PHASE_SECONDS, dies_at_end)
 	finished_recorder.recording_finished()

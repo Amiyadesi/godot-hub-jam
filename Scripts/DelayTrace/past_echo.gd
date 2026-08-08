@@ -7,6 +7,7 @@ signal caught_player
 const MATERIALIZE_PREVIEW_SECONDS := 0.35
 const TRACE_REFRESH_MSEC := 100
 const TRACE_SAMPLE_SECONDS := 0.1
+const TRACE_LOOKAHEAD_SECONDS := 6.0  # 略大于最大延迟5秒，确保完整预览
 const TRACE_MAX_SEGMENT_DISTANCE := 64.0
 const TRACE_COLOR := Color(0.95, 0.06, 0.08, 0.52)
 
@@ -290,7 +291,8 @@ func _refresh_pending_trace(track: TemporalTrack, playback_time: float) -> void:
 		return
 	_last_trace_refresh_msec = now_msec
 	var points := PackedVector2Array()
-	var end_time := track.get_end_time()
+	# 限制预览范围到未来 TRACE_LOOKAHEAD_SECONDS，避免长时间游戏后性能下降
+	var end_time := minf(playback_time + TRACE_LOOKAHEAD_SECONDS, track.get_end_time())
 	var sample_time := playback_time
 	while sample_time <= end_time:
 		var frame: TemporalFrame = track.sample_at(sample_time)
