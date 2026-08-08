@@ -36,7 +36,8 @@ const DEFAULTS := {
 	"mobile_joystick_scale": 1.0,
 	"mobile_control_opacity": 0.88,
 	"mobile_haptics": true,
-	"language"       : "zh_CN",
+	"language"       : "en",
+	"language_user_selected": false,
 	"display_mode"   : "fullscreen",
 	"borderless_enabled": false,
 	"window_width"   : 1920,
@@ -108,6 +109,9 @@ func get_value(key: String, fallback: Variant = null) -> Variant:
 
 # Writes, applies, emits, and queues persistence for one changed setting.
 func set_value(key: String, value: Variant) -> void:
+	if key == "language":
+		_set_language_from_user(value)
+		return
 	if _values.get(key) == value:
 		return
 	_values[key] = value
@@ -119,7 +123,7 @@ func set_value(key: String, value: Variant) -> void:
 # Restores all settings to defaults and queues persistence.
 func reset_to_defaults() -> void:
 	var previous_values := _values.duplicate(true)
-	_values = DEFAULTS.duplicate(true)
+	_values = _default_values()
 	apply_all()
 	for key: String in DEFAULTS:
 		if previous_values.get(key) != _values[key]:
@@ -212,7 +216,17 @@ func _normalize_values() -> void:
 	_values["timezone_mode"] = "custom" if str(_values.get("timezone_mode", DEFAULTS["timezone_mode"])) == "custom" else "system"
 	_values["custom_time_hour"] = clampi(int(_values.get("custom_time_hour", DEFAULTS["custom_time_hour"])), 0, 23)
 	_values["custom_time_minute"] = clampi(int(_values.get("custom_time_minute", DEFAULTS["custom_time_minute"])), 0, 59)
-	_values["language"] = _normalize_language(str(_values.get("language", _get_system_language())))
+	var language_was_selected := _is_truthy(
+		_values.get("language_user_selected", DEFAULTS["language_user_selected"])
+	)
+	_values["language_user_selected"] = language_was_selected
+	# Legacy settings did not record whether language was chosen manually.
+	# Treat those values as auto-detected so a browser/system locale can take over.
+	_values["language"] = (
+		_normalize_language(str(_values.get("language", "")))
+		if language_was_selected
+		else _get_system_language()
+	)
 
 
 # Converts unknown display mode strings back to a supported mode.
@@ -225,26 +239,69 @@ func _normalize_display_mode(value: String) -> String:
 
 
 # 只保留项目实际提供的两种语言，避免旧存档写入无效 locale。
-func _normalize_language(value: String) -> String:
-	return value if value in ["en", "zh_CN"] else _get_system_language()
+func _normalize_language(value: String, fallback_to_detected: bool = false) -> String:
+	if value in ["en", "zh_CN"]:
+		return value
+	return _get_system_language() if fallback_to_detected else "en"
 
 
 # Builds first-run defaults without overwriting an explicitly saved language.
 func _default_values() -> Dictionary:
 	var defaults := DEFAULTS.duplicate(true)
 	defaults["language"] = _get_system_language()
+	defaults["language_user_selected"] = false
 	return defaults
 
 
-# Selects Chinese for Chinese system locales and English for all others.
+# Records an explicit language choice, including reselecting the auto-detected language.
+func _set_language_from_user(value: Variant) -> void:
+	var language := _normalize_language(str(value))
+	var language_changed := str(_values.get("language", "")) != language
+	var was_selected := _is_truthy(_values.get("language_user_selected", false))
+	_values["language_user_selected"] = true
+	if not language_changed and was_selected:
+		return
+	_values["language"] = language
+	_normalize_values()
+	apply_setting("language", _values["language"])
+	settings_changed.emit("language", _values["language"])
+	_queue_save()
+
+
+# Selects Chinese for Chinese locales and English for all other locales.
 func _get_system_language() -> String:
-	return "zh_CN" if OS.get_locale_language().to_lower().begins_with("zh") else "en"
+	var locale := OS.get_locale()
+	if OS.has_feature("web"):
+		var browser_locale := _get_browser_locale()
+		if not browser_locale.is_empty():
+			locale = browser_locale
+	if locale.is_empty():
+		locale = OS.get_locale_language()
+	return map_locale_to_language(locale)
+
+
+# Maps BCP-47 or platform locale strings onto the two shipped translations.
+static func map_locale_to_language(locale: String) -> String:
+	var normalized := locale.strip_edges().replace("-", "_").to_lower()
+	var language := normalized.split("_", false)[0] if not normalized.is_empty() else ""
+	return "zh_CN" if language == "zh" else "en"
+
+
+# Reads navigator.language in Web exports while keeping desktop/mobile on OS locale.
+func _get_browser_locale() -> String:
+	var browser_locale: Variant = JavaScriptBridge.eval(
+		"typeof navigator !== 'undefined' ? (navigator.language || navigator.userLanguage || '') : ''"
+	)
+	return String(browser_locale) if browser_locale is String else ""
 
 
 # Applies the active locale to Godot's translation server.
 func _apply_language(language_code: String) -> void:
 	TranslationServer.set_locale(language_code)
-	DisplayServer.window_set_title(TranslationServer.translate(&"GAME_TITLE"))
+	var title := TranslationServer.translate(&"GAME_TITLE")
+	DisplayServer.window_set_title(title)
+	if OS.has_feature("web"):
+		JavaScriptBridge.eval("document.title = %s" % JSON.stringify(title), true)
 
 
 

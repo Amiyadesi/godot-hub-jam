@@ -2,6 +2,7 @@ extends Node2D
 ## Floating damage text that supports configurable color, scale, and decimals.
 
 @export var auto_start_text := ""
+@export_range(0.0, 10.0, 0.1) var hold_seconds := 1.2
 
 @onready var label: Label = $Label
 
@@ -45,7 +46,7 @@ func show_float(text: String) -> void:
 	_float_tween = create_tween()
 	_float_tween.tween_property(self, "global_position", _base_position + Vector2(0.0, -20.0), 0.28)\
 		.set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_CUBIC)
-	_float_tween.tween_interval(1.2)
+	_float_tween.tween_interval(hold_seconds)
 	_float_tween.tween_property(self, "global_position", _base_position + Vector2(0.0, -64.0), 0.55)\
 		.set_ease(Tween.EASE_IN).set_trans(Tween.TRANS_CUBIC)
 	_float_tween.parallel().tween_property(self, "modulate:a", 0.0, 0.55)\

@@ -13,7 +13,9 @@ Keeper: ...What do you want to know?
 	Keeper: Leave before the countdown ends, or remain trapped here forever.
 	=> return
 - What are the red and golden echoes?
-	Keeper: ...Red is your delayed past. Gold is a future possibility you recorded.
+	Keeper: ...Red is your delayed past replaying your route. It will catch the present you.
+	Keeper: Entering a golden recorder captures up to five seconds of your route.
+	Keeper: When recording ends or you recall, you and the Past return to the start. The golden Future replays that route.
 	Keeper: Here, the past can affect the present and future. The present can only affect the future.
 	=> return
 - What do I need to do to leave?

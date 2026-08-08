@@ -19,6 +19,7 @@ const LATCHED_OPEN_COLOR := Color(0.52, 0.86, 1.0, 0.38)
 
 @onready var collision_shape: CollisionShape2D = %CollisionShape2D
 @onready var visual: CanvasItem = %Visual
+@onready var mode_label: Label = %ModeLabel
 @onready var indicator_roots: Array[Node2D] = [
 	$Indicators/IndicatorA,
 	$Indicators/IndicatorB,
@@ -45,6 +46,9 @@ func _ready() -> void:
 	for plate in source_plates:
 		assert(plate != null, "TemporalDoor source_plates cannot contain null")
 		plate.pressed_changed.connect(_on_source_pressed_changed)
+	if SettingsModule.instance != null:
+		SettingsModule.instance.settings_changed.connect(_on_setting_changed)
+	_refresh_mode_label()
 	_checkpoint_closed = (
 		mode == Mode.LATCHED_ALL
 		and not latched_door_id.is_empty()
@@ -66,6 +70,17 @@ func _ready() -> void:
 		set_open(true, false)
 		return
 	_refresh_state()
+
+
+# Refreshes the authored mode label after a runtime language change.
+func _on_setting_changed(key: String, _value: Variant) -> void:
+	if key == "language":
+		_refresh_mode_label()
+
+
+# Names the two door contracts without relying on color alone.
+func _refresh_mode_label() -> void:
+	mode_label.text = tr("DOOR_MODE_LATCHED" if mode == Mode.LATCHED_ALL else "DOOR_MODE_MOMENTARY")
 
 
 # 任一压力板变化时重新计算全部输入。
@@ -90,11 +105,13 @@ func _refresh_state() -> void:
 func _latch() -> void:
 	if _latched or _checkpoint_closed:
 		return
+	if (
+		not latched_door_id.is_empty()
+		and LevelModule.instance != null
+		and not LevelModule.instance.open_latched_door(String(latched_door_id))
+	):
+		return
 	_latched = true
-	if latched_door_id.is_empty() or LevelModule.instance == null:
-		return
-	if not LevelModule.instance.open_latched_door(String(latched_door_id)):
-		return
 
 
 # Restores this door from committed checkpoint progress after a reset.
@@ -124,6 +141,8 @@ func restore_checkpoint_state() -> void:
 # Closes and persists this authored door when its checkpoint is activated.
 func close_at_checkpoint() -> void:
 	if not close_on_checkpoint or mode != Mode.LATCHED_ALL:
+		return
+	if not _latched and not _is_open:
 		return
 	_checkpoint_closed = true
 	_latched = false

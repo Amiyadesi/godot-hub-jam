@@ -73,4 +73,6 @@ func _uses_low_flash_mode() -> bool:
 func _on_body_entered(body: Node2D) -> void:
 	if not body is EchoPlayer:
 		return
+	if _active:
+		return
 	activation_requested.emit(self)

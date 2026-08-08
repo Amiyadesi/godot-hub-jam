@@ -136,23 +136,36 @@ theme_override_styles/panel = SubResource("StyleBox_echo_dialogue")
 [node name="CharacterLabel" parent="Balloon/Margin/PanelContainer/HBox/VBox" index="0"]
 texture_filter = 1
 theme_override_fonts/normal_font = ExtResource("3_pixel_font")
-theme_override_font_sizes/normal_font_size = 32
+theme_override_font_sizes/normal_font_size = 64
 
 [node name="ProjectDialogueLabel" parent="Balloon/Margin/PanelContainer/HBox/VBox" index="1"]
 texture_filter = 1
 theme_override_fonts/normal_font = ExtResource("3_pixel_font")
-theme_override_font_sizes/normal_font_size = 28
+theme_override_font_sizes/normal_font_size = 56
 
 [node name="ResponsesMenu" parent="Balloon" index="2"]
-offset_left = -390.0
-offset_top = -168.0
-offset_right = 390.0
-offset_bottom = 212.0
+offset_left = -560.0
+offset_top = -360.0
+offset_right = 560.0
+offset_bottom = 240.0
 theme_override_constants/separation = 16
 script = ExtResource("4_responses_menu")
-response_template = NodePath("NormalResponses/ResponseExample")
-carousel_threshold = 5
-page_size = 4
+response_template = NodePath("ResponseExample")
+carousel_threshold = 4
+page_size = 3
+
+[node name="ResponseExample" parent="Balloon/ResponsesMenu" index="0"]
+custom_minimum_size = Vector2(1040, 104)
+size_flags_horizontal = 3
+focus_mode = 2
+theme_override_fonts/font = ExtResource("3_pixel_font")
+theme_override_font_sizes/font_size = 48
+theme_override_styles/normal = SubResource("StyleBox_button_normal")
+theme_override_styles/hover = SubResource("StyleBox_button_hover")
+theme_override_styles/focus = SubResource("StyleBox_button_hover")
+theme_override_styles/pressed = SubResource("StyleBox_button_pressed")
+theme_override_styles/disabled = SubResource("StyleBox_button_disabled")
+autowrap_mode = 2
 
 [node name="NormalResponses" type="VBoxContainer" parent="Balloon/ResponsesMenu"]
 unique_name_in_owner = true
@@ -160,46 +173,29 @@ layout_mode = 2
 size_flags_horizontal = 4
 theme_override_constants/separation = 14
 
-[node name="ResponseExample" type="Button" parent="Balloon/ResponsesMenu/NormalResponses"]
-unique_name_in_owner = true
-visible = false
-custom_minimum_size = Vector2(720, 62)
-layout_mode = 2
-size_flags_horizontal = 3
-focus_mode = 2
-theme_override_fonts/font = ExtResource("3_pixel_font")
-theme_override_font_sizes/font_size = 24
-theme_override_styles/normal = SubResource("StyleBox_button_normal")
-theme_override_styles/hover = SubResource("StyleBox_button_hover")
-theme_override_styles/focus = SubResource("StyleBox_button_hover")
-theme_override_styles/pressed = SubResource("StyleBox_button_pressed")
-theme_override_styles/disabled = SubResource("StyleBox_button_disabled")
-text = "选项示例"
-autowrap_mode = 2
-
 [node name="CarouselFrame" type="PanelContainer" parent="Balloon/ResponsesMenu"]
 unique_name_in_owner = true
 visible = false
-custom_minimum_size = Vector2(780, 252)
+custom_minimum_size = Vector2(1080, 440)
 layout_mode = 2
 size_flags_horizontal = 4
 theme_override_styles/panel = SubResource("StyleBox_carousel")
 
 [node name="CarouselColumn" type="VBoxContainer" parent="Balloon/ResponsesMenu/CarouselFrame"]
 layout_mode = 2
-theme_override_constants/separation = 10
+theme_override_constants/separation = 12
 
 [node name="CarouselRow" type="HBoxContainer" parent="Balloon/ResponsesMenu/CarouselFrame/CarouselColumn"]
 layout_mode = 2
-theme_override_constants/separation = 12
+theme_override_constants/separation = 16
 
 [node name="PreviousPageButton" type="Button" parent="Balloon/ResponsesMenu/CarouselFrame/CarouselColumn/CarouselRow"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(58, 172)
+custom_minimum_size = Vector2(64, 344)
 layout_mode = 2
 focus_mode = 2
 theme_override_fonts/font = ExtResource("3_pixel_font")
-theme_override_font_sizes/font_size = 30
+theme_override_font_sizes/font_size = 60
 theme_override_styles/normal = SubResource("StyleBox_button_normal")
 theme_override_styles/hover = SubResource("StyleBox_button_hover")
 theme_override_styles/focus = SubResource("StyleBox_button_hover")
@@ -209,18 +205,18 @@ text = "<"
 
 [node name="CarouselResponses" type="VBoxContainer" parent="Balloon/ResponsesMenu/CarouselFrame/CarouselColumn/CarouselRow"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(620, 172)
+custom_minimum_size = Vector2(860, 344)
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_constants/separation = 14
+theme_override_constants/separation = 16
 
 [node name="NextPageButton" type="Button" parent="Balloon/ResponsesMenu/CarouselFrame/CarouselColumn/CarouselRow"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(58, 172)
+custom_minimum_size = Vector2(64, 344)
 layout_mode = 2
 focus_mode = 2
 theme_override_fonts/font = ExtResource("3_pixel_font")
-theme_override_font_sizes/font_size = 30
+theme_override_font_sizes/font_size = 60
 theme_override_styles/normal = SubResource("StyleBox_button_normal")
 theme_override_styles/hover = SubResource("StyleBox_button_hover")
 theme_override_styles/focus = SubResource("StyleBox_button_hover")
@@ -232,7 +228,7 @@ text = ">"
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_fonts/font = ExtResource("3_pixel_font")
-theme_override_font_sizes/font_size = 20
+theme_override_font_sizes/font_size = 40
 theme_override_colors/font_color = Color(0.48, 0.82, 0.84, 1)
 text = "1 / 1"
 horizontal_alignment = 1
@@ -241,4 +237,4 @@ horizontal_alignment = 1
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 4
-theme_override_constants/separation = 14
+theme_override_constants/separation = 16

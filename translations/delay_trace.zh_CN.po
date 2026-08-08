@@ -244,7 +244,16 @@ msgid "TUTORIAL_JUMP_CLIMB"
 msgstr "{jump}  跳跃 / 爬墙"
 
 msgid "TUTORIAL_DASH"
-msgstr "{dash} + 方向  冲刺"
+msgstr "{jump} 跳跃 + 方向 + {dash} 冲刺"
+
+msgid "TUTORIAL_FUTURE"
+msgstr "金色记录器开始记录\n5 秒后或按 {recall}，你与过去体回到起点\n金色未来体会重放刚才的路线"
+
+msgid "DOOR_MODE_MOMENTARY"
+msgstr "按住"
+
+msgid "DOOR_MODE_LATCHED"
+msgstr "锁存"
 
 msgid "TUTORIAL_DROP"
 msgstr "{down}  下穿平台"

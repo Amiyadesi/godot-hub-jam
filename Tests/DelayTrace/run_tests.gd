@@ -9,6 +9,7 @@ const FUTURE_ECHO_SCENE := preload("res://Scenes/DelayTrace/Prefabs/future_echo.
 const FUTURE_RECORDER_SCENE := preload("res://Scenes/DelayTrace/Prefabs/future_recorder.tscn")
 const FUTURE_BARRIER_SCENE := preload("res://Scenes/DelayTrace/Prefabs/future_condensation_barrier.tscn")
 const PROGRESSION_SHORTCUT_SCENE := preload("res://Scenes/DelayTrace/Prefabs/progression_shortcut.tscn")
+const CHECKPOINT_SCENE := preload("res://Scenes/DelayTrace/Prefabs/echo_checkpoint.tscn")
 
 const PHYSICS_STEP := 1.0 / 60.0
 const TILE_SIZE := 16.0
@@ -22,11 +23,14 @@ func _ready() -> void:
 	_test_track_keeps_recall_until_its_exact_time()
 	_test_player_tuning_matches_authored_envelope()
 	_test_level_module_round_trip()
+	_test_settings_language_selection()
 	await _test_run_countdown_lifecycle()
 	await _test_past_catch_reports_recording_source()
 	await _test_future_recording_commits_on_trap()
 	_test_dash_charge_marker_follows_player_state()
 	_test_dash_input_consumes_single_charge()
+	_test_dash_without_direction_uses_facing()
+	await _test_diagonal_input_allows_wall_jump()
 	_test_reset_discards_buffered_dash()
 	await _test_landing_restores_single_dash()
 	_test_temporal_door_requires_all_sources()
@@ -34,9 +38,12 @@ func _ready() -> void:
 	_test_temporal_door_supports_four_sources()
 	_test_temporal_door_modes_and_indicators()
 	_test_temporal_door_latched_state_round_trip()
+	_test_uncommitted_latched_door_can_reopen_after_reset()
+	_test_unopened_checkpoint_closed_door_can_reopen()
 	_test_temporal_pressure_plate_feedback()
 	_test_future_echo_reports_active_playback()
 	_test_future_barrier_follows_its_recorder()
+	_test_checkpoint_only_requests_first_activation()
 	await _test_progression_shortcut_follows_device()
 	await _test_memory_floor_gate_follows_collected_count()
 	await _test_future_collision_refills_single_dash()
@@ -124,6 +131,29 @@ func _test_level_module_round_trip() -> void:
 	_expect(is_equal_approx(module.get_past_delay_seconds(), 1.0), "slot round-trip restores selected past delay")
 	_expect(module.get_delay_switch_id() == &"delay_1s", "slot round-trip restores selected delay switch")
 	module.apply_data(original_data)
+
+
+# 验证首次启动按平台 locale 选择语言，显式选择后不会再被自动检测覆盖。
+func _test_settings_language_selection() -> void:
+	var original_instance := SettingsModule.instance
+	var module := SettingsModule.new()
+	_expect(SettingsModule.map_locale_to_language("zh-CN") == "zh_CN", "Chinese browser locale maps to zh_CN")
+	_expect(SettingsModule.map_locale_to_language("zh-TW") == "zh_CN", "Traditional Chinese locale maps to zh_CN")
+	_expect(SettingsModule.map_locale_to_language("fr-FR") == "en", "non-Chinese locale maps to English")
+	module.apply_data({"language": "zh_CN"})
+	var detected_language := SettingsModule.map_locale_to_language(OS.get_locale())
+	_expect(
+		str(module.get_value("language", "")) == detected_language,
+		"legacy settings without an explicit language choice use the detected locale"
+	)
+	_expect(not bool(module.get_value("language_user_selected", true)), "auto-detected language stays unmarked")
+	module.set_value("language", "en")
+	_expect(str(module.get_value("language", "")) == "en", "explicit language selection is applied immediately")
+	_expect(bool(module.get_value("language_user_selected", false)), "explicit language selection is persisted")
+	module.apply_data({"language": "zh_CN", "language_user_selected": true})
+	_expect(str(module.get_value("language", "")) == "zh_CN", "explicit language survives a reload")
+	module._save_request_serial += 1
+	SettingsModule.instance = original_instance
 
 
 # 验证 Future 录制撞陷阱时提交致死路径并回到锚点。
@@ -286,6 +316,87 @@ func _test_dash_input_consumes_single_charge() -> void:
 	player.free()
 
 
+# 验证无方向冲刺沿角色当前面朝方向启动。
+func _test_dash_without_direction_uses_facing() -> void:
+	var player := PLAYER_SCENE.instantiate() as EchoPlayer
+	add_child(player)
+	player.set_physics_process(false)
+	player.facing = -1.0
+	var directions: Array[Vector2] = []
+	player.dash_started.connect(func(direction: Vector2) -> void:
+		directions.append(direction)
+	)
+	var dash_event := InputEventAction.new()
+	dash_event.action = &"echo_dash"
+	dash_event.pressed = true
+	player._input(dash_event)
+	player._physics_process(PHYSICS_STEP)
+	_expect(directions.size() == 1, "directionless dash starts once")
+	if directions.size() == 1:
+		_expect(directions[0].is_equal_approx(Vector2.LEFT), "directionless dash follows the facing direction")
+	player.free()
+
+
+# 验证贴墙时同时按住墙方向与上方向，跳跃仍会沿墙法线弹开。
+func _test_diagonal_input_allows_wall_jump() -> void:
+	var wall := StaticBody2D.new()
+	var wall_shape := CollisionShape2D.new()
+	var wall_rectangle := RectangleShape2D.new()
+	wall_rectangle.size = Vector2(16.0, 128.0)
+	wall_shape.shape = wall_rectangle
+	wall.add_child(wall_shape)
+	wall.position = Vector2(16.0, 0.0)
+	add_child(wall)
+	var player := PLAYER_SCENE.instantiate() as EchoPlayer
+	add_child(player)
+	player.set_physics_process(false)
+	await get_tree().physics_frame
+	player.global_position = Vector2(3.0, 0.0)
+	Input.action_press(&"echo_move_right")
+	player._physics_process(PHYSICS_STEP)
+	player._physics_process(PHYSICS_STEP)
+	_expect(player.is_on_wall_only(), "diagonal wall-jump test reaches the authored wall")
+	Input.action_press(&"echo_move_up")
+	var jump_event := InputEventAction.new()
+	jump_event.action = &"echo_jump"
+	jump_event.pressed = true
+	player._input(jump_event)
+	player._physics_process(PHYSICS_STEP)
+	_expect(player.velocity.y < 0.0, "up-toward-wall plus jump starts a wall jump")
+	_expect(player.velocity.x < 0.0, "diagonal wall jump pushes away from the right wall")
+	Input.action_release(&"echo_move_up")
+	Input.action_release(&"echo_move_right")
+	player.free()
+	wall.free()
+
+	var left_wall := StaticBody2D.new()
+	var left_wall_shape := CollisionShape2D.new()
+	var left_wall_rectangle := RectangleShape2D.new()
+	left_wall_rectangle.size = Vector2(16.0, 128.0)
+	left_wall_shape.shape = left_wall_rectangle
+	left_wall.add_child(left_wall_shape)
+	left_wall.position = Vector2(-16.0, 0.0)
+	add_child(left_wall)
+	var left_player := PLAYER_SCENE.instantiate() as EchoPlayer
+	add_child(left_player)
+	left_player.set_physics_process(false)
+	await get_tree().physics_frame
+	left_player.global_position = Vector2(-3.0, 0.0)
+	Input.action_press(&"echo_move_left")
+	left_player._physics_process(PHYSICS_STEP)
+	left_player._physics_process(PHYSICS_STEP)
+	_expect(left_player.is_on_wall_only(), "diagonal wall-jump test reaches the left wall")
+	Input.action_press(&"echo_move_up")
+	left_player._input(jump_event)
+	left_player._physics_process(PHYSICS_STEP)
+	_expect(left_player.velocity.y < 0.0, "up-toward-left-wall plus jump starts a wall jump")
+	_expect(left_player.velocity.x > 0.0, "diagonal wall jump pushes away from the left wall")
+	Input.action_release(&"echo_move_up")
+	Input.action_release(&"echo_move_left")
+	left_player.free()
+	left_wall.free()
+
+
 # 验证死亡复位会丢弃同帧锁存的冲刺输入。
 func _test_reset_discards_buffered_dash() -> void:
 	var player := PLAYER_SCENE.instantiate() as EchoPlayer
@@ -413,7 +524,7 @@ func _test_temporal_door_supports_four_sources() -> void:
 		plate.free()
 
 
-# 验证两种门模式使用不同颜色，并只显示已接线的指示格。
+# 验证两种门模式使用不同颜色和文字标记，并只显示已接线的指示格。
 func _test_temporal_door_modes_and_indicators() -> void:
 	var plate_a := PRESSURE_PLATE_SCENE.instantiate() as TemporalPressurePlate
 	var plate_b := PRESSURE_PLATE_SCENE.instantiate() as TemporalPressurePlate
@@ -423,6 +534,10 @@ func _test_temporal_door_modes_and_indicators() -> void:
 	var momentary := TEMPORAL_DOOR_SCENE.instantiate() as TemporalDoor
 	momentary.source_plates = [plate_a]
 	add_child(momentary)
+	var momentary_label := momentary.get_node_or_null("ModeLabel") as Label
+	_expect(momentary_label != null, "Momentary door authors a mode label")
+	if momentary_label != null:
+		_expect(momentary_label.text == tr("DOOR_MODE_MOMENTARY"), "Momentary door labels its hold behavior")
 	_expect(momentary.get_node("Indicators/IndicatorA").visible, "Momentary door shows its connected source indicator")
 	_expect(not momentary.get_node("Indicators/IndicatorB").visible, "Momentary door hides unused source indicators")
 	_expect(momentary.visual.modulate.is_equal_approx(TemporalDoor.MOMENTARY_CLOSED_COLOR), "Momentary door uses its closed color")
@@ -433,6 +548,10 @@ func _test_temporal_door_modes_and_indicators() -> void:
 	latched.mode = TemporalDoor.Mode.LATCHED_ALL
 	latched.source_plates = [plate_a, plate_b]
 	add_child(latched)
+	var latched_label := latched.get_node_or_null("ModeLabel") as Label
+	_expect(latched_label != null, "Latched door authors a mode label")
+	if latched_label != null:
+		_expect(latched_label.text == tr("DOOR_MODE_LATCHED"), "Latched door labels its persistent behavior")
 	_expect(latched.visual.modulate.is_equal_approx(TemporalDoor.LATCHED_CLOSED_COLOR), "Latched door uses a distinct closed color")
 	plate_b.body_entered.emit(player)
 	_expect(latched.is_open(), "Latched door opens after all sources press")
@@ -477,6 +596,63 @@ func _test_temporal_door_latched_state_round_trip() -> void:
 	door.free()
 	plate_a.free()
 	plate_b.free()
+	LevelModule.instance = original_level_module
+
+
+# 验证未触碰 checkpoint 的锁存门失败复位后可再次满足条件并开启。
+func _test_uncommitted_latched_door_can_reopen_after_reset() -> void:
+	var original_level_module := LevelModule.instance
+	var module := LevelModule.new()
+	LevelModule.instance = module
+	var plate_a := PRESSURE_PLATE_SCENE.instantiate() as TemporalPressurePlate
+	var plate_b := PRESSURE_PLATE_SCENE.instantiate() as TemporalPressurePlate
+	add_child(plate_a)
+	add_child(plate_b)
+	var door := TEMPORAL_DOOR_SCENE.instantiate() as TemporalDoor
+	door.mode = TemporalDoor.Mode.LATCHED_ALL
+	door.latched_door_id = &"latched_reset_reopen"
+	door.source_plates = [plate_a, plate_b]
+	add_child(door)
+	var player := PLAYER_SCENE.instantiate() as EchoPlayer
+	plate_a.body_entered.emit(player)
+	plate_b.body_entered.emit(player)
+	_expect(door.is_open(), "uncommitted Latched door opens before reset")
+	module.discard_pending_latched_doors()
+	door.restore_checkpoint_state()
+	_expect(not door.is_open(), "uncommitted Latched door closes after reset")
+	plate_a.body_exited.emit(player)
+	plate_b.body_exited.emit(player)
+	plate_a.body_entered.emit(player)
+	plate_b.body_entered.emit(player)
+	_expect(door.is_open(), "uncommitted Latched door reopens after reset")
+	player.free()
+	door.free()
+	plate_a.free()
+	plate_b.free()
+	LevelModule.instance = original_level_module
+
+
+# 验证 checkpoint 前尚未打开的 close_on_checkpoint 门仍可在恢复后重新开启。
+func _test_unopened_checkpoint_closed_door_can_reopen() -> void:
+	var original_level_module := LevelModule.instance
+	var module := LevelModule.new()
+	LevelModule.instance = module
+	var plate := PRESSURE_PLATE_SCENE.instantiate() as TemporalPressurePlate
+	add_child(plate)
+	var door := TEMPORAL_DOOR_SCENE.instantiate() as TemporalDoor
+	door.mode = TemporalDoor.Mode.LATCHED_ALL
+	door.latched_door_id = &"latched_checkpoint_reopen"
+	door.close_on_checkpoint = true
+	door.source_plates = [plate]
+	add_child(door)
+	door.close_at_checkpoint()
+	_expect(not module.is_latched_door_closed("latched_checkpoint_reopen"), "unopened checkpoint door is not permanently closed")
+	var player := PLAYER_SCENE.instantiate() as EchoPlayer
+	plate.body_entered.emit(player)
+	_expect(door.is_open(), "unopened checkpoint door reopens when its source is satisfied")
+	player.free()
+	door.free()
+	plate.free()
 	LevelModule.instance = original_level_module
 
 
@@ -550,6 +726,26 @@ func _test_future_barrier_follows_its_recorder() -> void:
 	recorder.free()
 
 
+# 验证同一存档点激活后重复触碰不会再次请求保存。
+func _test_checkpoint_only_requests_first_activation() -> void:
+	var checkpoint := CHECKPOINT_SCENE.instantiate() as EchoCheckpoint
+	add_child(checkpoint)
+	var player := PLAYER_SCENE.instantiate() as EchoPlayer
+	var activation_count: Array[int] = [0]
+	checkpoint.activation_requested.connect(func(_checkpoint: EchoCheckpoint) -> void:
+		activation_count[0] += 1
+	)
+	checkpoint.body_entered.emit(player)
+	checkpoint.set_active(true)
+	checkpoint.body_entered.emit(player)
+	_expect(activation_count[0] == 1, "active checkpoint ignores repeated touches")
+	checkpoint.set_active(false)
+	checkpoint.body_entered.emit(player)
+	_expect(activation_count[0] == 2, "deactivated checkpoint can request a later activation")
+	player.free()
+	checkpoint.free()
+
+
 # 验证回 Hub 捷径只响应绑定装置，并在打开后关闭实体碰撞。
 func _test_progression_shortcut_follows_device() -> void:
 	var original_level_module := LevelModule.instance
@@ -577,6 +773,7 @@ func _test_memory_floor_gate_follows_collected_count() -> void:
 	var start_scene := load("res://Scenes/DelayTrace/delay_trace_start.tscn") as PackedScene
 	var start_root := start_scene.instantiate()
 	var final_room := start_root.get_node("World/Finnal") as Node2D
+	_strip_final_room_external_wirings(final_room)
 	start_root.get_node("World").remove_child(final_room)
 	start_root.free()
 	add_child(final_room)
@@ -598,6 +795,7 @@ func _test_memory_floor_gate_follows_collected_count() -> void:
 	LevelModule.instance = restored_module
 	var restored_root := start_scene.instantiate()
 	var restored_final_room := restored_root.get_node("World/Finnal") as Node2D
+	_strip_final_room_external_wirings(restored_final_room)
 	restored_root.get_node("World").remove_child(restored_final_room)
 	restored_root.free()
 	add_child(restored_final_room)
@@ -608,6 +806,17 @@ func _test_memory_floor_gate_follows_collected_count() -> void:
 	_expect(restored_gate.animation_player.current_animation == &"unlocked", "restored memory floor skips the one-shot unlock flash")
 	restored_final_room.free()
 	LevelModule.instance = original_level_module
+
+
+# The isolated MemoryFloorGate fixture does not keep World/Delay3s alive.
+# Remove only children whose authored paths intentionally point outside Finnal.
+func _strip_final_room_external_wirings(final_room: Node2D) -> void:
+	for child_name in [&"TemporalDoor13", &"FutureCondensationBarrier5"]:
+		var child := final_room.get_node_or_null(NodePath(child_name))
+		if child == null:
+			continue
+		final_room.remove_child(child)
+		child.free()
 
 
 # 验证地面与空中的现在体撞散 Future 都恢复唯一一格冲刺。

@@ -4,6 +4,7 @@
 [ext_resource type="Texture2D" uid="uid://bgrnghgd1ccr6" path="res://assets/delay_trace/tilemap/monochrome_tilemap_transparent_packed.png" id="2_tilemap"]
 [ext_resource type="AudioStream" path="res://assets/phase_lag/audio/sfx/door_open.ogg" id="3_open_audio"]
 [ext_resource type="AudioStream" path="res://assets/phase_lag/audio/sfx/door_close.ogg" id="4_close_audio"]
+[ext_resource type="FontFile" uid="uid://bk23nmiva6eei" path="res://assets/fonts/fusion-pixel-12px-proportional-zh_hans.ttf" id="5_pixel_font"]
 
 [sub_resource type="RectangleShape2D" id="Shape_door"]
 size = Vector2(32, 32)
@@ -33,6 +34,22 @@ texture = SubResource("Atlas_door")
 
 [node name="Indicators" type="Node2D" parent="." unique_id=1580140142]
 position = Vector2(0, -24)
+
+[node name="ModeLabel" type="Label" parent="."]
+unique_name_in_owner = true
+texture_filter = 1
+offset_left = -40.0
+offset_top = -43.0
+offset_right = 40.0
+offset_bottom = -30.0
+theme_override_colors/font_color = Color(0.92, 0.96, 1, 1)
+theme_override_colors/font_outline_color = Color(0.01, 0.02, 0.03, 1)
+theme_override_constants/outline_size = 2
+theme_override_fonts/font = ExtResource("5_pixel_font")
+theme_override_font_sizes/font_size = 9
+text = "HOLD"
+horizontal_alignment = 1
+vertical_alignment = 1
 
 [node name="IndicatorA" type="Node2D" parent="Indicators" unique_id=1863588928]
 position = Vector2(-9, 0)

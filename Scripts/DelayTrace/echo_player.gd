@@ -387,7 +387,7 @@ func _update_wall_memory(delta: float) -> void:
 			_wall_normal = current_wall_normal
 			return
 		if _wall_detached:
-			_wall_coyote_remaining = 0.0
+			_wall_coyote_remaining = maxf(_wall_coyote_remaining - delta, 0.0)
 			_wall_normal = current_wall_normal
 			return
 		if _wall_jump_locked and _wall_jump_lock_normal.dot(current_wall_normal) < -0.8:
@@ -470,12 +470,9 @@ func _update_standard_movement(delta: float) -> void:
 			_perform_standard_jump()
 			started_jump = true
 	if not started_jump and is_on_wall_only() and _wall_coyote_remaining > 0.0:
-		if (
-			Input.is_action_pressed(&"echo_move_up")
-			or Input.is_action_pressed(&"echo_move_down")
-		):
+		var move_x := _read_move_input().x
+		if move_x * _wall_normal.x > 0.0:
 			_wall_detached = true
-			_wall_coyote_remaining = 0.0
 	var dash_recovering := _dash_recovery_remaining > 0.0
 	if dash_recovering and not started_jump:
 		# 冲刺后短暂沿整条速度向量减速，保证八方向位移一致。
@@ -577,8 +574,21 @@ func _read_move_input() -> Vector2:
 func _read_dash_direction() -> Vector2:
 	var input_direction := _read_move_input()
 	if input_direction.is_zero_approx():
-		return Vector2(facing, 0.0)
+		var wall_direction := _read_wall_dash_direction()
+		if not wall_direction.is_zero_approx():
+			return wall_direction
+		return Vector2.LEFT if facing < 0.0 else Vector2.RIGHT
 	return _snap_to_eight(input_direction)
+
+
+# 无方向贴墙冲刺时远离墙面：左墙向右，右墙向左。
+func _read_wall_dash_direction() -> Vector2:
+	if not is_on_wall():
+		return Vector2.ZERO
+	var wall_normal := get_wall_normal()
+	if not _wall_rays_detect_wall(wall_normal):
+		return Vector2.ZERO
+	return Vector2.RIGHT if wall_normal.x > 0.0 else Vector2.LEFT
 
 
 # 将向量量化为最近的八方向之一。

@@ -407,7 +407,16 @@ msgid "TUTORIAL_JUMP_CLIMB"
 msgstr "{jump}  JUMP / WALL JUMP"
 
 msgid "TUTORIAL_DASH"
-msgstr "{dash} + DIRECTION  DASH"
+msgstr "{jump} JUMP + DIRECTION + {dash} DASH"
+
+msgid "TUTORIAL_FUTURE"
+msgstr "GOLD RECORDER STARTS RECORDING\nAFTER 5 SEC OR {recall}, YOU AND PAST REWIND\nGOLD FUTURE REPLAYS YOUR ROUTE"
+
+msgid "DOOR_MODE_MOMENTARY"
+msgstr "HOLD"
+
+msgid "DOOR_MODE_LATCHED"
+msgstr "LATCH"
 
 msgid "TUTORIAL_DROP"
 msgstr "{down}  DROP THROUGH"

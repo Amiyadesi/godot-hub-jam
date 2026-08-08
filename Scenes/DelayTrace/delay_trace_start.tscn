@@ -899,7 +899,7 @@ close_on_checkpoint = true
 position = Vector2(464, 512)
 mode = 1
 source_plates = [NodePath("../TemporalPressurePlate2"), NodePath("../TemporalPressurePlate3")]
-latched_door_id = &"before_hub_latched_2"
+latched_door_id = &"before_hub_latched_3"
 
 [node name="OpeningRunStart" type="Marker2D" parent="World/BeforeHub" unique_id=2114711929]
 unique_name_in_owner = true
@@ -979,6 +979,19 @@ collision_mask = 2
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="World/BeforeHub/FloatText3/Area2D" unique_id=1728518182]
 shape = SubResource("RectangleShape2D_k7cka")
+
+[node name="FloatText4" parent="World/BeforeHub" instance=ExtResource("36_run_text")]
+position = Vector2(560, 520)
+scale = Vector2(0.5, 0.5)
+hold_seconds = 3.6
+
+[node name="Label" parent="World/BeforeHub/FloatText4" index="0"]
+custom_minimum_size = Vector2(720, 220)
+offset_left = -360.0
+offset_top = -80.0
+offset_right = 360.0
+offset_bottom = 140.0
+theme_override_font_sizes/font_size = 40
 
 [node name="Delay1s" type="Node2D" parent="World" unique_id=1969831831]
 
@@ -1452,11 +1465,13 @@ dialogue_npc = NodePath("../../World/PresentHub/DialogueNpc")
 
 [node name="NarrativePresenter" parent="." unique_id=176848342 instance=ExtResource("37_narrative_presenter")]
 
-[node name="Onboarding" parent="." unique_id=810025189 node_paths=PackedStringArray("player", "floating_text", "floating_text2", "floating_text3") instance=ExtResource("40_onboarding")]
+[node name="Onboarding" parent="." unique_id=810025189 node_paths=PackedStringArray("player", "floating_text", "floating_text2", "floating_text3", "future_recorder", "future_text") instance=ExtResource("40_onboarding")]
 player = NodePath("../World/EchoPlayer")
 floating_text = NodePath("../World/BeforeHub/FloatText")
 floating_text2 = NodePath("../World/BeforeHub/FloatText2")
 floating_text3 = NodePath("../World/BeforeHub/FloatText3")
+future_recorder = NodePath("../World/BeforeHub/FutureRecorder")
+future_text = NodePath("../World/BeforeHub/FloatText4")
 
 [node name="StoryController" type="Node" parent="." unique_id=926052509 node_paths=PackedStringArray("gameplay_world", "player", "narrative_presenter", "normal_ending_trigger", "final_return_point")]
 process_mode = 3
